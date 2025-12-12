@@ -1,65 +1,52 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Shield, Scale } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import type { Jurisdiction } from '@/app/blotter/page';
-import { cn } from '@/lib/utils';
+import { Wifi, WifiOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
-
-interface BlotterHeaderProps {
-  jurisdiction: Jurisdiction;
-  onJurisdictionChange: (jurisdiction: Jurisdiction) => void;
-}
-
-const DigitalClock = () => {
+export default function BlotterHeader({ title }: { title: string }) {
+  const [isOnline, setIsOnline] = useState(true);
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    const timerId = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timerId);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    setIsOnline(navigator.onLine);
+
+    const timer = setInterval(() => setTime(new Date()), 1000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      clearInterval(timer);
+    };
   }, []);
 
   return (
-    <div className="text-sm font-mono tracking-wider">
-      {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
-    </div>
-  );
-};
-
-export default function BlotterHeader({ jurisdiction, onJurisdictionChange }: BlotterHeaderProps) {
-  const handleToggle = (checked: boolean) => {
-    onJurisdictionChange(checked ? 'pnp' : 'barangay');
-  };
-
-  return (
-    <header className="flex items-center justify-between p-3 border-b border-border shrink-0 bg-[hsl(var(--header-bg))] text-[hsl(var(--header-fg))] transition-colors duration-300">
+    <header className="flex items-center justify-between p-4 bg-[#1e1e1e] border-b border-gray-700 h-[80px]">
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 flex items-center justify-center">
-          <Scale className="h-8 w-8" />
-        </div>
-        <div className="hidden sm:block">
-          <h1 className="text-xl font-bold">Unified Blotter System</h1>
-          <p className="text-xs opacity-80">Incident Record Form (IRF)</p>
-        </div>
+        <Link href="/" passHref>
+          <Button variant="outline" className="h-12 w-12 bg-transparent border-gray-600 hover:bg-gray-700">
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold">{title}</h1>
       </div>
-      
-      <div className="flex items-center gap-6">
-        <DigitalClock />
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="jurisdiction-toggle" className={cn("font-semibold transition-opacity", jurisdiction === 'pnp' && 'opacity-60')}>
-            Barangay
-          </Label>
-          <Switch
-            id="jurisdiction-toggle"
-            checked={jurisdiction === 'pnp'}
-            onCheckedChange={handleToggle}
-            aria-label="Toggle Jurisdiction"
-          />
-          <Label htmlFor="jurisdiction-toggle" className={cn("font-semibold transition-opacity", jurisdiction === 'barangay' && 'opacity-60')}>
-            PNP
-          </Label>
+      <div className="flex items-center gap-4 text-lg">
+        <div className="flex items-center gap-2">
+            {isOnline ? (
+                <Wifi className="text-green-500" />
+            ) : (
+                <WifiOff className="text-red-500" />
+            )}
+            <span className="hidden sm:inline">{isOnline ? 'Online' : 'Offline'}</span>
+        </div>
+        <div className="font-mono tracking-wider">
+            {time.toLocaleTimeString()}
         </div>
       </div>
     </header>
