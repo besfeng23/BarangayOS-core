@@ -146,7 +146,7 @@ const BlotterLogModule = () => {
           </div>
         </main>
       </div>
-      <NewEntryModal isOpen={isNewEntryModalOpen} onClose={() => setIsNewEntryModalOpen(false)} />
+      <NewEntryModal isOpen={isNewEntryModalOpen} onClose={() => setIsNewEntryModalOpen(false)} isOnline={isOnline} />
       {selectedCase && (
         <PrintPreviewModal 
           isOpen={isPrintModalOpen} 

@@ -12,11 +12,12 @@ import { Save } from 'lucide-react';
 interface NewEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isOnline: boolean;
 }
 
 const steps = ['The People', 'The Incident', 'The Narrative'];
 
-const NewEntryModal = ({ isOpen, onClose }: NewEntryModalProps) => {
+const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
 
@@ -45,7 +46,7 @@ const NewEntryModal = ({ isOpen, onClose }: NewEntryModalProps) => {
       case 2:
         return <Step2Incident formData={formData} setFormData={setFormData} />;
       case 3:
-        return <Step3Narrative formData={formData} setFormData={setFormData} />;
+        return <Step3Narrative formData={formData} setFormData={setFormData} isOnline={isOnline} />;
       default:
         return null;
     }
