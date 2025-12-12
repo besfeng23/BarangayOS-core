@@ -15,3 +15,5 @@ export type AppData = {
   status?: 'get' | 'open';
   badge: BadgeInfo;
 };
+
+// Add other app-specific types here if needed

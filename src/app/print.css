@@ -1,0 +1,44 @@
+/* Use a more professional, government-style serif font for printing */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+/* Hide all elements on the page by default when printing */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  /* Make only the print area and its contents visible */
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+
+  /* Position the print area at the top-left of the page */
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 12pt;
+    color: #000000;
+    background: #FFFFFF;
+  }
+
+  /* Remove default browser margins and padding for printing */
+  @page {
+    size: A4;
+    margin: 1in;
+  }
+
+  /* Ensure no shadow or borders appear on the printed output */
+  #print-area .print-container {
+    box-shadow: none;
+    border: none;
+  }
+
+  /* Hide the 'Print Now' button when the page is printed */
+  .no-print {
+    display: none;
+  }
+}

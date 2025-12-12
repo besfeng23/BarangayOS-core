@@ -6,27 +6,45 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Printer } from 'lucide-react';
 import NewEntryModal from '@/components/blotter/BlotterLogModule/NewEntryModal';
-
-type CaseStatus = 'ACTIVE' | 'SETTLED' | 'FOR_HEARING';
-
-interface BlotterCase {
-  id: string;
-  caseId: string;
-  date: string;
-  complainant: string;
-  nature: string;
-  status: CaseStatus;
-}
+import PrintPreviewModal from '@/components/blotter/KPForm7/PrintPreviewModal';
+import type { BlotterCase } from '@/types/blotter';
 
 const mockCases: BlotterCase[] = [
-  { id: '1', caseId: '2024-001', date: '2024-07-28', complainant: 'Juan Dela Cruz', nature: 'Noise Complaint', status: 'ACTIVE' },
-  { id: '2', caseId: '2024-002', date: '2024-07-27', complainant: 'Maria Santos', nature: 'Unjust Vexation', status: 'SETTLED' },
-  { id: '3', caseId: '2024-003', date: '2024-07-26', complainant: 'Pedro Penduko', nature: 'Gossip', status: 'FOR_HEARING' },
+  { 
+    id: '1', 
+    caseId: '2024-001', 
+    date: '2024-07-28', 
+    complainant: 'Juan Dela Cruz', 
+    respondent: 'Pedro Penduko',
+    nature: 'Noise Complaint', 
+    status: 'ACTIVE',
+    narrative: 'Mr. Dela Cruz reports that Mr. Penduko has been using a loud karaoke machine every night for the past week, causing disturbances to the neighborhood. Attempts to resolve the issue amicably have failed.'
+  },
+  { 
+    id: '2', 
+    caseId: '2024-002', 
+    date: '2024-07-27', 
+    complainant: 'Maria Santos', 
+    respondent: 'Ana Reyes',
+    nature: 'Unjust Vexation', 
+    status: 'SETTLED',
+    narrative: 'Ms. Santos alleges that Ms. Reyes has been spreading malicious gossip about her, causing emotional distress.'
+  },
+  { 
+    id: '3', 
+    caseId: '2024-003', 
+    date: '2024-07-26', 
+    complainant: 'Pedro Penduko', 
+    respondent: 'Juan Dela Cruz',
+    nature: 'Gossip', 
+    status: 'FOR_HEARING',
+    narrative: 'A counter-complaint from Mr. Penduko, stating that Mr. Dela Cruz has been making false accusations against him in public.'
+  },
 ];
 
-const statusStyles: Record<CaseStatus, string> = {
+const statusStyles: Record<BlotterCase['status'], string> = {
   ACTIVE: 'bg-blue-600 hover:bg-blue-700',
   SETTLED: 'bg-green-600 hover:bg-green-700',
   FOR_HEARING: 'bg-orange-600 hover:bg-orange-700',
@@ -34,7 +52,9 @@ const statusStyles: Record<CaseStatus, string> = {
 
 const BlotterLogModule = () => {
   const [isOnline, setIsOnline] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewEntryModalOpen, setIsNewEntryModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [selectedCase, setSelectedCase] = useState<BlotterCase | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -49,6 +69,11 @@ const BlotterLogModule = () => {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  const handlePrintClick = (caseData: BlotterCase) => {
+    setSelectedCase(caseData);
+    setIsPrintModalOpen(true);
+  };
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-gray-200 font-sans">
@@ -82,7 +107,7 @@ const BlotterLogModule = () => {
         {/* Right Content */}
         <main className="flex-1 p-6 flex flex-col">
           <div className="flex justify-end mb-6">
-            <Button className="bg-blue-600 hover:bg-blue-700 h-14 text-lg px-6" onClick={() => setIsModalOpen(true)}>
+            <Button className="bg-blue-600 hover:bg-blue-700 h-14 text-lg px-6" onClick={() => setIsNewEntryModalOpen(true)}>
               <Plus className="mr-2 h-6 w-6" />
               NEW BLOTTER ENTRY
             </Button>
@@ -96,6 +121,7 @@ const BlotterLogModule = () => {
                   <TableHead className="text-lg text-gray-300">Complainant</TableHead>
                   <TableHead className="text-lg text-gray-300">Nature of Case</TableHead>
                   <TableHead className="text-lg text-gray-300">Status</TableHead>
+                  <TableHead className="text-lg text-gray-300 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -108,6 +134,11 @@ const BlotterLogModule = () => {
                     <TableCell>
                       <Badge className={statusStyles[c.status]}>{c.status.replace('_', ' ')}</Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" onClick={() => handlePrintClick(c)}>
+                        <Printer className="h-5 w-5" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -115,7 +146,14 @@ const BlotterLogModule = () => {
           </div>
         </main>
       </div>
-      <NewEntryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <NewEntryModal isOpen={isNewEntryModalOpen} onClose={() => setIsNewEntryModalOpen(false)} />
+      {selectedCase && (
+        <PrintPreviewModal 
+          isOpen={isPrintModalOpen} 
+          onClose={() => setIsPrintModalOpen(false)} 
+          caseData={selectedCase}
+        />
+      )}
     </div>
   );
 };
