@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -61,9 +62,9 @@ const BlotterLogModule = () => {
       </header>
 
       {/* Main Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-1/4 bg-slate-800 p-4 space-y-6 border-r border-slate-700">
+        <aside className="w-full md:w-64 bg-slate-800 p-4 space-y-6 border-b md:border-b-0 md:border-r border-slate-700">
           <div className="space-y-2">
             <Button variant="ghost" className="w-full justify-start text-lg bg-slate-700">All Cases</Button>
             <Button variant="ghost" className="w-full justify-start text-lg">For Hearing</Button>
@@ -79,14 +80,14 @@ const BlotterLogModule = () => {
         </aside>
 
         {/* Right Content */}
-        <main className="w-3/4 p-6 flex flex-col">
+        <main className="flex-1 p-6 flex flex-col">
           <div className="flex justify-end mb-6">
             <Button className="bg-blue-600 hover:bg-blue-700 h-14 text-lg px-6" onClick={() => setIsModalOpen(true)}>
               <Plus className="mr-2 h-6 w-6" />
               NEW BLOTTER ENTRY
             </Button>
           </div>
-          <div className="border border-slate-700 flex-1 overflow-y-auto">
+          <div className="border border-slate-700 rounded-lg flex-1 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-700 hover:bg-slate-800/50">
