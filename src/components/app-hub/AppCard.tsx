@@ -17,15 +17,30 @@ interface AppCardProps {
 export default function AppCard({ app }: AppCardProps) {
   const [isShaking, setIsShaking] = useState(false);
   const { toast } = useToast();
+  const [currentStatus, setCurrentStatus] = useState(app.status);
+  const [isInstalling, setIsInstalling] = useState(false);
 
-  const handleLockedClick = () => {
+
+  const handleLockedClick = (e: React.MouseEvent) => {
     if (app.isLocked) {
-      setIsShaking(true);
-      toast({
-        title: 'Service Locked',
-        description: `${app.name} is a core service and cannot be modified.`,
-      });
-      setTimeout(() => setIsShaking(false), 820);
+      // Allow navigation for links, but show toast for direct card clicks if needed.
+      // If the click is on the card itself and it's locked, we might prevent default
+      // if it wasn't wrapped in a link. Since it is, we let the link handle it.
+      return;
+    }
+    // Prevent interfering with Next.js Link navigation
+    if (app.category !== 'core' && (e.target as HTMLElement).closest('button')) {
+      e.preventDefault();
+    }
+  };
+
+  const handleGetClick = () => {
+    if (currentStatus === 'get') {
+      setIsInstalling(true);
+      setTimeout(() => {
+        setCurrentStatus('open');
+        setIsInstalling(false);
+      }, 2000);
     }
   };
 
@@ -33,14 +48,23 @@ export default function AppCard({ app }: AppCardProps) {
     if (app.isLocked) {
       return <Lock className="w-4 h-4 text-muted-foreground" />;
     }
-    if (app.status === 'get') {
+
+    if (isInstalling) {
       return (
-        <Button size="sm" className="font-semibold">
+        <Button size="sm" className="font-semibold" disabled>
+          Installing...
+        </Button>
+      );
+    }
+    
+    if (currentStatus === 'get') {
+      return (
+        <Button size="sm" className="font-semibold" onClick={handleGetClick}>
           GET
         </Button>
       );
     }
-    if (app.status === 'open') {
+    if (currentStatus === 'open') {
       return (
         <Button size="sm" variant="outline" className="font-semibold">
           OPEN
