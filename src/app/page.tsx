@@ -4,7 +4,6 @@ import Header from '@/components/app-hub/Header';
 import Footer from '@/components/app-hub/Footer';
 import Section from '@/components/app-hub/Section';
 import AppCard from '@/components/app-hub/AppCard';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 export default function Home() {
   // In a real app, this data would be fetched from a remote source like Firestore.
@@ -18,7 +17,7 @@ export default function Home() {
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 pb-40">
         <div className="space-y-12">
           <Section title="Core Services">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               {coreApps.map((app) => (
                 <AppCard key={app.id} app={app} />
               ))}
@@ -26,23 +25,11 @@ export default function Home() {
           </Section>
 
           <Section title="Optional Tools">
-            <Carousel
-              opts={{
-                align: 'start',
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {optionalApps.map((app, index) => (
-                  <CarouselItem key={index} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
-                    <AppCard app={app} />
-                  </CarouselItem>
+                    <AppCard key={app.id} app={app} />
                 ))}
-              </CarouselContent>
-              <CarouselPrevious className="ml-12" />
-              <CarouselNext className="mr-12" />
-            </Carousel>
+            </div>
           </Section>
 
           <Section title="Partner Services">
