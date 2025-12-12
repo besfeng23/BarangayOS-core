@@ -42,6 +42,14 @@ export const appsData: AppData[] = [
     isLocked: true,
     badge: { visible: true, count: 1, label: "New" },
   },
+  {
+    id: 'core-6',
+    name: "Captain's Dashboard",
+    category: 'core',
+    icon: 'BarChart3',
+    isLocked: true,
+    badge: { visible: false },
+  },
 
   // Optional Tools
   {

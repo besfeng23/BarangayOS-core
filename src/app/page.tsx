@@ -23,14 +23,16 @@ export default function Home() {
         return '/permits';
       case 'Announcements':
         return '/announcements';
+      case "Captain's Dashboard":
+        return '/dashboard';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }
   };
 
   const renderCoreApp = (app: (typeof appsData)[0]) => {
+    const href = getAppUrl(app.name);
     if (app.isLocked) {
-      const href = getAppUrl(app.name);
       // For locked core apps, wrap with a link
       return (
         <Link key={app.id} href={href} passHref>

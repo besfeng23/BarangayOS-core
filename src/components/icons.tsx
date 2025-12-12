@@ -17,6 +17,9 @@ import {
   HelpCircle,
   MessageCircleMore,
   Sparkles,
+  Printer,
+  CheckCircle2,
+  User,
 } from 'lucide-react';
 
 // For performance and bundle size, we explicitly map only the icons we use.
@@ -36,6 +39,9 @@ const iconMap = {
   HelpCircle,
   MessageCircleMore,
   Sparkles,
+  Printer,
+  CheckCircle2,
+  User,
 };
 
 type IconName = keyof typeof iconMap;
