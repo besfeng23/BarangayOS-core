@@ -1,0 +1,121 @@
+import type { AppData } from '@/types';
+
+export const appsData: AppData[] = [
+  // Core Services
+  {
+    id: 'core-1',
+    name: 'Blotter Log',
+    category: 'core',
+    icon: 'ClipboardList',
+    isLocked: true,
+    badge: { visible: true, count: 3, label: 'New Cases' },
+  },
+  {
+    id: 'core-2',
+    name: 'Resident Records',
+    category: 'core',
+    icon: 'Users',
+    isLocked: true,
+    badge: { visible: false },
+  },
+  {
+    id: 'core-3',
+    name: 'Certificates',
+    category: 'core',
+    icon: 'FileText',
+    isLocked: true,
+    badge: { visible: true, count: 8, label: 'Pending' },
+  },
+  {
+    id: 'core-4',
+    name: 'Business Permits',
+    category: 'core',
+    icon: 'Briefcase',
+    isLocked: true,
+    badge: { visible: false },
+  },
+  {
+    id: 'core-5',
+    name: 'Announcements',
+    category: 'core',
+    icon: 'MessageSquare',
+    isLocked: true,
+    badge: { visible: true, count: 1, label: "New" },
+  },
+
+  // Optional Tools
+  {
+    id: 'opt-1',
+    name: 'Health EMR',
+    category: 'optional',
+    icon: 'Stethoscope',
+    status: 'get',
+    badge: { visible: false },
+  },
+  {
+    id: 'opt-2',
+    name: 'Financials',
+    category: 'optional',
+    icon: 'BarChart3',
+    status: 'get',
+    badge: { visible: false },
+  },
+  {
+    id: 'opt-3',
+    name: 'Clinic Queue',
+    category: 'optional',
+    icon: 'HeartPulse',
+    status: 'open',
+    badge: { visible: false },
+  },
+  {
+    id: 'opt-4',
+    name: 'Dispatcher',
+    category: 'optional',
+    icon: 'Bus',
+    status: 'get',
+    badge: { visible: false },
+  },
+  {
+    id: 'opt-5',
+    name: 'e-Library',
+    category: 'optional',
+    icon: 'BookUser',
+    status: 'get',
+    badge: { visible: false },
+  },
+   {
+    id: 'opt-6',
+    name: 'Asset Management',
+    category: 'optional',
+    icon: 'Building',
+    status: 'open',
+    badge: { visible: false },
+  },
+
+  // Partner Services
+  {
+    id: 'partner-1',
+    name: 'eMango Wallet',
+    category: 'partner',
+    icon: 'Wallet',
+    status: 'open',
+    badge: { visible: true, count: 0, label: 'Promo' },
+  },
+  {
+    id: 'partner-2',
+    name: 'City Health',
+    category: 'partner',
+    icon: 'Stethoscope',
+    status: 'open',
+    badge: { visible: true, count: 2, label: 'Alerts' },
+  },
+  {
+    id: 'partner-3',
+    name: 'Jobs Portal',
+    category: 'partner',
+    icon: 'Briefcase',
+    status: 'open',
+    badge: { visible: false },
+  },
+];
