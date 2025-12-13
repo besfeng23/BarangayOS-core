@@ -21,7 +21,6 @@ export const appsData: AppData[] = [
     name: 'Certificates',
     category: 'core',
     icon: 'FileText',
-    requiredRole: 'Secretary',
     badge: { visible: true, count: 8, label: 'Pending' },
   },
   {
@@ -29,7 +28,6 @@ export const appsData: AppData[] = [
     name: 'Business Permits',
     category: 'core',
     icon: 'Briefcase',
-    requiredRole: 'Treasurer',
     badge: { visible: false },
   },
   {

@@ -46,7 +46,8 @@ export type UserRole =
   | 'dispatcher'
   | 'staff'
   | 'tanod'
-  | 'Captain';
+  | 'Captain'
+  | 'Treasurer';
 
 
 export interface UserProfile {
