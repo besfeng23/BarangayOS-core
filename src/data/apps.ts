@@ -80,8 +80,8 @@ export const appsData: AppData[] = [
     id: 'opt-4',
     name: 'Dispatcher',
     category: 'optional',
-    icon: 'Bus',
-    status: 'get',
+    icon: 'Radio',
+    status: 'open',
     badge: { visible: false },
   },
   {

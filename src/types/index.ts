@@ -41,7 +41,9 @@ export type UserRole =
   | 'NURSE'
   | 'DOCTOR'
   | 'ADMIN'
-  | 'BHW';
+  | 'BHW'
+  | 'dispatcher'
+  | 'staff';
 
 
 export interface UserProfile {

@@ -29,7 +29,8 @@ import {
   ChevronDown,
   UserSearch,
   FileCheck2,
-  Bot
+  Bot,
+  Radio
 } from 'lucide-react';
 
 // For performance and bundle size, we explicitly map only the icons we use.
@@ -61,7 +62,8 @@ const iconMap = {
   ChevronDown,
   UserSearch,
   FileCheck2,
-  Bot
+  Bot,
+  Radio
 };
 
 type IconName = keyof typeof iconMap;

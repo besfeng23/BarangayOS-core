@@ -37,6 +37,8 @@ export default function Home() {
         return '/clinic-queue';
       case 'Financials':
         return '/financials';
+      case 'Dispatcher':
+        return '/dispatcher';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }
