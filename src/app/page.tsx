@@ -33,6 +33,8 @@ export default function Home() {
         return '/health-emr';
       case 'Jobs Portal':
         return '/jobs';
+      case 'Clinic Queue':
+        return '/clinic-queue';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }

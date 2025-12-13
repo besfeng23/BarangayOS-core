@@ -4,6 +4,7 @@ import type { CityHealthTypes } from './city-health';
 import type { JobsPortalTypes } from './jobs-portal';
 import type { HealthEMRTypes } from './health-emr';
 import type { EmangoTypes } from './emango';
+import type { ClinicQueueTypes } from './clinic-queue';
 
 export type BadgeInfo = {
   visible: boolean;
@@ -34,7 +35,11 @@ export type UserRole =
   | 'VIEWER'
   | 'TREASURER'
   | 'CLERK'
-  | 'AUDITOR';
+  | 'AUDITOR'
+  | 'NURSE'
+  | 'DOCTOR'
+  | 'ADMIN'
+  | 'BHW';
 
 
 export interface UserProfile {
@@ -189,4 +194,4 @@ export interface AuditLog {
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
-export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes };
+export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes };
