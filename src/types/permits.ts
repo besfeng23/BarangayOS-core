@@ -90,6 +90,18 @@ export interface BusinessPermit {
   updatedAt: Timestamp;
 }
 
+export interface ApplicationReceipt {
+  applicationId: string;
+  businessName: string;
+  ownerName: string;
+  applicationType: ApplicationType;
+  dateApplied: string;
+  preliminaryFees: number;
+  notes?: string;
+  receivedBy: string; // Treasurer's name
+}
+
+
 export interface PermitAuditLog {
   id: string;
   action: string;

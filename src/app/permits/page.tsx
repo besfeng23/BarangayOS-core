@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { mockPermits, type BusinessPermit } from '@/data/permits-mock';
 import type { PermitStatus, PaymentStatus } from '@/types/permits';
+import NewApplicationModal from '@/components/permits/NewApplicationModal';
 
 const statusStyles: Record<PermitStatus, string> = {
   DRAFT: 'bg-gray-500',
@@ -68,6 +69,8 @@ const StatCard = ({ title, value, subtext }: { title: string; value: string | nu
 export default function BusinessPermitsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPermits, setSelectedPermits] = useState<Set<string>>(new Set());
+  const [isNewApplicationModalOpen, setIsNewApplicationModalOpen] = useState(false);
+
 
   const filteredPermits = useMemo(() => {
     return mockPermits.filter(permit =>
@@ -148,7 +151,7 @@ export default function BusinessPermitsPage() {
               <Button variant="outline" className="h-12" disabled={selectedPermits.size === 0}>
                   <Printer className="mr-2 h-4 w-4" /> Print Batch
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6">
+              <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6" onClick={() => setIsNewApplicationModalOpen(true)}>
                   <Plus className="mr-2 h-6 w-6" /> New Application
               </Button>
           </div>
@@ -217,6 +220,8 @@ export default function BusinessPermitsPage() {
               </TableBody>
           </Table>
       </div>
+
+       <NewApplicationModal isOpen={isNewApplicationModalOpen} onClose={() => setIsNewApplicationModalOpen(false)} />
 
     </div>
   );
