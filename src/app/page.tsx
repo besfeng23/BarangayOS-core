@@ -25,6 +25,8 @@ export default function Home() {
         return '/announcements';
       case "Captain's Dashboard":
         return '/dashboard';
+      case 'eMango Wallet':
+        return '/emango';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }
@@ -32,8 +34,8 @@ export default function Home() {
 
   const renderAppCard = (app: (typeof appsData)[0]) => {
     const href = getAppUrl(app.name);
-    // For all apps, wrap with a link if it's a core app
-    if (app.category === 'core') {
+    // For all apps, wrap with a link if it's a core app or partner app that should navigate
+    if (app.category === 'core' || (app.category === 'partner' && href !=='#')) {
       return (
         <Link key={app.id} href={href} passHref>
           <div className="h-full">
@@ -70,7 +72,7 @@ export default function Home() {
                <div className="flex space-x-6 overflow-x-auto pb-4 -mb-4">
                   {partnerApps.map((app) => (
                     <div key={app.id} className="min-w-[10rem] sm:min-w-[12rem]">
-                      <AppCard app={app} />
+                      {renderAppCard(app)}
                     </div>
                   ))}
                 </div>
