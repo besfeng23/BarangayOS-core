@@ -2,6 +2,8 @@
 import { Timestamp } from 'firebase/firestore';
 import type { CityHealthTypes } from './city-health';
 import type { JobsPortalTypes } from './jobs-portal';
+import type { HealthEMRTypes } from './health-emr';
+import type { EmangoTypes } from './emango';
 
 export type BadgeInfo = {
   visible: boolean;
@@ -187,4 +189,4 @@ export interface AuditLog {
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
-export type { CityHealthTypes, JobsPortalTypes };
+export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes };

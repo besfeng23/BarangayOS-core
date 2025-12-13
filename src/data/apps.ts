@@ -57,7 +57,7 @@ export const appsData: AppData[] = [
     name: 'Health EMR',
     category: 'optional',
     icon: 'Stethoscope',
-    status: 'get',
+    status: 'open',
     badge: { visible: false },
   },
   {

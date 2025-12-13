@@ -29,6 +29,8 @@ export default function Home() {
         return '/emango';
       case 'City Health':
         return '/city-health';
+      case 'Health EMR':
+        return '/health-emr';
       case 'Jobs Portal':
         return '/jobs';
       default:
@@ -39,7 +41,7 @@ export default function Home() {
   const renderAppCard = (app: (typeof appsData)[0]) => {
     const href = getAppUrl(app.name);
     // For all apps, wrap with a link if it's a core app or partner app that should navigate
-    if (app.category === 'core' || (app.category === 'partner' && href !=='#')) {
+    if (app.category === 'core' || (app.category === 'partner' && href !=='#') || (app.category === 'optional' && href !=='#' && app.status === 'open')) {
       return (
         <Link key={app.id} href={href} passHref>
           <div className="h-full">
@@ -65,9 +67,7 @@ export default function Home() {
 
           <Section title="Optional Tools">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {optionalApps.map((app) => (
-                    <AppCard key={app.id} app={app} />
-                ))}
+                {optionalApps.map(renderAppCard)}
             </div>
           </Section>
 

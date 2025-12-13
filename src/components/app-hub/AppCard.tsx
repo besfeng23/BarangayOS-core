@@ -29,6 +29,12 @@ const getAppUrl = (appName: string): string => {
         return '/announcements';
       case "Captain's Dashboard":
         return '/dashboard';
+      case 'eMango Wallet':
+        return '/emango';
+      case 'City Health':
+        return '/city-health';
+      case 'Health EMR':
+        return '/health-emr';
       case 'Jobs Portal':
         return '/jobs';
       default:
@@ -94,7 +100,7 @@ export default function AppCard({ app }: AppCardProps) {
 
   const CardWrapper = ({ children }: { children: React.ReactNode }) => {
     const href = getAppUrl(app.name);
-    if (app.category === 'core') {
+    if (app.category === 'core' || (app.status === 'open' && href !== '#')) {
       return <Link href={href} passHref><div className="h-full w-full">{children}</div></Link>;
     }
     return <>{children}</>;
