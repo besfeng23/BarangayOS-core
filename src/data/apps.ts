@@ -115,6 +115,7 @@ export const appsData: AppData[] = [
     category: 'partner',
     icon: 'Stethoscope',
     status: 'open',
+    isActivated: true,
     badge: { visible: true, count: 2, label: 'Alerts' },
   },
   {
@@ -123,6 +124,7 @@ export const appsData: AppData[] = [
     category: 'partner',
     icon: 'Briefcase',
     status: 'open',
+    isActivated: true,
     badge: { visible: false },
   },
 ];

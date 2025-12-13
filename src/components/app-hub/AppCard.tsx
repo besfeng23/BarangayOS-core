@@ -102,19 +102,18 @@ export default function AppCard({ app }: AppCardProps) {
       );
     }
     
-    if (app.name === 'eMango Wallet') {
+    if (app.category === 'partner') {
         if (!isActivated) {
-            return (
-                <Button size="sm" className="font-semibold" onClick={handleActivateClick}>
-                  ACTIVATE
-                </Button>
-            );
+            const canActivate = MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary';
+            if (canActivate) {
+                return (
+                    <Button size="sm" className="font-semibold" onClick={handleActivateClick}>
+                      ACTIVATE
+                    </Button>
+                );
+            }
+            return <Badge variant="secondary" className="font-normal">Inactive</Badge>;
         }
-        return (
-             <Button asChild size="sm" variant="outline" className="font-semibold">
-               <Link href={getAppUrl(app.name)}>OPEN</Link>
-            </Button>
-        )
     }
 
     if (currentStatus === 'get') {
@@ -141,6 +140,14 @@ export default function AppCard({ app }: AppCardProps) {
     }
     return null;
   };
+  
+  const CardWrapper = ({children}: {children: React.ReactNode}) => {
+    if (hasAccess) {
+      return <div className="h-full w-full">{children}</div>
+    }
+    return <>{children}</>;
+  }
+
 
   return (
     <Card
@@ -159,29 +166,27 @@ export default function AppCard({ app }: AppCardProps) {
         }
       }}
     >
-      <Link href={hasAccess ? getAppUrl(app.name) : '#'} passHref>
-        <div className="h-full w-full">
-            <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
-              {app.badge.visible && (
-                <Badge
-                  variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
-                  className="absolute top-2 right-2 tabular-nums"
-                >
-                  {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
-                </Badge>
-              )}
-              <div className="flex-grow flex flex-col items-center justify-center">
-                <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
-              </div>
-              <div className="w-full">
-                <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
-                <div className="h-9 mt-2 flex items-center justify-center">
-                  {renderAction()}
-                </div>
-              </div>
-            </CardContent>
-        </div>
-      </Link>
+      <CardWrapper>
+        <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
+          {app.badge.visible && (
+            <Badge
+              variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
+              className="absolute top-2 right-2 tabular-nums"
+            >
+              {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
+            </Badge>
+          )}
+          <div className="flex-grow flex flex-col items-center justify-center">
+            <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
+          </div>
+          <div className="w-full">
+            <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
+            <div className="h-9 mt-2 flex items-center justify-center">
+              {renderAction()}
+            </div>
+          </div>
+        </CardContent>
+      </CardWrapper>
     </Card>
   );
 }
