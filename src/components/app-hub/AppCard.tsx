@@ -135,8 +135,8 @@ export default function AppCard({ app }: AppCardProps) {
     const href = getAppUrl(app.name);
     if (currentStatus === 'open' && href !== '#') {
         return (
-            <Button asChild size="sm" variant="outline" className="font-semibold">
-               <a href={href}>OPEN</a>
+            <Button size="sm" variant="outline" className="font-semibold" asChild={false}>
+               OPEN
             </Button>
         );
     }
@@ -150,7 +150,7 @@ export default function AppCard({ app }: AppCardProps) {
     const roleText = Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole;
     return (
         <div className="absolute inset-x-0 bottom-4 flex items-center justify-center z-10 pointer-events-none">
-            <Badge variant="outline" className="border-red-500/50 bg-transparent font-normal text-red-500">
+             <Badge variant="outline" className="border-red-500/50 bg-transparent font-normal text-red-500 pointer-events-none">
                 {roleText} Only
             </Badge>
         </div>
