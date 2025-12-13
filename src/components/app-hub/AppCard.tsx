@@ -16,7 +16,7 @@ interface AppCardProps {
 }
 
 // This would typically come from an auth context
-const MOCK_CURRENT_USER_ROLE: UserRole = 'SUPER_ADMIN'; 
+const MOCK_CURRENT_USER_ROLE: UserRole[] = ['Captain', 'Secretary', 'Treasurer']; 
 
 const getAppUrl = (appName: string): string => {
     switch (appName) {
@@ -59,15 +59,13 @@ export default function AppCard({ app }: AppCardProps) {
 
 
   const isRoleAllowed = () => {
-    if (MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN') return true;
+    if (MOCK_CURRENT_USER_ROLE.includes('SUPER_ADMIN')) return true;
     if (!app.requiredRole) return true;
     
-    const userRoleLower = MOCK_CURRENT_USER_ROLE.toLowerCase();
-
     if (Array.isArray(app.requiredRole)) {
-      return app.requiredRole.some(role => role.toLowerCase() === userRoleLower);
+      return app.requiredRole.some(role => MOCK_CURRENT_USER_ROLE.includes(role as UserRole));
     }
-    return app.requiredRole.toLowerCase() === userRoleLower;
+    return MOCK_CURRENT_USER_ROLE.includes(app.requiredRole as UserRole);
   };
 
   const hasAccess = isRoleAllowed();
@@ -85,7 +83,7 @@ export default function AppCard({ app }: AppCardProps) {
   
   const handleActivateClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const canActivate = hasAccess || MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN';
+    const canActivate = hasAccess || MOCK_CURRENT_USER_ROLE.includes('Captain') || MOCK_CURRENT_USER_ROLE.includes('Secretary') || MOCK_CURRENT_USER_ROLE.includes('SUPER_ADMIN');
 
     if (!canActivate) {
          toast({
@@ -114,7 +112,7 @@ export default function AppCard({ app }: AppCardProps) {
     
     if (app.category === 'partner') {
         if (!isActivated) {
-             const canActivate = hasAccess || MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN';
+             const canActivate = hasAccess || MOCK_CURRENT_USER_ROLE.includes('Captain') || MOCK_CURRENT_USER_ROLE.includes('Secretary') || MOCK_CURRENT_USER_ROLE.includes('SUPER_ADMIN');
             if (canActivate) {
                 return (
                     <Button size="sm" className="font-semibold" onClick={handleActivateClick}>
@@ -138,7 +136,7 @@ export default function AppCard({ app }: AppCardProps) {
     if (currentStatus === 'open' && href !== '#') {
         return (
             <Button asChild size="sm" variant="outline" className="font-semibold">
-               <Link href={href}>OPEN</Link>
+               <a href={href}>OPEN</a>
             </Button>
         );
     }
@@ -164,7 +162,7 @@ export default function AppCard({ app }: AppCardProps) {
     <Card
       className={cn(
         'group relative w-full h-full text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1',
-        currentStatus === 'open' ? 'cursor-pointer' : 'cursor-default'
+        'cursor-pointer'
       )}
     >
       <Link href={getAppUrl(app.name)} passHref>
