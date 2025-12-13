@@ -30,7 +30,8 @@ import {
   UserSearch,
   FileCheck2,
   Bot,
-  Radio
+  Radio,
+  MessageSquare as MessageSquareIcon
 } from 'lucide-react';
 
 // For performance and bundle size, we explicitly map only the icons we use.
@@ -63,7 +64,8 @@ const iconMap = {
   UserSearch,
   FileCheck2,
   Bot,
-  Radio
+  Radio,
+  MessageSquareIcon,
 };
 
 type IconName = keyof typeof iconMap;
@@ -76,5 +78,3 @@ export function Icon({ name, ...props }: IconProps) {
   const LucideIcon = iconMap[name as IconName] || HelpCircle;
   return <LucideIcon {...props} />;
 }
-
-    
