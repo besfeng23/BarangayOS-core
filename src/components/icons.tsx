@@ -20,6 +20,8 @@ import {
   Printer,
   CheckCircle2,
   User,
+  QrCode,
+  MoreVertical,
 } from 'lucide-react';
 
 // For performance and bundle size, we explicitly map only the icons we use.
@@ -42,6 +44,8 @@ const iconMap = {
   Printer,
   CheckCircle2,
   User,
+  QrCode,
+  MoreVertical,
 };
 
 type IconName = keyof typeof iconMap;
