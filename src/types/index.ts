@@ -5,6 +5,7 @@ import type { JobsPortalTypes } from './jobs-portal';
 import type { HealthEMRTypes } from './health-emr';
 import type { EmangoTypes } from './emango';
 import type { ClinicQueueTypes } from './clinic-queue';
+import type { FinancialsTypes } from './financials';
 
 export type BadgeInfo = {
   visible: boolean;
@@ -194,4 +195,4 @@ export interface AuditLog {
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
-export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes };
+export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes };

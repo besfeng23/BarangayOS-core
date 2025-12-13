@@ -65,7 +65,7 @@ export const appsData: AppData[] = [
     name: 'Financials',
     category: 'optional',
     icon: 'BarChart3',
-    status: 'get',
+    status: 'open',
     badge: { visible: false },
   },
   {

@@ -35,6 +35,8 @@ export default function Home() {
         return '/jobs';
       case 'Clinic Queue':
         return '/clinic-queue';
+      case 'Financials':
+        return '/financials';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }
