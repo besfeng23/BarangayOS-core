@@ -22,7 +22,9 @@ export type AppData = {
   category: AppCategory;
   icon: string;
   isLocked?: boolean;
+  requiredRole?: string;
   status?: 'get' | 'open';
+  isActivated?: boolean;
   badge: BadgeInfo;
 };
 
@@ -43,7 +45,8 @@ export type UserRole =
   | 'ADMIN'
   | 'BHW'
   | 'dispatcher'
-  | 'staff';
+  | 'staff'
+  | 'tanod';
 
 
 export interface UserProfile {

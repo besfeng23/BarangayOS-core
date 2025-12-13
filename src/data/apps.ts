@@ -7,7 +7,7 @@ export const appsData: AppData[] = [
     name: 'Blotter Log',
     category: 'core',
     icon: 'ClipboardList',
-    isLocked: true,
+    isLocked: false, // Unlocked for relevant roles
     badge: { visible: true, count: 3, label: 'New Cases' },
   },
   {
@@ -15,7 +15,7 @@ export const appsData: AppData[] = [
     name: 'Resident Records',
     category: 'core',
     icon: 'Users',
-    isLocked: true,
+    isLocked: false,
     badge: { visible: false },
   },
   {
@@ -23,7 +23,8 @@ export const appsData: AppData[] = [
     name: 'Certificates',
     category: 'core',
     icon: 'FileText',
-    isLocked: true,
+    isLocked: false,
+    requiredRole: 'Secretary',
     badge: { visible: true, count: 8, label: 'Pending' },
   },
   {
@@ -31,7 +32,8 @@ export const appsData: AppData[] = [
     name: 'Business Permits',
     category: 'core',
     icon: 'Briefcase',
-    isLocked: true,
+    isLocked: false,
+    requiredRole: 'Treasurer',
     badge: { visible: false },
   },
   {
@@ -39,7 +41,7 @@ export const appsData: AppData[] = [
     name: 'Announcements',
     category: 'core',
     icon: 'MessageSquare',
-    isLocked: true,
+    isLocked: false,
     badge: { visible: true, count: 1, label: "New" },
   },
   {
@@ -47,7 +49,7 @@ export const appsData: AppData[] = [
     name: "Captain's Dashboard",
     category: 'core',
     icon: 'BarChart3',
-    isLocked: true,
+    isLocked: false,
     badge: { visible: false },
   },
 
@@ -108,7 +110,8 @@ export const appsData: AppData[] = [
     category: 'partner',
     icon: 'Wallet',
     status: 'open',
-    badge: { visible: true, count: 0, label: 'Promo' },
+    isActivated: false, // Changed from true to false to show 'ACTIVATE' button
+    badge: { visible: false },
   },
   {
     id: 'partner-2',
