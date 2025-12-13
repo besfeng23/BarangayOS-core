@@ -58,7 +58,7 @@ export default function CityHealthHomePage() {
                 <h3 className="text-lg font-semibold">AI Quick Assist</h3>
             </div>
             <div className="relative mt-2">
-                 <input placeholder="Ask: Show children missing vaccines" className="bg-slate-900 border-slate-600 text-white pl-4 pr-20 h-12 w-full rounded-md" />
+                 <input placeholder="Ask: Show children missing vaccines" className="bg-slate-900 border-slate-600 text-white pl-4 pr-28 h-12 w-full rounded-md" />
                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                     <Button variant="ghost" size="icon"><Mic/></Button>
                     <Button variant="ghost">Suggest</Button>

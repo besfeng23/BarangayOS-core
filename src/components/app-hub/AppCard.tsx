@@ -91,7 +91,7 @@ export default function AppCard({ app }: AppCardProps) {
   const renderAction = () => {
     if (!hasAccess) {
        const roleText = Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole;
-       return <Badge variant="destructive" className="font-normal">{roleText} Only</Badge>
+       return <Badge variant="outline" className="border-red-500 text-red-500 bg-transparent font-normal">{roleText} Only</Badge>
     }
 
     if (isInstalling) {
@@ -123,27 +123,23 @@ export default function AppCard({ app }: AppCardProps) {
         </Button>
       );
     }
-    if (currentStatus === 'open') {
-        const href = getAppUrl(app.name);
-        if (href !== '#') {
-            return (
-                <Button asChild size="sm" variant="outline" className="font-semibold">
-                   <Link href={href}>OPEN</Link>
-                </Button>
-            );
-        }
-      return (
-        <Button size="sm" variant="outline" className="font-semibold">
-          OPEN
-        </Button>
-      );
+    
+    const href = getAppUrl(app.name);
+    if (currentStatus === 'open' && href !== '#') {
+        return (
+            <Button asChild size="sm" variant="outline" className="font-semibold">
+               <Link href={href}>OPEN</Link>
+            </Button>
+        );
     }
+    
     return null;
   };
   
   const CardWrapper = ({children}: {children: React.ReactNode}) => {
-    if (hasAccess) {
-      return <div className="h-full w-full">{children}</div>
+    const href = getAppUrl(app.name);
+    if (hasAccess && currentStatus === 'open' && href !== '#') {
+      return <Link href={href} passHref><div className="h-full w-full">{children}</div></Link>;
     }
     return <>{children}</>;
   }
