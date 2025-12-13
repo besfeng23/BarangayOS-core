@@ -79,6 +79,7 @@ export interface Resident {
     suffix?: string;
   };
   displayName: string;
+  displayNameLower: string;
   sex: 'M' | 'F';
   dateOfBirth: Timestamp;
   placeOfBirth: string;
@@ -178,3 +179,5 @@ export interface AuditLog {
 }
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
+
+    

@@ -19,6 +19,7 @@ export const mockResidents: Resident[] = [
       middle: 'Reyes',
     },
     displayName: 'DELA CRUZ, Juan Reyes',
+    displayNameLower: 'dela cruz, juan reyes',
     sex: 'M',
     dateOfBirth: createTimestamp('1955-03-15'),
     placeOfBirth: 'Manila',
@@ -66,6 +67,7 @@ export const mockResidents: Resident[] = [
       middle: 'Lim',
     },
     displayName: 'SANTOS, Maria Lim',
+    displayNameLower: 'santos, maria lim',
     sex: 'F',
     dateOfBirth: createTimestamp('1988-07-22'),
     placeOfBirth: 'Cebu City',
@@ -112,6 +114,7 @@ export const mockResidents: Resident[] = [
       middle: 'Santos',
     },
     displayName: 'DELA CRUZ, Pedro Santos',
+    displayNameLower: 'dela cruz, pedro santos',
     sex: 'M',
     dateOfBirth: createTimestamp('2005-11-30'),
     placeOfBirth: 'Mabalacat, Pampanga',
@@ -165,3 +168,5 @@ export const mockSectors: Record<Sector, SectorInfo> = {
     fourPs: { label: "4Ps Beneficiary", count: 180 },
     osy: { label: "Out-of-School Youth", count: 65 },
 };
+
+    

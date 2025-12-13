@@ -40,6 +40,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const getInitials = (name: string) => {
+  if (!name) return 'N/A';
   const names = name.split(' ');
   const initials = names.map((n) => n[0]).join('');
   return initials.slice(0, 2).toUpperCase();
@@ -111,6 +112,7 @@ const ResidentRecords = () => {
   };
   
   const getAge = (dateOfBirth: { seconds: number }) => {
+    if(!dateOfBirth) return 'N/A';
     return Math.floor(
       (new Date() - new Date(dateOfBirth.seconds * 1000)) /
       (1000 * 60 * 60 * 24 * 365.25)
@@ -273,13 +275,13 @@ const ResidentRecords = () => {
             <StatCard title="Total Population" value="10,234" />
             <StatCard title="Registered Voters" value="7,890" />
             <StatCard title="Households" value="1,567" />
-            <StatCard title="In Sectors" value={Object.values(mockSectors).reduce((acc, sector) => acc + sector.count, 0)} />
+            <StatCard title="Tagged Residents" value={Object.values(mockSectors).reduce((acc, sector) => acc + sector.count, 0)} />
           </div>
         </div>
 
         {/* Action & Filter Bar */}
         <div className="p-4 bg-slate-800/50 border-b border-slate-700 flex flex-wrap items-center gap-4">
-          <div className="relative flex-grow md:flex-grow-0 md:w-72">
+          <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               placeholder="Search by name or RBI ID..."
@@ -404,3 +406,5 @@ const ResidentRecords = () => {
 };
 
 export default ResidentRecords;
+
+    

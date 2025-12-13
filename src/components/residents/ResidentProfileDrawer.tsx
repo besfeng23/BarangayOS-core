@@ -114,14 +114,14 @@ const ResidentProfileDrawer = ({
               <InfoField label="Last Name" value={resident.fullName.last} />
               <InfoField label="Middle Name" value={resident.fullName.middle} />
               <InfoField label="Suffix" value={resident.fullName.suffix} />
-              <InfoField label="Date of Birth" value={format(new Date(resident.dateOfBirth.seconds * 1000), 'MMMM d, yyyy')} />
+              <InfoField label="Date of Birth" value={resident.dateOfBirth ? format(new Date(resident.dateOfBirth.seconds * 1000), 'MMMM d, yyyy') : 'N/A'} />
               <InfoField label="Place of Birth" value={resident.placeOfBirth} />
               <InfoField label="Sex" value={resident.sex === 'M' ? 'Male' : 'Female'} />
               <InfoField label="Civil Status" value={resident.civilStatus} />
               <InfoField label="Mobile" value={resident.contact.mobile} />
               <InfoField label="Email" value={resident.contact.email} />
               <InfoField label="Voter" value={resident.voter?.isVoter ? `Yes - Precinct ${resident.voter.precinctNumber}` : 'No'} />
-              <InfoField label="Consent Signed" value={resident.consent.signed ? `Yes, on ${format(new Date(resident.consent.signedAt!.seconds * 1000), 'yyyy-MM-dd')}` : 'No'} />
+              <InfoField label="Consent Signed" value={resident.consent.signed && resident.consent.signedAt ? `Yes, on ${format(new Date(resident.consent.signedAt!.seconds * 1000), 'yyyy-MM-dd')}` : 'No'} />
             </div>
           </TabsContent>
           
@@ -180,7 +180,12 @@ const ResidentProfileDrawer = ({
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent 
-        className={`bg-slate-900 border-l border-slate-700 text-white p-0 overflow-y-auto ${isMobile ? 'w-full' : 'w-full md:w-3/5 lg:w-2/5 xl:w-1/3'}`}
+        className={cn(
+          'bg-slate-900 border-l border-slate-700 text-white p-0 overflow-y-auto',
+          isMobile ? 'w-full' : 'w-full md:w-3/5 lg:w-2/5 xl:w-1/3'
+        )}
+        side={isMobile ? 'bottom' : 'right'}
+        style={isMobile ? { height: '90vh' } : {}}
       >
         {content}
       </SheetContent>
@@ -189,3 +194,5 @@ const ResidentProfileDrawer = ({
 };
 
 export default ResidentProfileDrawer;
+
+    
