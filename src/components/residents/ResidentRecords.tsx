@@ -406,5 +406,3 @@ const ResidentRecords = () => {
 };
 
 export default ResidentRecords;
-
-    

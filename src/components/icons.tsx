@@ -22,6 +22,11 @@ import {
   User,
   QrCode,
   MoreVertical,
+  Filter,
+  Plus,
+  FileDown,
+  Search,
+  ChevronDown,
 } from 'lucide-react';
 
 // For performance and bundle size, we explicitly map only the icons we use.
@@ -46,6 +51,11 @@ const iconMap = {
   User,
   QrCode,
   MoreVertical,
+  Filter,
+  Plus,
+  FileDown,
+  Search,
+  ChevronDown,
 };
 
 type IconName = keyof typeof iconMap;
