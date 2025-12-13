@@ -85,7 +85,7 @@ export default function AppCard({ app }: AppCardProps) {
   
   const handleActivateClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (MOCK_CURRENT_USER_ROLE !== 'Captain' && MOCK_CURRENT_USER_ROLE !== 'Secretary' && MOCK_CURRENT_USER_ROLE !== 'SUPER_ADMIN') {
+    if (!hasAccess && !(MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN')) {
          toast({
             variant: 'destructive',
             title: 'Permission Denied',
@@ -117,7 +117,7 @@ export default function AppCard({ app }: AppCardProps) {
     
     if (app.category === 'partner') {
         if (!isActivated) {
-             const canActivate = MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN';
+             const canActivate = hasAccess || MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN';
             if (canActivate) {
                 return (
                     <Button size="sm" className="font-semibold" onClick={handleActivateClick}>
@@ -151,7 +151,7 @@ export default function AppCard({ app }: AppCardProps) {
   
   const CardWrapper = ({children}: {children: React.ReactNode}) => {
     const href = getAppUrl(app.name);
-    if (hasAccess && currentStatus === 'open' && href !== '#') {
+    if (currentStatus === 'open' && href !== '#') {
         return <Link href={href} passHref><div className="h-full w-full">{children}</div></Link>;
     }
     return <>{children}</>;
@@ -161,19 +161,8 @@ export default function AppCard({ app }: AppCardProps) {
   return (
     <Card
       className={cn(
-        'group relative w-full h-full text-center transition-all duration-300 ease-in-out',
-        hasAccess ? 'cursor-pointer hover:shadow-lg hover:-translate-y-1' : 'cursor-not-allowed opacity-60'
+        'group relative w-full h-full text-center transition-all duration-300 ease-in-out cursor-pointer hover:shadow-lg hover:-translate-y-1'
       )}
-      onClick={(e) => {
-        if (!hasAccess) {
-            e.preventDefault();
-            toast({
-                variant: 'destructive',
-                title: 'Access Denied',
-                description: `You need the '${Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole}' role to use this module.`
-            })
-        }
-      }}
     >
       <CardWrapper>
         <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
