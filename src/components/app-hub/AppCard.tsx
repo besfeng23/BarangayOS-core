@@ -16,7 +16,7 @@ interface AppCardProps {
 }
 
 // This would typically come from an auth context
-const MOCK_CURRENT_USER_ROLE: UserRole = 'staff'; 
+const MOCK_CURRENT_USER_ROLE: UserRole = 'SUPER_ADMIN'; 
 
 const getAppUrl = (appName: string): string => {
     switch (appName) {
@@ -59,11 +59,15 @@ export default function AppCard({ app }: AppCardProps) {
 
 
   const isRoleAllowed = () => {
+    if (MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN') return true;
     if (!app.requiredRole) return true;
+    
+    const userRoleLower = MOCK_CURRENT_USER_ROLE.toLowerCase();
+
     if (Array.isArray(app.requiredRole)) {
-      return app.requiredRole.includes(MOCK_CURRENT_USER_ROLE);
+      return app.requiredRole.some(role => role.toLowerCase() === userRoleLower);
     }
-    return app.requiredRole.toLowerCase() === MOCK_CURRENT_USER_ROLE.toLowerCase();
+    return app.requiredRole.toLowerCase() === userRoleLower;
   };
 
   const hasAccess = isRoleAllowed();
@@ -81,6 +85,14 @@ export default function AppCard({ app }: AppCardProps) {
   
   const handleActivateClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (MOCK_CURRENT_USER_ROLE !== 'Captain' && MOCK_CURRENT_USER_ROLE !== 'Secretary' && MOCK_CURRENT_USER_ROLE !== 'SUPER_ADMIN') {
+         toast({
+            variant: 'destructive',
+            title: 'Permission Denied',
+            description: `Only a Captain or Secretary can activate partner services.`
+        })
+        return;
+    }
     toast({ title: "Activating...", description: `${app.name} is being set up.` });
     setTimeout(() => {
         setIsActivated(true);
@@ -92,7 +104,7 @@ export default function AppCard({ app }: AppCardProps) {
   const renderAction = () => {
     if (!hasAccess) {
        const roleText = Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole;
-       return <Badge variant="outline" className="border-red-500 text-red-500 bg-transparent font-normal">{roleText} Only</Badge>
+       return <Badge variant="outline" className="border-red-500/50 bg-transparent font-normal text-red-500">{roleText} Only</Badge>
     }
 
     if (isInstalling) {
@@ -105,7 +117,7 @@ export default function AppCard({ app }: AppCardProps) {
     
     if (app.category === 'partner') {
         if (!isActivated) {
-            const canActivate = MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary';
+             const canActivate = MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN';
             if (canActivate) {
                 return (
                     <Button size="sm" className="font-semibold" onClick={handleActivateClick}>
@@ -140,7 +152,7 @@ export default function AppCard({ app }: AppCardProps) {
   const CardWrapper = ({children}: {children: React.ReactNode}) => {
     const href = getAppUrl(app.name);
     if (hasAccess && currentStatus === 'open' && href !== '#') {
-      return <div className="h-full w-full">{children}</div>;
+        return <Link href={href} passHref><div className="h-full w-full">{children}</div></Link>;
     }
     return <>{children}</>;
   }
@@ -160,14 +172,6 @@ export default function AppCard({ app }: AppCardProps) {
                 title: 'Access Denied',
                 description: `You need the '${Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole}' role to use this module.`
             })
-        } else {
-            const href = getAppUrl(app.name);
-            if (href && href !== '#') {
-                // NextJS Link navigation is handled by the button, but we can push the route here for the whole card click
-                // To avoid issues, let's assume the button is the main interactive element.
-                // If a user clicks the card but not the button, we can choose to navigate or not.
-                // For simplicity and to avoid nested links, we let the button handle it.
-            }
         }
       }}
     >
