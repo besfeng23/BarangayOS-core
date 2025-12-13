@@ -27,6 +27,8 @@ export default function Home() {
         return '/dashboard';
       case 'eMango Wallet':
         return '/emango';
+      case 'City Health':
+        return '/city-health';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }

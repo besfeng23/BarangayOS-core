@@ -1,5 +1,6 @@
 
 import { Timestamp } from 'firebase/firestore';
+import type { CityHealthTypes } from './city-health';
 
 export type BadgeInfo = {
   visible: boolean;
@@ -185,4 +186,4 @@ export interface AuditLog {
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
-    
+export type { CityHealthTypes };
