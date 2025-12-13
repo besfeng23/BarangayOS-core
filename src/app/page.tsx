@@ -30,10 +30,10 @@ export default function Home() {
     }
   };
 
-  const renderCoreApp = (app: (typeof appsData)[0]) => {
+  const renderAppCard = (app: (typeof appsData)[0]) => {
     const href = getAppUrl(app.name);
-    if (app.isLocked) {
-      // For locked core apps, wrap with a link
+    // For all apps, wrap with a link if it's a core app
+    if (app.category === 'core') {
       return (
         <Link key={app.id} href={href} passHref>
           <div className="h-full">
@@ -42,7 +42,7 @@ export default function Home() {
         </Link>
       );
     }
-    // For other apps or if not locked, render without a link wrapper at this level
+    // For other apps, render without a link wrapper at this level, handled in AppCard
     return <AppCard key={app.id} app={app} />;
   };
 
@@ -53,7 +53,7 @@ export default function Home() {
         <div className="space-y-12">
           <Section title="Core Services">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {coreApps.map(renderCoreApp)}
+              {coreApps.map(renderAppCard)}
             </div>
           </Section>
 

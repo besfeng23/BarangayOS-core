@@ -1,21 +1,14 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, UserSearch, FileCheck2, Bot, Sparkles } from 'lucide-react';
+import { ArrowLeft, UserSearch, FileCheck2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import {
   Select,
   SelectContent,
@@ -41,7 +34,7 @@ const mockTemplates = [
     id: 'cert-2',
     name: 'Certificate of Residency',
     fee: 0,
-    validityDays: 0,
+    validityDays: 90,
     requirements: ['Proof of Billing'],
     requiredFields: ['purpose'],
   },
@@ -61,6 +54,14 @@ const mockTemplates = [
     requirements: ['DTI Registration', 'Owner ID'],
     requiredFields: ['businessName', 'businessType'],
   },
+  {
+    id: 'cert-5',
+    name: 'Good Moral Character',
+    fee: 50.0,
+    validityDays: 30,
+    requirements: ['Valid ID'],
+    requiredFields: ['purpose'],
+    }
 ];
 
 const getInitials = (name: string) => {
@@ -77,11 +78,11 @@ export default function CertificatesPage() {
   const [step, setStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredResidents = mockResidents.filter(
+  const filteredResidents = searchTerm ? mockResidents.filter(
     (r) =>
       r.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.rbiId.includes(searchTerm)
-  );
+  ) : [];
 
   const handleSelectResident = (resident: Resident) => {
     setSelectedResident(resident);
@@ -93,10 +94,15 @@ export default function CertificatesPage() {
     setStep(3);
   };
   
-  const resetFlow = () => {
-    setSelectedResident(null);
-    setSelectedTemplate(null);
-    setStep(1);
+  const resetFlow = (targetStep: number) => {
+    if (targetStep === 1) {
+        setSelectedResident(null);
+        setSelectedTemplate(null);
+    }
+    if (targetStep <= 2) {
+        setSelectedTemplate(null);
+    }
+    setStep(targetStep);
   }
 
   return (
@@ -135,6 +141,16 @@ export default function CertificatesPage() {
             />
             <ScrollArea className="flex-1">
                 <div className="space-y-2 pr-4">
+                    {filteredResidents.length === 0 && searchTerm && (
+                        <div className="text-center py-8 text-slate-400">
+                            <p>No matching residents found.</p>
+                        </div>
+                    )}
+                     {filteredResidents.length === 0 && !searchTerm && (
+                        <div className="text-center py-8 text-slate-400">
+                            <p>Start typing a name or RBI ID.</p>
+                        </div>
+                    )}
                     {filteredResidents.map(res => (
                         <div key={res.id} onClick={() => step === 1 && handleSelectResident(res)} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-700 cursor-pointer">
                             <Avatar>
@@ -156,7 +172,7 @@ export default function CertificatesPage() {
         </Card>
 
         {/* Step 2: Certificate Type */}
-        <Card className={`bg-slate-800/50 border-slate-700 flex flex-col ${step !== 2 ? 'opacity-50' : ''}`}>
+        <Card className={`bg-slate-800/50 border-slate-700 flex flex-col ${step === 1 || !selectedResident ? 'opacity-50' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl">
               <FileCheck2 className="text-blue-400" />
@@ -165,25 +181,30 @@ export default function CertificatesPage() {
             {selectedResident && step >= 2 && (
                 <div className="pt-2 text-sm text-slate-300 border-t border-slate-700 mt-2">
                     <p>Requestor: <span className="font-bold">{selectedResident.displayName}</span></p>
-                    <Button variant="link" className="p-0 h-auto" onClick={resetFlow}>Change</Button>
+                    <Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => resetFlow(1)}>Change</Button>
                 </div>
+            )}
+            {!selectedResident && (
+                 <p className="text-sm text-slate-500 pt-2">Select a resident first to continue.</p>
             )}
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {mockTemplates.map(t => (
-                    <div key={t.id} onClick={() => step === 2 && handleSelectTemplate(t)} className="p-4 bg-slate-900 rounded-lg cursor-pointer hover:ring-2 ring-blue-500">
-                        <p className="font-bold text-lg">{t.name}</p>
-                        <p className="text-sm text-slate-400">Fee: ₱{t.fee.toFixed(2)}</p>
-                        <p className="text-sm text-slate-400">Validity: {t.validityDays > 0 ? `${t.validityDays} days` : 'N/A'}</p>
-                    </div>
-                ))}
-            </div>
+             {selectedResident && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {mockTemplates.map(t => (
+                        <div key={t.id} onClick={() => step === 2 && handleSelectTemplate(t)} className={`p-4 bg-slate-900 rounded-lg hover:ring-2 ring-blue-500 ${step === 2 ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+                            <p className="font-bold text-lg">{t.name}</p>
+                            <p className="text-sm text-slate-400">Fee: ₱{t.fee.toFixed(2)}</p>
+                            <p className="text-sm text-slate-400">Validity: {t.validityDays > 0 ? `${t.validityDays} days` : 'N/A'}</p>
+                        </div>
+                    ))}
+                </div>
+             )}
           </CardContent>
         </Card>
 
         {/* Step 3: Details & Issue */}
-        <Card className={`bg-slate-800/50 border-slate-700 flex flex-col ${step !== 3 ? 'opacity-50' : ''}`}>
+        <Card className={`bg-slate-800/50 border-slate-700 flex flex-col ${step < 3 ? 'opacity-50' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl">
               <Sparkles className="text-blue-400" />
@@ -192,8 +213,11 @@ export default function CertificatesPage() {
              {selectedTemplate && step === 3 && (
                 <div className="pt-2 text-sm text-slate-300 border-t border-slate-700 mt-2">
                     <p>Certificate: <span className="font-bold">{selectedTemplate.name}</span></p>
-                    <Button variant="link" className="p-0 h-auto" onClick={() => setStep(2)}>Change</Button>
+                    <Button variant="link" className="p-0 h-auto text-blue-400" onClick={() => resetFlow(2)}>Change</Button>
                 </div>
+            )}
+             {!selectedTemplate && (
+                 <p className="text-sm text-slate-500 pt-2">Select a certificate type to continue.</p>
             )}
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto space-y-4">
@@ -224,14 +248,10 @@ export default function CertificatesPage() {
                         <Textarea className="bg-slate-900 border-slate-600 mt-1" />
                     </div>
                     
-                    <div className="flex justify-end gap-2">
-                        <Button variant="ghost"><Bot className="mr-2" /> AI Assist</Button>
-                    </div>
-                    
                     <div className="border-t border-slate-700 pt-4 space-y-2">
                         <div className="flex justify-between items-center">
                             <span className="text-slate-400">Fee</span>
-                            <span className="font-bold">₱{selectedTemplate.fee.toFixed(2)}</span>
+                            <span className="font-bold text-xl">₱{selectedTemplate.fee.toFixed(2)}</span>
                         </div>
                          <div className="flex justify-between items-center">
                             <span className="text-slate-400">OR Number</span>
@@ -242,9 +262,9 @@ export default function CertificatesPage() {
             )}
           </CardContent>
            {step === 3 && (
-            <div className="p-4 border-t border-slate-700 flex justify-end gap-2">
-                <Button variant="outline" className="h-12 text-lg">Save Draft</Button>
-                <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg">Preview & Issue</Button>
+            <div className="p-4 border-t border-slate-700 flex justify-end gap-2 sticky bottom-0 bg-slate-800/50">
+                <Button variant="outline" className="h-12 text-lg">Preview</Button>
+                <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6">Continue</Button>
             </div>
            )}
         </Card>
@@ -252,5 +272,3 @@ export default function CertificatesPage() {
     </div>
   );
 }
-
-    
