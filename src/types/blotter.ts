@@ -1,3 +1,4 @@
+
 export type CaseStatus = 'ACTIVE' | 'SETTLED' | 'FOR_HEARING';
 
 export interface BlotterCase {
