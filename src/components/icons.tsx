@@ -27,6 +27,9 @@ import {
   FileDown,
   Search,
   ChevronDown,
+  UserSearch,
+  FileCheck2,
+  Bot
 } from 'lucide-react';
 
 // For performance and bundle size, we explicitly map only the icons we use.
@@ -56,6 +59,9 @@ const iconMap = {
   FileDown,
   Search,
   ChevronDown,
+  UserSearch,
+  FileCheck2,
+  Bot
 };
 
 type IconName = keyof typeof iconMap;
@@ -68,3 +74,5 @@ export function Icon({ name, ...props }: IconProps) {
   const LucideIcon = iconMap[name as IconName] || HelpCircle;
   return <LucideIcon {...props} />;
 }
+
+    
