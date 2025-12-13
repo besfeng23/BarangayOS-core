@@ -29,6 +29,8 @@ const getAppUrl = (appName: string): string => {
         return '/announcements';
       case "Captain's Dashboard":
         return '/dashboard';
+      case 'Jobs Portal':
+        return '/jobs';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }

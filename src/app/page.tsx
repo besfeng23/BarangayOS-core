@@ -29,6 +29,8 @@ export default function Home() {
         return '/emango';
       case 'City Health':
         return '/city-health';
+      case 'Jobs Portal':
+        return '/jobs';
       default:
         return '#'; // Return a non-navigable link for unhandled cases
     }
