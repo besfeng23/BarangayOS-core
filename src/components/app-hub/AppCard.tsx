@@ -85,7 +85,9 @@ export default function AppCard({ app }: AppCardProps) {
   
   const handleActivateClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!hasAccess && !(MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN')) {
+    const canActivate = hasAccess || MOCK_CURRENT_USER_ROLE === 'Captain' || MOCK_CURRENT_USER_ROLE === 'Secretary' || MOCK_CURRENT_USER_ROLE === 'SUPER_ADMIN';
+
+    if (!canActivate) {
          toast({
             variant: 'destructive',
             title: 'Permission Denied',
@@ -102,11 +104,6 @@ export default function AppCard({ app }: AppCardProps) {
 
 
   const renderAction = () => {
-    if (!hasAccess) {
-       const roleText = Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole;
-       return <Badge variant="outline" className="border-red-500/50 bg-transparent font-normal text-red-500">{roleText} Only</Badge>
-    }
-
     if (isInstalling) {
       return (
         <Button size="sm" className="font-semibold" disabled>
@@ -149,42 +146,51 @@ export default function AppCard({ app }: AppCardProps) {
     return null;
   };
   
-  const CardWrapper = ({children}: {children: React.ReactNode}) => {
-    const href = getAppUrl(app.name);
-    if (currentStatus === 'open' && href !== '#') {
-        return <Link href={href} passHref><div className="h-full w-full">{children}</div></Link>;
-    }
-    return <>{children}</>;
+  const renderRoleBadge = () => {
+    if (hasAccess) return null;
+
+    const roleText = Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole;
+    return (
+        <div className="absolute inset-x-0 bottom-4 flex items-center justify-center z-10 pointer-events-none">
+            <Badge variant="outline" className="border-red-500/50 bg-transparent font-normal text-red-500">
+                {roleText} Only
+            </Badge>
+        </div>
+    );
   }
 
 
   return (
     <Card
       className={cn(
-        'group relative w-full h-full text-center transition-all duration-300 ease-in-out cursor-pointer hover:shadow-lg hover:-translate-y-1'
+        'group relative w-full h-full text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1',
+        currentStatus === 'open' ? 'cursor-pointer' : 'cursor-default'
       )}
     >
-      <CardWrapper>
-        <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
-          {app.badge.visible && (
-            <Badge
-              variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
-              className="absolute top-2 right-2 tabular-nums"
-            >
-              {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
-            </Badge>
-          )}
-          <div className="flex-grow flex flex-col items-center justify-center">
-            <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
-          </div>
-          <div className="w-full">
-            <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
-            <div className="h-9 mt-2 flex items-center justify-center">
-              {renderAction()}
+      <Link href={getAppUrl(app.name)} passHref>
+        <div className="h-full w-full">
+            <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
+            {app.badge.visible && (
+                <Badge
+                variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
+                className="absolute top-2 right-2 tabular-nums"
+                >
+                {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
+                </Badge>
+            )}
+            <div className="flex-grow flex flex-col items-center justify-center">
+                <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
             </div>
-          </div>
-        </CardContent>
-      </CardWrapper>
+            <div className="w-full">
+                <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
+                <div className="h-9 mt-2 flex items-center justify-center">
+                    {renderAction()}
+                </div>
+            </div>
+            {renderRoleBadge()}
+            </CardContent>
+        </div>
+      </Link>
     </Card>
   );
 }
