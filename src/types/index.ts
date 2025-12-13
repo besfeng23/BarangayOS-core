@@ -1,3 +1,4 @@
+
 import { Timestamp } from 'firebase/firestore';
 
 export type BadgeInfo = {
@@ -26,7 +27,11 @@ export type UserRole =
   | 'SECRETARY'
   | 'HEALTH_WORKER'
   | 'ENCODER'
-  | 'VIEWER';
+  | 'VIEWER'
+  | 'TREASURER'
+  | 'CLERK'
+  | 'AUDITOR';
+
 
 export interface UserProfile {
   uid: string;
