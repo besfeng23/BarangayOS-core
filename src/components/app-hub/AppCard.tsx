@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -139,7 +140,7 @@ export default function AppCard({ app }: AppCardProps) {
   const CardWrapper = ({children}: {children: React.ReactNode}) => {
     const href = getAppUrl(app.name);
     if (hasAccess && currentStatus === 'open' && href !== '#') {
-      return <Link href={href} passHref><div className="h-full w-full">{children}</div></Link>;
+      return <div className="h-full w-full">{children}</div>;
     }
     return <>{children}</>;
   }
@@ -159,6 +160,14 @@ export default function AppCard({ app }: AppCardProps) {
                 title: 'Access Denied',
                 description: `You need the '${Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole}' role to use this module.`
             })
+        } else {
+            const href = getAppUrl(app.name);
+            if (href && href !== '#') {
+                // NextJS Link navigation is handled by the button, but we can push the route here for the whole card click
+                // To avoid issues, let's assume the button is the main interactive element.
+                // If a user clicks the card but not the button, we can choose to navigate or not.
+                // For simplicity and to avoid nested links, we let the button handle it.
+            }
         }
       }}
     >
