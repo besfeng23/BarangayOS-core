@@ -9,7 +9,9 @@ import {
   FileDown,
   Printer,
   ChevronDown,
+  ArrowLeft
 } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,14 +31,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { mockPermits, BusinessPermit } from '@/data/permits-mock';
+import { mockPermits, type BusinessPermit } from '@/data/permits-mock';
 import type { PermitStatus, PaymentStatus } from '@/types/permits';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 
 const statusStyles: Record<PermitStatus, string> = {
   DRAFT: 'bg-gray-500',
-  PENDING_REVIEW: 'bg-yellow-500',
+  PENDING_REVIEW: 'bg-yellow-500 text-yellow-900',
   FOR_PAYMENT: 'bg-blue-500',
   FOR_INSPECTION: 'bg-purple-500',
   FOR_APPROVAL: 'bg-cyan-500',
@@ -54,7 +54,7 @@ const paymentStatusStyles: Record<PaymentStatus, string> = {
 };
 
 const StatCard = ({ title, value, subtext }: { title: string; value: string | number, subtext: string }) => (
-    <Card className="bg-slate-800/50 border-slate-700 flex-1">
+    <Card className="bg-slate-800/50 border-slate-700 flex-1 cursor-pointer hover:bg-slate-800 transition-colors">
         <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-400">{title}</CardTitle>
         </CardHeader>
@@ -105,15 +105,14 @@ export default function BusinessPermitsPage() {
           <p className="text-slate-400 text-sm sm:text-base">Manage all business applications and permits.</p>
         </div>
         <Link href="/" passHref>
-          <Button variant="outline">
+          <Button variant="ghost">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Hub
           </Button>
         </Link>
       </header>
       
-      {/* Stats Panel */}
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           <StatCard title="Pending Review" value="8" subtext="New & Renewals" />
           <StatCard title="For Payment" value="12" subtext="Approved applications" />
           <StatCard title="For Release" value="5" subtext="Paid & ready" />
@@ -121,7 +120,6 @@ export default function BusinessPermitsPage() {
           <StatCard title="Expired / For Renewal" value="42" subtext="Next 30 days" />
       </div>
 
-      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
           <div className="relative flex-grow min-w-[250px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -133,19 +131,21 @@ export default function BusinessPermitsPage() {
               />
           </div>
           <div className="flex gap-2">
-              {/* Add filter dropdowns here */}
               <Button variant="outline" className="h-12">
                   Status <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
               <Button variant="outline" className="h-12">
                   Type <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
+               <Button variant="outline" className="h-12">
+                  Payment <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
           </div>
           <div className="flex gap-2 ml-auto">
-              <Button variant="outline" className="h-12">
+              <Button variant="outline" className="h-12" disabled={selectedPermits.size === 0}>
                   <FileDown className="mr-2 h-4 w-4" /> Export
               </Button>
-              <Button variant="outline" className="h-12">
+              <Button variant="outline" className="h-12" disabled={selectedPermits.size === 0}>
                   <Printer className="mr-2 h-4 w-4" /> Print Batch
               </Button>
               <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6">
@@ -154,7 +154,6 @@ export default function BusinessPermitsPage() {
           </div>
       </div>
 
-      {/* Table */}
       <div className="border border-slate-700 rounded-lg flex-1 overflow-y-auto">
           <Table>
               <TableHeader>
@@ -165,18 +164,19 @@ export default function BusinessPermitsPage() {
                             onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
                           />
                       </TableHead>
-                      <TableHead className="text-lg text-gray-300">Permit #</TableHead>
-                      <TableHead className="text-lg text-gray-300">Business Name</TableHead>
-                      <TableHead className="text-lg text-gray-300">Owner</TableHead>
-                      <TableHead className="text-lg text-gray-300">Filed</TableHead>
-                      <TableHead className="text-lg text-gray-300">Status</TableHead>
-                      <TableHead className="text-lg text-gray-300">Payment</TableHead>
+                      <TableHead>Permit #</TableHead>
+                      <TableHead>Business Name</TableHead>
+                      <TableHead>Owner</TableHead>
+                       <TableHead>Purok</TableHead>
+                      <TableHead>Filed</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Payment</TableHead>
                       <TableHead className="w-16 text-right"></TableHead>
                   </TableRow>
               </TableHeader>
               <TableBody>
                   {filteredPermits.map((permit) => (
-                      <TableRow key={permit.id} className="border-slate-800 h-[70px] hover:bg-slate-800/50">
+                      <TableRow key={permit.id} className="border-slate-800 hover:bg-slate-800/50">
                            <TableCell>
                               <Checkbox 
                                 checked={selectedPermits.has(permit.id)}
@@ -186,6 +186,7 @@ export default function BusinessPermitsPage() {
                            <TableCell className="font-mono">{permit.permitNo}</TableCell>
                            <TableCell className="font-medium">{permit.businessName}</TableCell>
                            <TableCell>{permit.owner.fullName}</TableCell>
+                           <TableCell>{permit.businessAddress.purok}</TableCell>
                            <TableCell>{new Date(permit.filedAt.seconds * 1000).toLocaleDateString()}</TableCell>
                            <TableCell>
                               <Badge className={`${statusStyles[permit.status]} text-white`}>
@@ -220,5 +221,3 @@ export default function BusinessPermitsPage() {
     </div>
   );
 }
-
-    
