@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Icon } from '@/components/icons';
-import { Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -58,8 +57,15 @@ export default function AppCard({ app }: AppCardProps) {
   const [isActivated, setIsActivated] = useState(app.isActivated);
 
 
-  const isRoleAllowed = !app.requiredRole || app.requiredRole.toLowerCase() === MOCK_CURRENT_USER_ROLE.toLowerCase();
+  const isRoleAllowed = () => {
+    if (!app.requiredRole) return true;
+    if (Array.isArray(app.requiredRole)) {
+      return app.requiredRole.includes(MOCK_CURRENT_USER_ROLE);
+    }
+    return app.requiredRole.toLowerCase() === MOCK_CURRENT_USER_ROLE.toLowerCase();
+  };
 
+  const hasAccess = isRoleAllowed();
 
   const handleGetClick = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent link navigation
@@ -83,8 +89,9 @@ export default function AppCard({ app }: AppCardProps) {
 
 
   const renderAction = () => {
-    if (!isRoleAllowed && app.requiredRole) {
-       return <Badge variant="destructive" className="font-normal">{app.requiredRole} Only</Badge>
+    if (!hasAccess) {
+       const roleText = Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole;
+       return <Badge variant="destructive" className="font-normal">{roleText} Only</Badge>
     }
 
     if (isInstalling) {
@@ -104,11 +111,9 @@ export default function AppCard({ app }: AppCardProps) {
             );
         }
         return (
-            <Link href={getAppUrl(app.name)} passHref>
-                <Button asChild size="sm" variant="outline" className="font-semibold">
-                   <a>OPEN</a>
-                </Button>
-            </Link>
+             <Button asChild size="sm" variant="outline" className="font-semibold">
+               <Link href={getAppUrl(app.name)}>OPEN</Link>
+            </Button>
         )
     }
 
@@ -123,11 +128,9 @@ export default function AppCard({ app }: AppCardProps) {
         const href = getAppUrl(app.name);
         if (href !== '#') {
             return (
-                <Link href={href} passHref>
-                    <Button asChild size="sm" variant="outline" className="font-semibold">
-                       <a>OPEN</a>
-                    </Button>
-                </Link>
+                <Button asChild size="sm" variant="outline" className="font-semibold">
+                   <Link href={href}>OPEN</Link>
+                </Button>
             );
         }
       return (
@@ -139,52 +142,46 @@ export default function AppCard({ app }: AppCardProps) {
     return null;
   };
 
-  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
-    if (!isRoleAllowed) {
-        return <div className="h-full w-full opacity-50 cursor-not-allowed">{children}</div>;
-    }
-
-    const href = getAppUrl(app.name);
-    
-    // Allow navigation if role is allowed and it's either a core app or an "open" status app with a valid URL
-    if (app.category === 'core' || (currentStatus === 'open' && href !== '#')) {
-      // Special case for unactivated partner apps
-      if(app.category === 'partner' && !isActivated) {
-          return <div className="h-full w-full">{children}</div>
-      }
-      return <Link href={href} passHref><div className="h-full w-full">{children}</div></Link>;
-    }
-    return <>{children}</>;
-  }
-
   return (
     <Card
       className={cn(
         'group relative w-full h-full text-center transition-all duration-300 ease-in-out',
-        isRoleAllowed ? 'cursor-pointer hover:shadow-lg hover:-translate-y-1' : 'cursor-not-allowed'
+        hasAccess ? 'cursor-pointer hover:shadow-lg hover:-translate-y-1' : 'cursor-not-allowed opacity-60'
       )}
+      onClick={(e) => {
+        if (!hasAccess) {
+            e.preventDefault();
+            toast({
+                variant: 'destructive',
+                title: 'Access Denied',
+                description: `You need the '${Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole}' role to use this module.`
+            })
+        }
+      }}
     >
-      <CardWrapper>
-        <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
-          {app.badge.visible && (
-            <Badge
-              variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
-              className="absolute top-2 right-2 tabular-nums"
-            >
-              {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
-            </Badge>
-          )}
-          <div className="flex-grow flex flex-col items-center justify-center">
-            <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
-          </div>
-          <div className="w-full">
-            <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
-            <div className="h-9 mt-2 flex items-center justify-center">
-              {renderAction()}
-            </div>
-          </div>
-        </CardContent>
-      </CardWrapper>
+      <Link href={hasAccess ? getAppUrl(app.name) : '#'} passHref>
+        <div className="h-full w-full">
+            <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
+              {app.badge.visible && (
+                <Badge
+                  variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
+                  className="absolute top-2 right-2 tabular-nums"
+                >
+                  {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
+                </Badge>
+              )}
+              <div className="flex-grow flex flex-col items-center justify-center">
+                <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
+              </div>
+              <div className="w-full">
+                <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
+                <div className="h-9 mt-2 flex items-center justify-center">
+                  {renderAction()}
+                </div>
+              </div>
+            </CardContent>
+        </div>
+      </Link>
     </Card>
   );
 }

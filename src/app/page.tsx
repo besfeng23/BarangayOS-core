@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { appsData } from '@/data/apps';
 import Header from '@/components/app-hub/Header';
 import Footer from '@/components/app-hub/Footer';

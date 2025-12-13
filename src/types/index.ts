@@ -21,8 +21,7 @@ export type AppData = {
   name: string;
   category: AppCategory;
   icon: string;
-  isLocked?: boolean;
-  requiredRole?: string;
+  requiredRole?: UserRole | UserRole[];
   status?: 'get' | 'open';
   isActivated?: boolean;
   badge: BadgeInfo;
@@ -46,7 +45,8 @@ export type UserRole =
   | 'BHW'
   | 'dispatcher'
   | 'staff'
-  | 'tanod';
+  | 'tanod'
+  | 'Captain';
 
 
 export interface UserProfile {
