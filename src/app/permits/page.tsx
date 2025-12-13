@@ -54,14 +54,14 @@ const paymentStatusStyles: Record<PaymentStatus, string> = {
   WAIVED: 'border-gray-500 text-gray-500',
 };
 
-const StatCard = ({ title, value, subtext }: { title: string; value: string | number, subtext: string }) => (
-    <Card className="bg-slate-800/50 border-slate-700 flex-1 cursor-pointer hover:bg-slate-800 transition-colors">
+const StatCard = ({ title, value, subtext, className }: { title: string; value: string | number, subtext: string, className?: string }) => (
+    <Card className={`border-slate-700 flex-1 cursor-pointer hover:brightness-110 transition-all ${className}`}>
         <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">{title}</CardTitle>
+            <CardTitle className="text-sm font-medium text-white/90">{title}</CardTitle>
         </CardHeader>
         <CardContent>
             <div className="text-4xl font-bold">{value}</div>
-            <p className="text-xs text-slate-500">{subtext}</p>
+            <p className="text-xs text-white/70">{subtext}</p>
         </CardContent>
     </Card>
 );
@@ -116,11 +116,11 @@ export default function BusinessPermitsPage() {
       </header>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          <StatCard title="Pending Review" value="8" subtext="New & Renewals" />
-          <StatCard title="For Payment" value="12" subtext="Approved applications" />
-          <StatCard title="For Release" value="5" subtext="Paid & ready" />
-          <StatCard title="Released Today" value="15" subtext="Total permits issued" />
-          <StatCard title="Expired / For Renewal" value="42" subtext="Next 30 days" />
+          <StatCard title="Pending Review" value="8" subtext="New & Renewals" className="bg-slate-800" />
+          <StatCard title="For Payment" value="12" subtext="Approved applications" className="bg-amber-600 text-white" />
+          <StatCard title="For Release" value="5" subtext="Paid & ready" className="bg-slate-800" />
+          <StatCard title="Released Today" value="15" subtext="Total permits issued" className="bg-emerald-700 text-white" />
+          <StatCard title="Expired / For Renewal" value="42" subtext="Next 30 days" className="bg-red-900 text-white" />
       </div>
 
       <div className="flex flex-wrap items-center gap-4 mb-6">

@@ -1,3 +1,4 @@
+
 import type { AppData } from '@/types';
 
 export const appsData: AppData[] = [
@@ -15,6 +16,7 @@ export const appsData: AppData[] = [
     category: 'core',
     icon: 'Users',
     badge: { visible: false },
+    status: 'open',
   },
   {
     id: 'core-3',
