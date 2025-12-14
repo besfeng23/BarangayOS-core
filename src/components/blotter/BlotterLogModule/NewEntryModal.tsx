@@ -8,6 +8,10 @@ import Step1People from './Step1_People';
 import Step2Incident from './Step2_Incident';
 import Step3Narrative from './Step3_Narrative';
 import { Save } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { blotterCaseConverter, type BlotterCase } from '@/lib/firebase/schema';
 
 interface NewEntryModalProps {
   isOpen: boolean;
@@ -19,7 +23,9 @@ const steps = ['The People', 'The Incident', 'The Narrative'];
 
 const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<Partial<BlotterCase>>({});
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -33,10 +39,56 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
     }
   };
 
-  const handleSave = () => {
-    console.log("Saving data:", formData);
-    // Add save logic here (e.g., write to Firebase)
-    onClose(); // Close modal after save
+  const handleSave = async () => {
+    setIsSaving(true);
+    toast({
+        title: "Filing Case...",
+        description: "Saving the blotter case to the database.",
+    });
+
+    try {
+        const { date, time, ...restOfData } = formData;
+        
+        // Combine date and time for the incidentAt timestamp
+        const incidentDateTime = new Date(`${date}T${time}`);
+        const incidentAt = Timestamp.fromDate(incidentDateTime);
+
+        const newCase: Omit<BlotterCase, 'id' | 'createdAt' | 'updatedAt'> = {
+            caseId: `BC-${Date.now()}`,
+            complainant: formData.complainant || 'Unknown',
+            respondent: formData.respondent || 'Unknown',
+            nature: formData.nature || 'Not Specified',
+            narrative: formData.narrative || '',
+            status: 'ACTIVE',
+            incidentAt: incidentAt,
+            date: formData.date!, // from form
+            barangayId: "TEST-BARANGAY-1",
+            createdBy: "SECRETARY-DEVICE-1",
+        };
+
+        const blotterRef = collection(db, 'blotter_cases').withConverter(blotterCaseConverter);
+        await addDoc(blotterRef, newCase);
+
+        toast({
+            title: "Case Filed Successfully!",
+            description: `Case #${newCase.caseId} has been saved.`,
+        });
+
+        // Reset form and close
+        setFormData({});
+        setCurrentStep(1);
+        onClose();
+
+    } catch (error) {
+        console.error("Error adding blotter case: ", error);
+        toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: "Could not save the case. Please try again.",
+        });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const renderStepContent = () => {
@@ -51,9 +103,16 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
         return null;
     }
   };
+  
+  const resetAndClose = () => {
+    setFormData({});
+    setCurrentStep(1);
+    onClose();
+  }
+
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={resetAndClose}>
       <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl w-full">
         <DialogHeader>
           <DialogTitle className="text-2xl">New Blotter Entry - Step {currentStep}: {steps[currentStep - 1]}</DialogTitle>
@@ -66,7 +125,7 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
         <DialogFooter className="justify-between mt-4">
           <div>
             {currentStep > 1 && (
-              <Button variant="outline" className="h-12 text-lg" onClick={handleBack}>
+              <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={isSaving}>
                 Back
               </Button>
             )}
@@ -77,9 +136,9 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
                 Next
               </Button>
             ) : (
-              <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave}>
+              <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={isSaving}>
                 <Save className="mr-2 h-5 w-5" />
-                Save Record
+                {isSaving ? "Saving..." : "Save Record"}
               </Button>
             )}
           </div>

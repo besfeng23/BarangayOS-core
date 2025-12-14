@@ -15,6 +15,10 @@ interface Step3NarrativeProps {
 }
 
 const Step3Narrative = ({ formData, setFormData, isOnline }: Step3NarrativeProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+  
   return (
     <div className="space-y-4">
       <Label htmlFor="narrative" className="text-lg">Narrative of the Incident</Label>
@@ -22,6 +26,8 @@ const Step3Narrative = ({ formData, setFormData, isOnline }: Step3NarrativeProps
         id="narrative"
         placeholder="Start writing the story here..."
         className="min-h-[250px] text-lg bg-slate-900 border-slate-600"
+        value={formData.narrative || ''}
+        onChange={handleChange}
       />
       <div className="flex justify-between items-center mt-2">
         <Button variant="secondary" className="h-12 text-lg">

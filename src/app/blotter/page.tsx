@@ -10,42 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Printer, ArrowLeft } from 'lucide-react';
 import NewEntryModal from '@/components/blotter/BlotterLogModule/NewEntryModal';
 import PrintPreviewModal from '@/components/blotter/KPForm7/PrintPreviewModal';
-import type { BlotterCase } from '@/types/blotter';
+import type { BlotterCase as BlotterCaseType } from '@/types/blotter';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { blotterCaseConverter, type BlotterCase as BlotterCaseSchema } from '@/lib/firebase/schema';
+import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
 
-const mockCases: BlotterCase[] = [
-  { 
-    id: '1', 
-    caseId: '2024-001', 
-    date: '2024-07-28', 
-    complainant: 'Juan Dela Cruz', 
-    respondent: 'Pedro Penduko',
-    nature: 'Noise Complaint', 
-    status: 'ACTIVE',
-    narrative: 'Mr. Dela Cruz reports that Mr. Penduko has been using a loud karaoke machine every night for the past week, causing disturbances to the neighborhood. Attempts to resolve the issue amicably have failed.'
-  },
-  { 
-    id: '2', 
-    caseId: '2024-002', 
-    date: '2024-07-27', 
-    complainant: 'Maria Santos', 
-    respondent: 'Ana Reyes',
-    nature: 'Unjust Vexation', 
-    status: 'SETTLED',
-    narrative: 'Ms. Santos alleges that Ms. Reyes has been spreading malicious gossip about her, causing emotional distress.'
-  },
-  { 
-    id: '3', 
-    caseId: '2024-003', 
-    date: '2024-07-26', 
-    complainant: 'Pedro Penduko', 
-    respondent: 'Juan Dela Cruz',
-    nature: 'Gossip', 
-    status: 'FOR_HEARING',
-    narrative: 'A counter-complaint from Mr. Penduko, stating that Mr. Dela Cruz has been making false accusations against him in public.'
-  },
-];
-
-const statusStyles: Record<BlotterCase['status'], string> = {
+const statusStyles: Record<BlotterCaseType['status'], string> = {
   ACTIVE: 'bg-blue-600 hover:bg-blue-700',
   SETTLED: 'bg-green-600 hover:bg-green-700',
   FOR_HEARING: 'bg-orange-600 hover:bg-orange-700',
@@ -55,7 +27,9 @@ const BlotterLogModule = () => {
   const [isOnline, setIsOnline] = useState(true);
   const [isNewEntryModalOpen, setIsNewEntryModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [selectedCase, setSelectedCase] = useState<BlotterCase | null>(null);
+  const [selectedCase, setSelectedCase] = useState<BlotterCaseType | null>(null);
+  const [cases, setCases] = useState<BlotterCaseSchema[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -65,16 +39,46 @@ const BlotterLogModule = () => {
     window.addEventListener('offline', handleOffline);
     setIsOnline(navigator.onLine);
 
+    const blotterRef = collection(db, 'blotter_cases').withConverter(blotterCaseConverter);
+    const q = query(blotterRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const casesData: BlotterCaseSchema[] = [];
+        querySnapshot.forEach((doc) => {
+            casesData.push(doc.data());
+        });
+        setCases(casesData);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching blotter cases: ", error);
+        setLoading(false);
+    });
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      unsubscribe();
     };
   }, []);
 
-  const handlePrintClick = (caseData: BlotterCase) => {
+  const handlePrintClick = (caseData: BlotterCaseType) => {
     setSelectedCase(caseData);
     setIsPrintModalOpen(true);
   };
+  
+  const renderLoadingSkeleton = () => (
+    Array.from({ length: 3 }).map((_, i) => (
+      <TableRow key={i} className="border-slate-800 h-[70px]">
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+        <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+      </TableRow>
+    ))
+  );
+
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-gray-200 font-sans">
@@ -125,7 +129,7 @@ const BlotterLogModule = () => {
               <TableHeader>
                 <TableRow className="border-slate-700 hover:bg-slate-800/50">
                   <TableHead className="text-lg text-gray-300">Case ID</TableHead>
-                  <TableHead className="text-lg text-gray-300">Date</TableHead>
+                  <TableHead className="text-lg text-gray-300">Date Filed</TableHead>
                   <TableHead className="text-lg text-gray-300">Complainant</TableHead>
                   <TableHead className="text-lg text-gray-300">Nature of Case</TableHead>
                   <TableHead className="text-lg text-gray-300">Status</TableHead>
@@ -133,10 +137,10 @@ const BlotterLogModule = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockCases.map((c) => (
+                {loading ? renderLoadingSkeleton() : cases.map((c) => (
                   <TableRow key={c.id} className="border-slate-800 h-[70px] hover:bg-slate-800/50">
                     <TableCell className="font-mono text-lg">{c.caseId}</TableCell>
-                    <TableCell className="text-lg">{c.date}</TableCell>
+                    <TableCell className="text-lg">{format(c.createdAt.toDate(), 'yyyy-MM-dd')}</TableCell>
                     <TableCell className="text-lg">{c.complainant}</TableCell>
                     <TableCell className="text-lg">{c.nature}</TableCell>
                     <TableCell>

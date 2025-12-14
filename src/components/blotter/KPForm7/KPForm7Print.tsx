@@ -3,6 +3,8 @@
 
 import React from 'react';
 import type { BlotterCase } from '@/types/blotter';
+import { format, parseISO } from 'date-fns';
+
 
 interface KPForm7PrintProps {
   caseData: BlotterCase;
@@ -12,7 +14,16 @@ const KPForm7Print = React.forwardRef<HTMLDivElement, KPForm7PrintProps>(({ case
   const provinceName = "Pampanga"; // Placeholder
   const cityName = "Mabalacat"; // Placeholder
   const barangayName = "Dau"; // Placeholder
-  const reportDate = new Date(caseData.date);
+  const reportDate = new Date(); // Use current date for printing
+  
+  let incidentDate: Date;
+  try {
+      incidentDate = new Date(caseData.date);
+      if(isNaN(incidentDate.getTime())) throw new Error('Invalid date');
+  } catch(e) {
+      incidentDate = new Date(); // fallback to current date
+  }
+
 
   return (
     <div ref={ref} id="print-area" className="bg-white text-black p-8 max-w-4xl mx-auto print-container">
@@ -52,7 +63,7 @@ const KPForm7Print = React.forwardRef<HTMLDivElement, KPForm7PrintProps>(({ case
       {/* Footer */}
       <div className="mt-12 text-base">
         <p className="mb-8">THEREFORE, I pray that the following relief be granted to me in accordance with law and/or equity.</p>
-        <p>Made this <span className="font-bold underline">{reportDate.getDate()}</span> day of <span className="font-bold underline">{reportDate.toLocaleString('default', { month: 'long' })}</span>, <span className="font-bold underline">{reportDate.getFullYear()}</span>.</p>
+        <p>Made this <span className="font-bold underline">{format(reportDate, 'do')}</span> day of <span className="font-bold underline">{format(reportDate, 'MMMM')}</span>, <span className="font-bold underline">{format(reportDate, 'yyyy')}</span>.</p>
         
         <div className="mt-20">
           <div className="w-1/2">
