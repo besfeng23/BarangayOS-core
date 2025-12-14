@@ -140,7 +140,7 @@ const BlotterLogModule = () => {
                 {loading ? renderLoadingSkeleton() : cases.map((c) => (
                   <TableRow key={c.id} className="border-slate-800 h-[70px] hover:bg-slate-800/50">
                     <TableCell className="font-mono text-lg">{c.caseId}</TableCell>
-                    <TableCell className="text-lg">{format(c.createdAt.toDate(), 'yyyy-MM-dd')}</TableCell>
+                    <TableCell className="text-lg">{c.createdAt?.toDate ? format(c.createdAt.toDate(), 'yyyy-MM-dd') : 'Just Now'}</TableCell>
                     <TableCell className="text-lg">{c.complainant}</TableCell>
                     <TableCell className="text-lg">{c.nature}</TableCell>
                     <TableCell>
