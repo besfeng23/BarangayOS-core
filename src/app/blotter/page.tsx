@@ -2,11 +2,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Printer } from 'lucide-react';
+import { Search, Plus, Printer, ArrowLeft } from 'lucide-react';
 import NewEntryModal from '@/components/blotter/BlotterLogModule/NewEntryModal';
 import PrintPreviewModal from '@/components/blotter/KPForm7/PrintPreviewModal';
 import type { BlotterCase } from '@/types/blotter';
@@ -79,7 +80,14 @@ const BlotterLogModule = () => {
     <div className="flex flex-col h-screen bg-slate-900 text-gray-200 font-sans">
       {/* Header */}
       <header className="flex items-center justify-between p-4 border-b border-slate-700">
-        <h1 className="text-2xl font-bold">Blotter Log Records</h1>
+        <div className="flex items-center gap-4">
+            <Link href="/" passHref>
+                <Button variant="outline" size="icon">
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+            </Link>
+            <h1 className="text-2xl font-bold">Blotter Log Records</h1>
+        </div>
         <div className={`flex items-center gap-2 px-3 py-1 text-sm font-medium rounded-full ${isOnline ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
           <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
           {isOnline ? 'Online' : 'Offline'}
