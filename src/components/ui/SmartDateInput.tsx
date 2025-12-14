@@ -1,0 +1,64 @@
+
+"use client";
+
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+
+interface SmartDateInputProps {
+  value: string; // Expects "YYYY-MM-DD"
+  onChange: (newDate: string) => void;
+  label?: string;
+  className?: string;
+}
+
+const QuickActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => (
+  <button
+    type="button"
+    className={cn(
+      "rounded-full bg-slate-800 px-3 py-1 text-xs font-bold uppercase text-blue-400 transition-colors hover:bg-slate-700",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange, label, className }) => {
+
+  const handleQuickAction = (action: 'today' | 'yesterday') => {
+    const now = new Date();
+    if (action === 'yesterday') {
+      now.setDate(now.getDate() - 1);
+    }
+    onChange(format(now, 'yyyy-MM-dd'));
+  };
+
+  return (
+    <div className={cn('w-full', className)}>
+      {label && (
+        <label className="mb-2 block text-sm text-slate-400">
+          {label}
+        </label>
+      )}
+      <div className="mb-2 flex items-center gap-2">
+        <QuickActionButton onClick={() => handleQuickAction('today')}>
+          Today
+        </QuickActionButton>
+        <QuickActionButton onClick={() => handleQuickAction('yesterday')}>
+          Yesterday
+        </QuickActionButton>
+      </div>
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-lg text-white focus:ring-2 focus:ring-blue-600"
+        style={{
+          colorScheme: 'dark', // Inverts the calendar icon to white
+        }}
+      />
+    </div>
+  );
+};
