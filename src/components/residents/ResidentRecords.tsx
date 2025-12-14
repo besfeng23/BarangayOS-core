@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Users,
   Search,
@@ -34,10 +34,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import ResidentProfileDrawer from './ResidentProfileDrawer';
-import { mockResidents, mockPuroks, mockSectors } from '@/data/residents-mock';
+import { mockPuroks, mockSectors } from '@/data/residents-mock';
 import type { Resident } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { residentConverter, type Resident as ResidentSchema } from '@/lib/firebase/schema';
+import { Skeleton } from '@/components/ui/skeleton';
+import NewResidentModal from './NewResidentModal';
 
 const getInitials = (name: string) => {
   if (!name) return 'N/A';
@@ -55,10 +60,13 @@ const StatCard = ({ title, value }: { title: string, value: string | number }) =
 
 
 const ResidentRecords = () => {
+  const [allResidents, setAllResidents] = useState<ResidentSchema[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedResident, setSelectedResident] = useState<Resident | null>(
     null
   );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isNewResidentModalOpen, setIsNewResidentModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPuroks, setSelectedPuroks] = useState<Set<string>>(new Set());
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(
@@ -67,8 +75,30 @@ const ResidentRecords = () => {
 
   const isMobile = useIsMobile();
 
+  useEffect(() => {
+    setLoading(true);
+    const residentsRef = collection(db, 'residents').withConverter(residentConverter);
+    
+    // In a real multi-tenant app, you'd add: where('barangayId', '==', user.barangayId)
+    const q = query(residentsRef);
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const residentsData: ResidentSchema[] = [];
+      querySnapshot.forEach((doc) => {
+        residentsData.push(doc.data());
+      });
+      setAllResidents(residentsData);
+      setLoading(false);
+    }, (error) => {
+        console.error("Error fetching residents: ", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const filteredResidents = useMemo(() => {
-    return mockResidents.filter((resident) => {
+    return allResidents.filter((resident) => {
       const purokMatch =
         selectedPuroks.size === 0 || selectedPuroks.has(resident.addressSnapshot.purok);
       const sectorMatch =
@@ -80,7 +110,7 @@ const ResidentRecords = () => {
         resident.rbiId.includes(searchTerm);
       return purokMatch && sectorMatch && searchMatch;
     });
-  }, [searchTerm, selectedPuroks, selectedSectors]);
+  }, [searchTerm, selectedPuroks, selectedSectors, allResidents]);
 
   const handleRowClick = (resident: Resident) => {
     setSelectedResident(resident);
@@ -111,13 +141,36 @@ const ResidentRecords = () => {
     });
   };
   
-  const getAge = (dateOfBirth: { seconds: number }) => {
+  const getAge = (dateOfBirth?: { seconds: number }) => {
     if(!dateOfBirth) return 'N/A';
     return Math.floor(
       (new Date() - new Date(dateOfBirth.seconds * 1000)) /
       (1000 * 60 * 60 * 24 * 365.25)
     );
   }
+  
+  const renderLoadingSkeleton = (count = 5) => (
+    Array.from({ length: count }).map((_, index) => (
+      <TableRow key={index} className="border-slate-800 h-[80px]">
+        <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+        <TableCell>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div>
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24 mt-2" />
+            </div>
+          </div>
+        </TableCell>
+        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+      </TableRow>
+    ))
+  );
+
 
   const renderDesktopView = () => (
     <div className="flex-1 overflow-y-auto">
@@ -134,11 +187,11 @@ const ResidentRecords = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredResidents.map((resident) => {
+          {loading ? renderLoadingSkeleton() : filteredResidents.map((resident) => {
             const age = getAge(resident.dateOfBirth);
-            const tags = Object.entries(resident.sectorFlags)
+            const tags = resident.sectorFlags ? Object.entries(resident.sectorFlags)
               .filter(([, value]) => value)
-              .map(([key]) => mockSectors[key as keyof typeof mockSectors]?.label);
+              .map(([key]) => mockSectors[key as keyof typeof mockSectors]?.label) : [];
 
             return (
               <TableRow
@@ -194,11 +247,23 @@ const ResidentRecords = () => {
 
   const renderMobileView = () => (
       <div className="flex-1 overflow-y-auto px-4 space-y-3 pb-24">
-          {filteredResidents.map(resident => {
+          {loading && Array.from({length: 5}).map((_, i) => (
+             <div key={i} className="bg-slate-800/50 rounded-lg p-4 space-y-2">
+                <div className="flex items-start gap-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-3 w-full" />
+                        <Skeleton className="h-3 w-1/2" />
+                    </div>
+                </div>
+            </div>
+          ))}
+          {!loading && filteredResidents.map(resident => {
               const age = getAge(resident.dateOfBirth);
-              const tags = Object.entries(resident.sectorFlags)
+              const tags = resident.sectorFlags ? Object.entries(resident.sectorFlags)
                 .filter(([, value]) => value)
-                .map(([key]) => mockSectors[key as keyof typeof mockSectors]?.label);
+                .map(([key]) => mockSectors[key as keyof typeof mockSectors]?.label) : [];
               
               return (
                   <div key={resident.id} className="bg-slate-800/50 rounded-lg p-4 cursor-pointer relative" onClick={() => handleRowClick(resident)}>
@@ -272,8 +337,8 @@ const ResidentRecords = () => {
         {/* Stats Panel */}
         <div className="bg-slate-900 border-b border-slate-700 p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard title="Total Population" value="10,234" />
-            <StatCard title="Registered Voters" value="7,890" />
+            <StatCard title="Total Population" value={allResidents.length} />
+            <StatCard title="Registered Voters" value={allResidents.filter(r => r.voter?.isVoter).length} />
             <StatCard title="Households" value="1,567" />
             <StatCard title="Tagged Residents" value={Object.values(mockSectors).reduce((acc, sector) => acc + sector.count, 0)} />
           </div>
@@ -345,7 +410,7 @@ const ResidentRecords = () => {
             <Button variant="outline" className="h-12">
               <Printer className="mr-2 h-4 w-4" /> Print
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6">
+            <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6" onClick={() => setIsNewResidentModalOpen(true)}>
               <Plus className="mr-2 h-6 w-6" /> New Resident
             </Button>
           </div>
@@ -361,6 +426,11 @@ const ResidentRecords = () => {
         userRole="SECRETARY"
       />
       
+      <NewResidentModal 
+        isOpen={isNewResidentModalOpen}
+        onClose={() => setIsNewResidentModalOpen(false)}
+      />
+
       {/* Mobile Sticky Footer */}
       {isMobile && (
         <div className="fixed bottom-0 left-0 right-0 bg-slate-800/80 backdrop-blur-lg border-t border-slate-700 p-2 flex justify-around items-center">
@@ -384,7 +454,7 @@ const ResidentRecords = () => {
                 <span className="text-xs">Scan QR</span>
             </Button>
             
-            <Button className="bg-blue-600 hover:bg-blue-700 rounded-full h-16 w-16 text-lg absolute -top-8 shadow-lg border-4 border-slate-900">
+            <Button className="bg-blue-600 hover:bg-blue-700 rounded-full h-16 w-16 text-lg absolute -top-8 shadow-lg border-4 border-slate-900" onClick={() => setIsNewResidentModalOpen(true)}>
                 <Plus className="h-8 w-8" />
             </Button>
             
@@ -406,3 +476,5 @@ const ResidentRecords = () => {
 };
 
 export default ResidentRecords;
+
+    

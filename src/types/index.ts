@@ -103,14 +103,14 @@ export interface Resident {
   displayName: string;
   displayNameLower: string;
   sex: 'M' | 'F';
-  dateOfBirth: Timestamp;
-  placeOfBirth: string;
-  civilStatus: 'single' | 'married' | 'widowed' | 'separated';
+  dateOfBirth?: Timestamp;
+  placeOfBirth?: string;
+  civilStatus?: 'single' | 'married' | 'widowed' | 'separated';
   addressSnapshot: {
     purok: string;
     addressLine: string;
   };
-  contact: {
+  contact?: {
     mobile?: string;
     email?: string;
     emergencyContactName?: string;
@@ -126,7 +126,7 @@ export interface Resident {
     isVoter: boolean;
     precinctNumber?: string;
   };
-  sectorFlags: {
+  sectorFlags?: {
     senior: boolean;
     pwd: boolean;
     soloParent: boolean;
@@ -140,7 +140,7 @@ export interface Resident {
     signedAt?: Timestamp;
     consentFormFilePath?: string;
   };
-  qr: {
+  qr?: {
     qrValue?: string;
     generatedAt?: Timestamp;
   };
@@ -203,3 +203,5 @@ export interface AuditLog {
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
 export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes, AnnouncementsTypes };
+
+    
