@@ -2,7 +2,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence, initializeFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence, initializeFirestore, Firestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig: FirebaseOptions = {
@@ -16,12 +16,16 @@ const firebaseConfig: FirebaseOptions = {
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let db: Firestore;
 
-// Initialize Firestore with offline persistence
-// Using initializeFirestore with persistentLocalCache is the modern approach
-const db = initializeFirestore(app, {
-  localCache: { kind: 'persistent' }
-});
+try {
+    db = getFirestore(app);
+} catch (e) {
+    db = initializeFirestore(app, {
+        localCache: { kind: 'persistent' }
+    });
+}
+
 
 // For older SDK versions, you might see enableIndexedDbPersistence.
 // We'll call it here with a catch block for robustness, though initializeFirestore handles it.
