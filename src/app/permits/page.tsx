@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   MoreVertical,
   Search,
@@ -31,9 +31,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { mockPermits, type BusinessPermit } from '@/data/permits-mock';
+import type { BusinessPermit as AppBusinessPermit } from '@/types/permits';
 import type { PermitStatus, PaymentStatus } from '@/types/permits';
 import NewApplicationModal from '@/components/permits/NewApplicationModal';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { businessPermitConverter, type BusinessPermit } from '@/lib/firebase/schema';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusStyles: Record<PermitStatus, string> = {
   DRAFT: 'bg-gray-500',
@@ -67,18 +71,56 @@ const StatCard = ({ title, value, subtext, className }: { title: string; value: 
 );
 
 export default function BusinessPermitsPage() {
+  const [permits, setPermits] = useState<BusinessPermit[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPermits, setSelectedPermits] = useState<Set<string>>(new Set());
   const [isNewApplicationModalOpen, setIsNewApplicationModalOpen] = useState(false);
 
+  useEffect(() => {
+    const permitsRef = collection(db, 'business_permits').withConverter(businessPermitConverter);
+    const q = query(permitsRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const permitsData: BusinessPermit[] = [];
+        querySnapshot.forEach((doc) => {
+            permitsData.push(doc.data());
+        });
+        setPermits(permitsData);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching permits: ", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const filteredPermits = useMemo(() => {
-    return mockPermits.filter(permit =>
-        permit.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        permit.owner.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        permit.permitNo.toLowerCase().includes(searchTerm.toLowerCase())
+    return permits.filter(permit =>
+        (permit.businessName && permit.businessName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (permit.owner && permit.owner.fullName && permit.owner.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (permit.permitNo && permit.permitNo.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  }, [searchTerm]);
+  }, [searchTerm, permits]);
+  
+  const kpiValues = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return {
+        pendingReview: permits.filter(p => p.status === 'PENDING_REVIEW').length,
+        forPayment: permits.filter(p => p.status === 'FOR_PAYMENT').length,
+        forRelease: permits.filter(p => p.status === 'FOR_RELEASE').length,
+        releasedToday: permits.filter(p => 
+            p.status === 'RELEASED' && 
+            p.releasedAt && 
+            p.releasedAt.toDate().setHours(0,0,0,0) === today.getTime()
+        ).length,
+        expired: permits.filter(p => p.validUntil && p.validUntil.toDate() < new Date()).length
+    };
+  }, [permits]);
+
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -99,6 +141,22 @@ export default function BusinessPermitsPage() {
       return newSet;
     });
   };
+  
+   const renderLoadingSkeleton = () => (
+    Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={i} className="border-slate-800 h-[70px]">
+        <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+        <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+      </TableRow>
+    ))
+  );
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-gray-200 font-sans p-4 sm:p-6 lg:p-8">
@@ -116,11 +174,11 @@ export default function BusinessPermitsPage() {
       </header>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          <StatCard title="Pending Review" value="8" subtext="New & Renewals" className="bg-slate-800" />
-          <StatCard title="For Payment" value="12" subtext="Approved applications" className="bg-amber-600 text-white" />
-          <StatCard title="For Release" value="5" subtext="Paid & ready" className="bg-slate-800" />
-          <StatCard title="Released Today" value="15" subtext="Total permits issued" className="bg-emerald-700 text-white" />
-          <StatCard title="Expired / For Renewal" value="42" subtext="Next 30 days" className="bg-red-900 text-white" />
+          <StatCard title="Pending Review" value={kpiValues.pendingReview} subtext="New & Renewals" className="bg-slate-800" />
+          <StatCard title="For Payment" value={kpiValues.forPayment} subtext="Approved applications" className="bg-amber-600 text-white" />
+          <StatCard title="For Release" value={kpiValues.forRelease} subtext="Paid & ready" className="bg-slate-800" />
+          <StatCard title="Released Today" value={kpiValues.releasedToday} subtext="Total permits issued" className="bg-emerald-700 text-white" />
+          <StatCard title="Expired / For Renewal" value={kpiValues.expired} subtext="Next 30 days" className="bg-red-900 text-white" />
       </div>
 
       <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -178,7 +236,7 @@ export default function BusinessPermitsPage() {
                   </TableRow>
               </TableHeader>
               <TableBody>
-                  {filteredPermits.map((permit) => (
+                  {loading ? renderLoadingSkeleton() : filteredPermits.map((permit) => (
                       <TableRow key={permit.id} className="border-slate-800 hover:bg-slate-800/50">
                            <TableCell>
                               <Checkbox 
@@ -190,7 +248,7 @@ export default function BusinessPermitsPage() {
                            <TableCell className="font-medium">{permit.businessName}</TableCell>
                            <TableCell>{permit.owner.fullName}</TableCell>
                            <TableCell>{permit.businessAddress.purok}</TableCell>
-                           <TableCell>{new Date(permit.filedAt.seconds * 1000).toLocaleDateString()}</TableCell>
+                           <TableCell>{permit.filedAt?.toDate ? new Date(permit.filedAt.seconds * 1000).toLocaleDateString() : 'Pending...'}</TableCell>
                            <TableCell>
                               <Badge className={`${statusStyles[permit.status]} text-white`}>
                                   {permit.status.replace(/_/g, ' ')}

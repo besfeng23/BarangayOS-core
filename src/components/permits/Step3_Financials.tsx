@@ -9,7 +9,15 @@ import { Textarea } from '@/components/ui/textarea';
 
 const Step3Financials = ({ formData, setFormData }: { formData: any, setFormData: any }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+     if (id === 'totalFees') {
+      setFormData({
+        ...formData,
+        totals: { ...formData.totals, total: value }
+      });
+    } else {
+      setFormData({ ...formData, [id]: value });
+    }
   };
   
   const handleRadioChange = (value: string) => {
@@ -27,7 +35,7 @@ const Step3Financials = ({ formData, setFormData }: { formData: any, setFormData
             placeholder="0.00" 
             className="h-12 text-lg bg-slate-900 border-slate-600 mt-1"
             onChange={handleChange}
-            value={formData.totalFees || ''}
+            value={formData.totals?.total || ''}
           />
         </div>
         <div>
@@ -36,6 +44,7 @@ const Step3Financials = ({ formData, setFormData }: { formData: any, setFormData
             defaultValue={formData.paymentStatus || 'UNPAID'} 
             className="mt-2 flex gap-6"
             onValueChange={handleRadioChange}
+            disabled // This is determined by system, not user
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="UNPAID" id="unpaid" />

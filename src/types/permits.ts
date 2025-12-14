@@ -1,7 +1,7 @@
 
 import { Timestamp } from 'firebase/firestore';
 
-export type ApplicationType = "NEW" | "RENEWAL";
+export type ApplicationType = "NEW" | "RENEWAL" | "TRANSFER";
 
 export type PermitStatus = 
   | "DRAFT" 
@@ -86,8 +86,8 @@ export interface BusinessPermit {
   assignedOfficerUid?: string;
   flags: string[]; // e.g., "MISSING_ID", "MISSING_DOCS"
   createdByUid: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 
 export interface ApplicationReceipt {
@@ -109,5 +109,3 @@ export interface PermitAuditLog {
   timestamp: Timestamp;
   details: object;
 }
-
-    
