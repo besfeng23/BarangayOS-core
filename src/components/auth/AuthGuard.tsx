@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -13,15 +13,21 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+
   if (loading) {
-    // This state is already handled by the AuthProvider,
-    // so we can just return null or a minimal loader here.
+    // AuthProvider shows a skeleton, so we can just wait here.
     return null;
   }
 
   if (!user) {
-    router.push('/login');
-    return null; // Don't render children if not authenticated
+    // Don't render children if not authenticated, useEffect will redirect.
+    return null; 
   }
 
   return <>{children}</>;
