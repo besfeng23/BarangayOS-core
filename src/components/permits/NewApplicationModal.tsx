@@ -45,6 +45,15 @@ const NewApplicationModal = ({ isOpen, onClose }: NewApplicationModalProps) => {
   };
 
   const handleSave = async () => {
+    if (!formData.businessName || !(formData.owner as any)?.fullName) {
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please provide both a business name and an owner's name.",
+        });
+        return;
+    }
+      
     setIsSaving(true);
     toast({
         title: "Saving Application...",
@@ -52,39 +61,40 @@ const NewApplicationModal = ({ isOpen, onClose }: NewApplicationModalProps) => {
     });
 
     try {
+        const filedAtDate = (formData as any).applicationDate ? new Date((formData as any).applicationDate) : new Date();
+
         const newPermitData: Omit<BusinessPermit, 'id' | 'createdAt' | 'updatedAt'> = {
             permitNo: `BP-DRAFT-${Date.now()}`,
             applicationType: formData.applicationType || 'NEW',
             status: 'PENDING_REVIEW',
-            businessName: formData.businessName || 'N/A',
+            businessName: formData.businessName,
             businessAddress: {
-                purok: (formData.businessAddress as any)?.purok || 'N/A', // Simplified for now
+                purok: (formData.businessAddress as any)?.purok || 'N/A',
                 street: (formData.businessAddress as any)?.street || '',
                 barangay: 'Dau',
                 city: 'Mabalacat',
                 province: 'Pampanga'
             },
             owner: {
-                fullName: (formData.owner as any)?.fullName || 'N/A',
+                fullName: (formData.owner as any)?.fullName,
                 contactNo: (formData.owner as any)?.contactNo || '',
-                address: '' // Simplified
+                address: ''
             },
-            filedAt: Timestamp.fromDate(new Date(formData.filedAt as any) || new Date()),
-            validFrom: Timestamp.fromDate(new Date()), // Placeholder
-            validUntil: Timestamp.fromDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1))), // Placeholder
+            filedAt: Timestamp.fromDate(filedAtDate),
+            validFrom: Timestamp.fromDate(new Date(filedAtDate.getFullYear(), 0, 1)), // Jan 1 of current year
+            validUntil: Timestamp.fromDate(new Date(filedAtDate.getFullYear(), 11, 31)), // Dec 31 of current year
             payment: {
                 status: 'UNPAID',
             },
             totals: {
-                subtotal: parseFloat((formData.totals as any)?.totalFees) || 0,
+                subtotal: parseFloat((formData.totals as any)?.total) || 0,
                 penalties: 0,
                 discounts: 0,
-                total: parseFloat((formData.totals as any)?.totalFees) || 0,
+                total: parseFloat((formData.totals as any)?.total) || 0,
             },
             barangayId: "TEST-BARANGAY-1",
-            createdByUid: "SECRETARY-DEVICE-1",
-            // fields that are not in the form but required by schema
-            category: formData.category || 'Other',
+            createdBy: "SECRETARY-DEVICE-1",
+            category: (formData as any).businessNature || 'Other',
             requirements: [],
             fees: [],
             flags: [],
