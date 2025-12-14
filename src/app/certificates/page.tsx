@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, UserSearch, FileCheck2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { Resident } from '@/types';
-import { mockResidents } from '@/data/residents-mock';
+import type { Resident as ResidentType } from '@/types';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { residentConverter, type Resident as ResidentSchema } from '@/lib/firebase/schema';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Mock data for certificate templates
 const mockTemplates = [
@@ -73,18 +76,43 @@ const getInitials = (name: string) => {
 
 
 export default function CertificatesPage() {
-  const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
+  const [allResidents, setAllResidents] = useState<ResidentSchema[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedResident, setSelectedResident] = useState<ResidentSchema | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<(typeof mockTemplates)[0] | null>(null);
   const [step, setStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredResidents = searchTerm ? mockResidents.filter(
-    (r) =>
-      r.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.rbiId.includes(searchTerm)
-  ) : [];
+  useEffect(() => {
+    setLoading(true);
+    const residentsRef = collection(db, 'residents').withConverter(residentConverter);
+    const q = query(residentsRef);
 
-  const handleSelectResident = (resident: Resident) => {
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const residentsData: ResidentSchema[] = [];
+      querySnapshot.forEach((doc) => {
+        residentsData.push(doc.data());
+      });
+      setAllResidents(residentsData);
+      setLoading(false);
+    }, (error) => {
+        console.error("Error fetching residents: ", error);
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const filteredResidents = useMemo(() => {
+    if (!searchTerm) return [];
+    return allResidents.filter(
+      (r) =>
+        r.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.rbiId.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allResidents, searchTerm]);
+
+  const handleSelectResident = (resident: ResidentSchema) => {
     setSelectedResident(resident);
     setStep(2);
   };
@@ -103,6 +131,50 @@ export default function CertificatesPage() {
         setSelectedTemplate(null);
     }
     setStep(targetStep);
+  }
+
+  const renderResidentList = () => {
+    if (loading && searchTerm) {
+        return Array.from({length: 2}).map((_, i) => (
+             <div key={i} className="flex items-center gap-3 p-2">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-20" />
+                </div>
+            </div>
+        ));
+    }
+
+    if (filteredResidents.length === 0 && searchTerm) {
+      return (
+        <div className="text-center py-8 text-slate-400">
+          <p>Resident not found.</p>
+          <p className="text-sm">Add them in the Resident Module first.</p>
+        </div>
+      );
+    }
+
+    if (filteredResidents.length > 0) {
+      return filteredResidents.map(res => (
+        <div key={res.id} onClick={() => step === 1 && handleSelectResident(res)} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-700 cursor-pointer">
+          <Avatar>
+            <AvatarImage src={res.photoFilePath} />
+            <AvatarFallback>{getInitials(res.displayName)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-semibold">{res.displayName}</p>
+            <p className="text-sm text-slate-400">{res.rbiId} &middot; {res.addressSnapshot.purok}</p>
+          </div>
+        </div>
+      ));
+    }
+    
+    return (
+        <div className="text-center py-8 text-slate-400">
+            <p>Start typing a name or RBI ID.</p>
+        </div>
+    );
   }
 
   return (
@@ -141,28 +213,7 @@ export default function CertificatesPage() {
             />
             <ScrollArea className="flex-1">
                 <div className="space-y-2 pr-4">
-                    {filteredResidents.length === 0 && searchTerm && (
-                        <div className="text-center py-8 text-slate-400">
-                            <p>No matching residents found.</p>
-                        </div>
-                    )}
-                     {filteredResidents.length === 0 && !searchTerm && (
-                        <div className="text-center py-8 text-slate-400">
-                            <p>Start typing a name or RBI ID.</p>
-                        </div>
-                    )}
-                    {filteredResidents.map(res => (
-                        <div key={res.id} onClick={() => step === 1 && handleSelectResident(res)} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-700 cursor-pointer">
-                            <Avatar>
-                                <AvatarImage src={res.photoFilePath} />
-                                <AvatarFallback>{getInitials(res.displayName)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-semibold">{res.displayName}</p>
-                                <p className="text-sm text-slate-400">{res.rbiId} &middot; {res.addressSnapshot.purok}</p>
-                            </div>
-                        </div>
-                    ))}
+                    {renderResidentList()}
                 </div>
             </ScrollArea>
              <Button variant="outline" className="w-full h-12 text-lg" disabled={step > 1}>
