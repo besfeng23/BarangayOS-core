@@ -141,8 +141,8 @@ export default function AppCard({ app }: AppCardProps) {
     // For accessible and active apps, the button should be a link.
     if (currentStatus === 'open' && href !== '#') {
       return (
-        <Link href={href} passHref legacyBehavior>
-          <Button as="a" size="sm" variant="outline" className="font-semibold">
+        <Link href={href}>
+          <Button size="sm" variant="outline" className="font-semibold">
             OPEN
           </Button>
         </Link>
