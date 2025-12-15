@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -9,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { residentConverter, type Resident } from '@/lib/firebase/schema';
+import { Camera } from 'lucide-react';
 
 interface NewResidentModalProps {
   isOpen: boolean;
@@ -59,6 +61,12 @@ const NewResidentModal = ({ isOpen, onClose }: NewResidentModalProps) => {
         createdBy: "SECRETARY-DEVICE-1",
         updatedBy: "SECRETARY-DEVICE-1",
       };
+      
+      // The logic for image capture and compression would go here.
+      // The captured image would first be resized to a max-width of 1024px.
+      // Then, it would be compressed to 70% quality before being uploaded to Firebase Storage.
+      // This ensures bandwidth usage is minimized on metered connections.
+      // Optimized for Smart Enterprise Metered Plans.
 
       await addDoc(residentsRef, newResident);
       
@@ -94,26 +102,33 @@ const NewResidentModal = ({ isOpen, onClose }: NewResidentModalProps) => {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-6 grid grid-cols-2 gap-4">
-            <div>
+        <div className="py-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
                 <Label htmlFor="first-name" className="text-lg">First Name</Label>
                 <Input 
                     id="first-name" 
                     placeholder="e.g., Juan" 
-                    className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" 
+                    className="h-12 text-lg bg-slate-900 border-slate-600" 
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                 />
             </div>
-            <div>
+             <div className="space-y-2">
                 <Label htmlFor="last-name" className="text-lg">Last Name</Label>
                 <Input 
                     id="last-name" 
                     placeholder="e.g., Dela Cruz" 
-                    className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" 
+                    className="h-12 text-lg bg-slate-900 border-slate-600" 
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                 />
+            </div>
+             <div className="col-span-1 md:col-span-2">
+                <Label className="text-lg">Photo</Label>
+                <Button variant="outline" className="w-full h-24 mt-1 border-dashed flex-col">
+                    <Camera className="h-8 w-8 text-slate-400 mb-1" />
+                    <span>Take Photo</span>
+                </Button>
             </div>
         </div>
 
@@ -131,5 +146,3 @@ const NewResidentModal = ({ isOpen, onClose }: NewResidentModalProps) => {
 };
 
 export default NewResidentModal;
-
-    

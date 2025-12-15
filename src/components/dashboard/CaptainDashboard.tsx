@@ -1,9 +1,10 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Printer, FileText, CheckCircle2, User } from 'lucide-react';
+import { Printer, FileText, CheckCircle2, User, Wifi, BarChartHorizontal, Timer } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 
@@ -32,6 +33,19 @@ const ActivityItem = ({ icon, text, time }: { icon: React.ElementType, text: str
         </div>
     );
 };
+
+const TelemetryItem = ({ icon, label, value }: { icon: React.ElementType, label: string, value: string }) => {
+    const Icon = icon;
+    return (
+        <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+            <div className="flex items-center gap-3">
+                <Icon className="w-5 h-5 text-blue-400" />
+                <span className="text-slate-300">{label}</span>
+            </div>
+            <span className="font-mono font-bold text-lg">{value}</span>
+        </div>
+    )
+}
 
 
 const CaptainDashboard = () => {
@@ -70,10 +84,20 @@ const CaptainDashboard = () => {
         </header>
 
         {/* Big Numbers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard title="Active Disputes" value="12" label="Requires Attention" valueColor="text-red-500" />
             <StatCard title="Peace & Order Rating" value="98%" label="Based on settled cases" valueColor="text-green-500" />
             <StatCard title="Collections (This Month)" value="₱12,450.00" label="Permits & Clearances" valueColor="text-yellow-400" />
+             <Card className="bg-slate-900/50 border-slate-700">
+                <CardHeader>
+                    <CardTitle className="text-lg font-medium text-slate-300">Connectivity & Usage</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <TelemetryItem icon={Wifi} label="Signal Strength" value="-85 dBm" />
+                    <TelemetryItem icon={BarChartHorizontal} label="Data Usage Today" value="12.4 MB" />
+                    <TelemetryItem icon={Timer} label="Uplink Latency" value="24ms" />
+                </CardContent>
+            </Card>
         </div>
 
         {/* Recent Activity */}
@@ -91,4 +115,3 @@ const CaptainDashboard = () => {
 
 export default CaptainDashboard;
 
-    
