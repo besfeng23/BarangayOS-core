@@ -138,14 +138,15 @@ export default function AppCard({ app }: AppCardProps) {
       );
     }
     
+    // For accessible and active apps, the button should be a link.
     if (currentStatus === 'open' && href !== '#') {
-        return (
-            <Link href={href} passHref>
-                <Button size="sm" variant="outline" className="font-semibold">
-                OPEN
-                </Button>
-            </Link>
-        );
+      return (
+        <Link href={href} passHref legacyBehavior>
+          <Button as="a" size="sm" variant="outline" className="font-semibold">
+            OPEN
+          </Button>
+        </Link>
+      );
     }
     
     return null;
@@ -163,38 +164,45 @@ export default function AppCard({ app }: AppCardProps) {
         </div>
     );
   }
-
-  const isClickable = hasAccess && href !== '#' && (currentStatus === 'open' || app.category === 'partner' && isActivated);
+  
+  const CardContentWrapper = ({ children }: { children: React.ReactNode }) => {
+    const isClickable = hasAccess && href !== '#' && (currentStatus === 'open' || (app.category === 'partner' && isActivated));
+    if (isClickable) {
+        return <Link href={href} passHref>{children}</Link>;
+    }
+    return <>{children}</>;
+  }
 
   return (
     <Card
       className={cn(
         'group relative w-full h-full text-center transition-all duration-300 ease-in-out',
-        isClickable ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'opacity-75'
+        (hasAccess && href !== '#') ? 'hover:shadow-lg hover:-translate-y-1' : 'opacity-75',
+        (hasAccess && href !== '#' && (currentStatus === 'open' || (app.category === 'partner' && isActivated))) ? 'cursor-pointer' : 'cursor-not-allowed'
       )}
     >
-        <div className="h-full w-full">
-            <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
-            {app.badge.visible && (
-                <Badge
-                variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
-                className="absolute top-2 right-2 tabular-nums"
-                >
-                {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
-                </Badge>
-            )}
-            <div className="flex-grow flex flex-col items-center justify-center">
-                <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
-            </div>
-            <div className="w-full">
-                <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
-                <div className="h-9 mt-2 flex items-center justify-center">
-                    {renderAction()}
-                </div>
-            </div>
-            {renderRoleBadge()}
-            </CardContent>
+      <CardContentWrapper>
+        <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
+        {app.badge.visible && (
+            <Badge
+            variant={app.badge.count && app.badge.count > 0 ? 'destructive' : 'secondary'}
+            className="absolute top-2 right-2 tabular-nums"
+            >
+            {app.badge.count !== undefined && app.badge.count > 0 ? app.badge.count : app.badge.label}
+            </Badge>
+        )}
+        <div className="flex-grow flex flex-col items-center justify-center">
+            <Icon name={app.icon} className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
         </div>
+        <div className="w-full">
+            <p className="font-semibold text-sm truncate text-foreground">{app.name}</p>
+            <div className="h-9 mt-2 flex items-center justify-center">
+                {renderAction()}
+            </div>
+        </div>
+        {renderRoleBadge()}
+        </CardContent>
+      </CardContentWrapper>
     </Card>
   );
 }
