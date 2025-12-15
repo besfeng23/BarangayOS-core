@@ -76,25 +76,32 @@ const ResidentRecords = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    let isMounted = true;
     setLoading(true);
     const residentsRef = collection(db, 'residents').withConverter(residentConverter);
     
-    // In a real multi-tenant app, you'd add: where('barangayId', '==', user.barangayId)
     const q = query(residentsRef);
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const residentsData: ResidentSchema[] = [];
-      querySnapshot.forEach((doc) => {
-        residentsData.push(doc.data());
-      });
-      setAllResidents(residentsData);
-      setLoading(false);
+      if (isMounted) {
+        const residentsData: ResidentSchema[] = [];
+        querySnapshot.forEach((doc) => {
+          residentsData.push(doc.data());
+        });
+        setAllResidents(residentsData);
+        setLoading(false);
+      }
     }, (error) => {
         console.error("Error fetching residents: ", error);
-        setLoading(false);
+        if (isMounted) {
+            setLoading(false);
+        }
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const filteredResidents = useMemo(() => {
@@ -476,5 +483,3 @@ const ResidentRecords = () => {
 };
 
 export default ResidentRecords;
-
-    
