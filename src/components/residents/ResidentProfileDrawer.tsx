@@ -118,10 +118,10 @@ const ResidentProfileDrawer = ({
               <InfoField label="Place of Birth" value={resident.placeOfBirth} />
               <InfoField label="Sex" value={resident.sex === 'M' ? 'Male' : 'Female'} />
               <InfoField label="Civil Status" value={resident.civilStatus} />
-              <InfoField label="Mobile" value={resident.contact.mobile} />
-              <InfoField label="Email" value={resident.contact.email} />
+              <InfoField label="Mobile" value={resident.contact?.mobile} />
+              <InfoField label="Email" value={resident.contact?.email} />
               <InfoField label="Voter" value={resident.voter?.isVoter ? `Yes - Precinct ${resident.voter.precinctNumber}` : 'No'} />
-              <InfoField label="Consent Signed" value={resident.consent.signed && resident.consent.signedAt ? `Yes, on ${format(new Date(resident.consent.signedAt!.seconds * 1000), 'yyyy-MM-dd')}` : 'No'} />
+              <InfoField label="Consent Signed" value={resident.consent?.signed && resident.consent.signedAt ? `Yes, on ${format(new Date(resident.consent.signedAt!.seconds * 1000), 'yyyy-MM-dd')}` : 'No'} />
             </div>
           </TabsContent>
           
@@ -133,9 +133,9 @@ const ResidentProfileDrawer = ({
              <div className="space-y-4">
                   <h3 className="font-bold text-xl mb-2">Sectoral Information</h3>
                   <div className="flex flex-wrap gap-2">
-                      {Object.entries(resident.sectorFlags).map(([key, value]) => value && <Badge key={key}>{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</Badge>)}
+                      {Object.entries(resident.sectorFlags || {}).map(([key, value]) => value && <Badge key={key}>{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</Badge>)}
                   </div>
-                  {Object.values(resident.sectorFlags).every(v => !v) && <p className="text-slate-400">No sectoral tags.</p>}
+                  {Object.values(resident.sectorFlags || {}).every(v => !v) && <p className="text-slate-400">No sectoral tags.</p>}
              </div>
           </TabsContent>
 
@@ -194,5 +194,3 @@ const ResidentProfileDrawer = ({
 };
 
 export default ResidentProfileDrawer;
-
-    
