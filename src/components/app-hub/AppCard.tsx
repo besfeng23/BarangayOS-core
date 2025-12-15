@@ -168,7 +168,9 @@ export default function AppCard({ app }: AppCardProps) {
   const CardContentWrapper = ({ children }: { children: React.ReactNode }) => {
     const isClickable = hasAccess && href !== '#' && (currentStatus === 'open' || (app.category === 'partner' && isActivated));
     if (isClickable) {
-        return <Link href={href} passHref>{children}</Link>;
+        // This was previously wrapping children in a Link, causing nested <a> tags.
+        // The Link is now only on the button itself.
+        return <div className="h-full w-full">{children}</div>;
     }
     return <>{children}</>;
   }
@@ -206,3 +208,4 @@ export default function AppCard({ app }: AppCardProps) {
     </Card>
   );
 }
+
