@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Printer, ArrowLeft } from 'lucide-react';
 import NewEntryModal from '@/components/blotter/BlotterLogModule/NewEntryModal';
 import PrintPreviewModal from '@/components/blotter/KPForm7/PrintPreviewModal';
-import type { BlotterCase as BlotterCaseType } from '@/types/blotter';
+import type { BlotterCase as BlotterCaseType, CaseStatus } from '@/types/blotter';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { blotterCaseConverter, type BlotterCase as BlotterCaseSchema } from '@/lib/firebase/schema';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const statusStyles: Record<BlotterCaseType['status'], string> = {
   ACTIVE: 'bg-blue-600 hover:bg-blue-700',
@@ -30,6 +31,8 @@ const BlotterLogModule = () => {
   const [selectedCase, setSelectedCase] = useState<BlotterCaseType | null>(null);
   const [cases, setCases] = useState<BlotterCaseSchema[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<CaseStatus | 'ALL'>('ALL');
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -60,6 +63,16 @@ const BlotterLogModule = () => {
       unsubscribe();
     };
   }, []);
+  
+  const filteredCases = useMemo(() => {
+    return cases.filter(c => {
+        const searchMatch = searchTerm === '' ||
+            c.complainant.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.caseId.toLowerCase().includes(searchTerm.toLowerCase());
+        const statusMatch = statusFilter === 'ALL' || c.status === statusFilter;
+        return searchMatch && statusMatch;
+    });
+  }, [cases, searchTerm, statusFilter]);
 
   const handlePrintClick = (caseData: BlotterCaseType) => {
     setSelectedCase(caseData);
@@ -78,7 +91,6 @@ const BlotterLogModule = () => {
       </TableRow>
     ))
   );
-
 
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-gray-200 font-sans">
@@ -103,15 +115,17 @@ const BlotterLogModule = () => {
         {/* Left Sidebar */}
         <aside className="w-full md:w-64 bg-slate-900 p-4 space-y-6 border-b md:border-b-0 md:border-r border-slate-700">
           <div className="space-y-2">
-            <Button variant="ghost" className="w-full justify-start text-lg bg-slate-700">All Cases</Button>
-            <Button variant="ghost" className="w-full justify-start text-lg">For Hearing</Button>
-            <Button variant="ghost" className="w-full justify-start text-lg">Settled</Button>
+             <Button variant="ghost" onClick={() => setStatusFilter('ALL')} className={cn("w-full justify-start text-lg", statusFilter === 'ALL' && "bg-slate-700")}>All Cases</Button>
+            <Button variant="ghost" onClick={() => setStatusFilter('FOR_HEARING')} className={cn("w-full justify-start text-lg", statusFilter === 'FOR_HEARING' && "bg-slate-700")}>For Hearing</Button>
+            <Button variant="ghost" onClick={() => setStatusFilter('SETTLED')} className={cn("w-full justify-start text-lg", statusFilter === 'SETTLED' && "bg-slate-700")}>Settled</Button>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               placeholder="Search Name or Case #"
               className="bg-slate-950 border-slate-600 text-white pl-10 h-12"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </aside>
@@ -137,7 +151,7 @@ const BlotterLogModule = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loading ? renderLoadingSkeleton() : cases.map((c) => (
+                {loading ? renderLoadingSkeleton() : filteredCases.map((c) => (
                   <TableRow key={c.id} className="border-slate-800 h-[70px] hover:bg-slate-800/50">
                     <TableCell className="font-mono text-lg">{c.caseId}</TableCell>
                     <TableCell className="text-lg">{c.createdAt?.toDate ? format(c.createdAt.toDate(), 'yyyy-MM-dd') : 'Just Now'}</TableCell>
@@ -171,5 +185,3 @@ const BlotterLogModule = () => {
 };
 
 export default BlotterLogModule;
-
-    

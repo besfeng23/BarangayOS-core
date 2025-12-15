@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -347,7 +348,7 @@ const ResidentRecords = () => {
             <StatCard title="Total Population" value={allResidents.length} />
             <StatCard title="Registered Voters" value={allResidents.filter(r => r.voter?.isVoter).length} />
             <StatCard title="Households" value="1,567" />
-            <StatCard title="Tagged Residents" value={Object.values(mockSectors).reduce((acc, sector) => acc + sector.count, 0)} />
+            <StatCard title="Tagged Residents" value="560" />
           </div>
         </div>
 

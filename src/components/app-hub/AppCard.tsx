@@ -53,7 +53,7 @@ const getAppUrl = (appName: string): string => {
 
 export default function AppCard({ app }: AppCardProps) {
   const { toast } = useToast();
-  const [currentStatus, setCurrentStatus] = useState(app.status);
+  const [currentStatus, setCurrentStatus] = useState(app.status || 'open');
   const [isInstalling, setIsInstalling] = useState(false);
   const [isActivated, setIsActivated] = useState(app.isActivated);
 
@@ -69,14 +69,17 @@ export default function AppCard({ app }: AppCardProps) {
   };
 
   const hasAccess = isRoleAllowed();
+  const href = getAppUrl(app.name);
 
   const handleGetClick = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent link navigation
     if (currentStatus === 'get') {
       setIsInstalling(true);
+      toast({ title: "Installing...", description: `${app.name} is being installed.` });
       setTimeout(() => {
         setCurrentStatus('open');
         setIsInstalling(false);
+        toast({ title: "Installation Complete", description: `${app.name} is ready.` });
       }, 2000);
     }
   };
@@ -102,6 +105,9 @@ export default function AppCard({ app }: AppCardProps) {
 
 
   const renderAction = () => {
+    if (!hasAccess || href ==='#') {
+      return <Badge variant="destructive" className="font-normal">Restricted</Badge>;
+    }
     if (isInstalling) {
       return (
         <Button size="sm" className="font-semibold" disabled>
@@ -132,12 +138,13 @@ export default function AppCard({ app }: AppCardProps) {
       );
     }
     
-    const href = getAppUrl(app.name);
     if (currentStatus === 'open' && href !== '#') {
         return (
-            <Button size="sm" variant="outline" className="font-semibold" asChild={false}>
-               OPEN
-            </Button>
+            <Link href={href} passHref>
+                <Button size="sm" variant="outline" className="font-semibold">
+                OPEN
+                </Button>
+            </Link>
         );
     }
     
@@ -145,7 +152,7 @@ export default function AppCard({ app }: AppCardProps) {
   };
   
   const renderRoleBadge = () => {
-    if (hasAccess) return null;
+    if (hasAccess || href === '#') return null;
 
     const roleText = Array.isArray(app.requiredRole) ? app.requiredRole.join('/') : app.requiredRole;
     return (
@@ -157,15 +164,15 @@ export default function AppCard({ app }: AppCardProps) {
     );
   }
 
+  const isClickable = hasAccess && href !== '#' && (currentStatus === 'open' || app.category === 'partner' && isActivated);
 
   return (
     <Card
       className={cn(
-        'group relative w-full h-full text-center transition-all duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1',
-        'cursor-pointer'
+        'group relative w-full h-full text-center transition-all duration-300 ease-in-out',
+        isClickable ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' : 'opacity-75'
       )}
     >
-      <Link href={getAppUrl(app.name)} passHref>
         <div className="h-full w-full">
             <CardContent className="flex flex-col items-center justify-between p-4 aspect-square">
             {app.badge.visible && (
@@ -188,7 +195,6 @@ export default function AppCard({ app }: AppCardProps) {
             {renderRoleBadge()}
             </CardContent>
         </div>
-      </Link>
     </Card>
   );
 }
