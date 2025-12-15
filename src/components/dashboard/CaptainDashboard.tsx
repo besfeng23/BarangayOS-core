@@ -9,7 +9,7 @@ import Link from 'next/link';
 
 
 const StatCard = ({ title, value, label, valueColor }: { title: string, value: string, label: string, valueColor: string }) => (
-  <Card className="bg-slate-800/50 border-slate-700">
+  <Card className="bg-slate-900/50 border-slate-700">
     <CardHeader>
       <CardTitle className="text-lg font-medium text-slate-300">{title}</CardTitle>
     </CardHeader>
@@ -50,7 +50,7 @@ const CaptainDashboard = () => {
     };
 
     return (
-    <div className="bg-slate-900 min-h-screen text-white p-4 sm:p-6 lg:p-8">
+    <div className="bg-slate-950 min-h-screen text-white p-4 sm:p-6 lg:p-8">
         <header className="mb-8">
             <div className="flex justify-between items-start flex-wrap gap-4">
                 <div>
@@ -79,7 +79,7 @@ const CaptainDashboard = () => {
         {/* Recent Activity */}
         <section>
             <h2 className="text-2xl font-bold mb-4">Latest Barangay Activity</h2>
-            <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+            <div className="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden">
                 <ActivityItem icon={FileText} text="New Blotter Entry: Noise Complaint" time="2 hrs ago" />
                 <ActivityItem icon={CheckCircle2} text="Business Permit Issued: Sari-Sari Store" time="4 hrs ago" />
                 <ActivityItem icon={User} text="Lola Maria requested Indigency Cert" time="5 hrs ago" />
@@ -90,3 +90,5 @@ const CaptainDashboard = () => {
 };
 
 export default CaptainDashboard;
+
+    

@@ -13,8 +13,8 @@ const Step1People = ({ formData, setFormData }: { formData: any, setFormData: an
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
   
-  const handleCheckboxChange = (checked: boolean) => {
-    setIsRespondentUnknown(checked);
+  const handleCheckboxChange = (checked: boolean | 'indeterminate') => {
+    setIsRespondentUnknown(Boolean(checked));
     if(checked) {
       const { respondent, ...rest } = formData;
       setFormData({ ...rest, respondent: 'Unknown' });
@@ -31,11 +31,11 @@ const Step1People = ({ formData, setFormData }: { formData: any, setFormData: an
         <h3 className="text-xl font-semibold text-blue-400">Complainant</h3>
         <div>
           <Label htmlFor="complainant" className="text-lg">Full Name</Label>
-          <Input id="complainant" placeholder="e.g., Juan Dela Cruz" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={formData.complainant || ''} onChange={handleChange} />
+          <Input id="complainant" placeholder="e.g., Juan Dela Cruz" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" value={formData.complainant || ''} onChange={handleChange} />
         </div>
         <div>
           <Label htmlFor="complainant-contact" className="text-lg">Contact #</Label>
-          <Input id="complainant-contact" placeholder="e.g., 09123456789" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" />
+          <Input id="complainant-contact" placeholder="e.g., 09123456789" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" />
         </div>
       </div>
 
@@ -43,14 +43,14 @@ const Step1People = ({ formData, setFormData }: { formData: any, setFormData: an
       <div className="space-y-4">
         <h3 className="text-xl font-semibold text-orange-400">Respondent</h3>
         <div className="flex items-center space-x-2">
-          <Checkbox id="respondent-unknown" onCheckedChange={(checked) => handleCheckboxChange(Boolean(checked))} />
+          <Checkbox id="respondent-unknown" onCheckedChange={handleCheckboxChange} />
           <Label htmlFor="respondent-unknown" className="text-lg">Respondent is Unknown</Label>
         </div>
 
         {!isRespondentUnknown && (
           <div>
             <Label htmlFor="respondent" className="text-lg">Full Name</Label>
-            <Input id="respondent" placeholder="e.g., Maria Santos" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={formData.respondent || ''} onChange={handleChange} />
+            <Input id="respondent" placeholder="e.g., Maria Santos" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" value={formData.respondent || ''} onChange={handleChange} />
           </div>
         )}
       </div>
@@ -59,3 +59,5 @@ const Step1People = ({ formData, setFormData }: { formData: any, setFormData: an
 };
 
 export default Step1People;
+
+    

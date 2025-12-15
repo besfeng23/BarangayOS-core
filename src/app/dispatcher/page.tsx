@@ -21,6 +21,7 @@ import {
   X,
   Smartphone,
   Router,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -193,9 +194,9 @@ export default function DispatcherModulePage() {
 
 
   return (
-    <div className="bg-slate-900 min-h-screen text-white font-sans">
+    <div className="bg-slate-950 min-h-screen text-white font-sans">
       {/* Sticky Top Bar */}
-      <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700">
+      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-lg border-b border-slate-700">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" passHref>
              <Button variant="ghost" size="icon">
@@ -220,7 +221,7 @@ export default function DispatcherModulePage() {
         </div>
 
         {/* Module Hero Card */}
-        <Card className="bg-slate-800/50 border-slate-700 overflow-hidden text-center">
+        <Card className="bg-slate-900/50 border-slate-700 overflow-hidden text-center">
           <CardContent className="p-8 space-y-6">
             <div className="absolute top-4 right-4">
                  <Badge variant={statusChipProps.variant}>{statusChipProps.text}</Badge>
@@ -349,7 +350,7 @@ export default function DispatcherModulePage() {
 // --- Sub Components ---
 
 const InfoCard = ({ title, children }: { title: string, children: React.ReactNode }) => (
-    <Card className="bg-slate-800/50 border-slate-700">
+    <Card className="bg-slate-900/50 border-slate-700">
         <CardHeader>
             <CardTitle className="text-xl">{title}</CardTitle>
         </CardHeader>
@@ -433,3 +434,5 @@ const InstallConfirmationSheet = ({ isOpen, onClose, onConfirm }: { isOpen: bool
         </Dialog>
     );
 };
+
+    

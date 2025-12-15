@@ -81,7 +81,7 @@ const BlotterLogModule = () => {
 
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900 text-gray-200 font-sans">
+    <div className="flex flex-col h-screen bg-slate-950 text-gray-200 font-sans">
       {/* Header */}
       <header className="flex items-center justify-between p-4 border-b border-slate-700">
         <div className="flex items-center gap-4">
@@ -101,7 +101,7 @@ const BlotterLogModule = () => {
       {/* Main Body */}
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-full md:w-64 bg-slate-800 p-4 space-y-6 border-b md:border-b-0 md:border-r border-slate-700">
+        <aside className="w-full md:w-64 bg-slate-900 p-4 space-y-6 border-b md:border-b-0 md:border-r border-slate-700">
           <div className="space-y-2">
             <Button variant="ghost" className="w-full justify-start text-lg bg-slate-700">All Cases</Button>
             <Button variant="ghost" className="w-full justify-start text-lg">For Hearing</Button>
@@ -111,7 +111,7 @@ const BlotterLogModule = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               placeholder="Search Name or Case #"
-              className="bg-slate-900 border-slate-600 text-white pl-10 h-12"
+              className="bg-slate-950 border-slate-600 text-white pl-10 h-12"
             />
           </div>
         </aside>
@@ -171,3 +171,5 @@ const BlotterLogModule = () => {
 };
 
 export default BlotterLogModule;
+
+    

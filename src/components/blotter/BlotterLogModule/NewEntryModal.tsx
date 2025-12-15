@@ -47,7 +47,7 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
     });
 
     try {
-        const { date, time, ...restOfData } = formData;
+        const { date, time, ...restOfData } = formData as any;
         
         // Combine date and time for the incidentAt timestamp
         const incidentDateTime = new Date(`${date}T${time}`);
@@ -113,7 +113,7 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl w-full">
+      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl w-full">
         <DialogHeader>
           <DialogTitle className="text-2xl">New Blotter Entry - Step {currentStep}: {steps[currentStep - 1]}</DialogTitle>
         </DialogHeader>
@@ -149,3 +149,5 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
 };
 
 export default NewEntryModal;
+
+    

@@ -20,7 +20,7 @@ const Step2Incident = ({ formData, setFormData }: { formData: any, setFormData: 
       <div>
         <Label htmlFor="nature" className="text-lg">Nature of Case</Label>
         <Select onValueChange={handleSelectChange} defaultValue={formData.nature}>
-          <SelectTrigger className="h-12 text-lg bg-slate-900 border-slate-600 mt-1">
+          <SelectTrigger className="h-12 text-lg bg-slate-950 border-slate-600 mt-1">
             <SelectValue placeholder="Select the type of incident..." />
           </SelectTrigger>
           <SelectContent className="bg-slate-800 text-white border-slate-700">
@@ -36,19 +36,21 @@ const Step2Incident = ({ formData, setFormData }: { formData: any, setFormData: 
       <div className="grid grid-cols-2 gap-6">
         <div>
           <Label htmlFor="date" className="text-lg">Date of Incident</Label>
-          <Input id="date" type="date" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={formData.date || ''} onChange={handleChange} />
+          <Input id="date" type="date" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" value={formData.date || ''} onChange={handleChange} />
         </div>
         <div>
           <Label htmlFor="time" className="text-lg">Time of Incident</Label>
-          <Input id="time" type="time" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={formData.time || ''} onChange={handleChange} />
+          <Input id="time" type="time" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" value={formData.time || ''} onChange={handleChange} />
         </div>
       </div>
       <div>
         <Label htmlFor="location" className="text-lg">Location of Incident</Label>
-        <Input id="location" placeholder="e.g., Purok 3, near the basketball court" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={formData.location || ''} onChange={handleChange} />
+        <Input id="location" placeholder="e.g., Purok 3, near the basketball court" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" value={formData.location || ''} onChange={handleChange} />
       </div>
     </div>
   );
 };
 
 export default Step2Incident;
+
+    
