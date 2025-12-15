@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -17,6 +18,7 @@ import type { Resident, UserRole, BlotterCaseSummary } from '@/types';
 import { Shield, FileText, Users, Briefcase, PlusCircle, Edit, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from "@/lib/utils";
 
 interface ResidentProfileDrawerProps {
   resident: Resident | null;
@@ -45,7 +47,7 @@ const mockDocumentHistory = [
 const InfoField = ({ label, value }: { label: string; value: string | number | undefined | null }) => (
   <div>
     <p className="text-sm text-slate-400">{label}</p>
-    <p className="font-medium text-lg">{value || 'N/A'}</p>
+    <p className="font-medium text-lg">{value || '-'}</p>
   </div>
 );
 
@@ -114,12 +116,12 @@ const ResidentProfileDrawer = ({
               <InfoField label="Last Name" value={resident.fullName.last} />
               <InfoField label="Middle Name" value={resident.fullName.middle} />
               <InfoField label="Suffix" value={resident.fullName.suffix} />
-              <InfoField label="Date of Birth" value={resident.dateOfBirth ? format(new Date(resident.dateOfBirth.seconds * 1000), 'MMMM d, yyyy') : 'N/A'} />
+              <InfoField label="Date of Birth" value={resident.dateOfBirth ? format(new Date(resident.dateOfBirth.seconds * 1000), 'MMMM d, yyyy') : '-'} />
               <InfoField label="Place of Birth" value={resident.placeOfBirth} />
               <InfoField label="Sex" value={resident.sex === 'M' ? 'Male' : 'Female'} />
               <InfoField label="Civil Status" value={resident.civilStatus} />
-              <InfoField label="Mobile" value={resident.contact?.mobile} />
-              <InfoField label="Email" value={resident.contact?.email} />
+              <InfoField label="Mobile" value={resident.contact?.mobile || '-'} />
+              <InfoField label="Email" value={resident.contact?.email || '-'} />
               <InfoField label="Voter" value={resident.voter?.isVoter ? `Yes - Precinct ${resident.voter.precinctNumber}` : 'No'} />
               <InfoField label="Consent Signed" value={resident.consent?.signed && resident.consent.signedAt ? `Yes, on ${format(new Date(resident.consent.signedAt!.seconds * 1000), 'yyyy-MM-dd')}` : 'No'} />
             </div>
