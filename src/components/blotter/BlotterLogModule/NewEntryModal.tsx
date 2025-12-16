@@ -41,8 +41,10 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
 
   const getFullName = (person: Resident | { fullName: string } | undefined): string => {
     if (!person) return 'Unknown';
-    if ('displayName' in person) return person.displayName;
-    if ('fullName' in person) return person.fullName;
+    // Case 1: It's a full Resident object from the picker
+    if ('displayName' in person && person.displayName) return person.displayName;
+    // Case 2: It's a manual entry object
+    if ('fullName' in person && person.fullName) return person.fullName;
     return 'Unknown';
   }
 

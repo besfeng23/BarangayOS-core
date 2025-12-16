@@ -41,7 +41,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
     return (
       <div className="flex items-center gap-2 p-2 rounded-md bg-slate-800 border border-slate-700">
         <User className="h-5 w-5 text-blue-400" />
-        <span className="font-medium flex-1">{selectedResident.displayName}</span>
+        <span className="font-medium flex-1">{selectedResident.displayName || (selectedResident as any).fullName}</span>
         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onSelectResident(null)}>
           <X className="h-4 w-4" />
         </Button>
@@ -79,7 +79,11 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-0" align="start">
+        <PopoverContent 
+            className="w-[400px] p-0" 
+            align="start"
+            onMouseDown={(e) => e.preventDefault()}
+        >
           <ResidentSearch>
             {({ residents, loading, searchTerm, setSearchTerm }) => (
               <Command shouldFilter={false}>
