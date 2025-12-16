@@ -203,5 +203,3 @@ export interface AuditLog {
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
 export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes, AnnouncementsTypes };
-
-    
