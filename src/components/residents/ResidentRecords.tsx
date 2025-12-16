@@ -94,7 +94,14 @@ function ResidentRecordsContent() {
 
   const buildQuery = useCallback(() => {
     const residentsRef = collection(db, 'residents').withConverter(residentConverter);
-    let q: Query<DocumentData> = query(residentsRef, orderBy('displayName'), limit(PAGE_SIZE));
+    // Base query that filters out archived residents
+    let q: Query<DocumentData> = query(
+      residentsRef,
+      where('status', '!=', 'archived'),
+      orderBy('status'), // Firestore requires an orderBy for inequality filters
+      orderBy('displayName'),
+      limit(PAGE_SIZE)
+    );
     return q;
   }, []);
 
@@ -132,7 +139,14 @@ function ResidentRecordsContent() {
 
     setLoadingMore(true);
     const residentsRef = collection(db, 'residents').withConverter(residentConverter);
-    const nextQuery = query(residentsRef, orderBy('displayName'), startAfter(lastVisible), limit(PAGE_SIZE));
+    const nextQuery = query(
+        residentsRef, 
+        where('status', '!=', 'archived'),
+        orderBy('status'),
+        orderBy('displayName'), 
+        startAfter(lastVisible), 
+        limit(PAGE_SIZE)
+    );
     
     try {
         const documentSnapshots = await getDocs(nextQuery);

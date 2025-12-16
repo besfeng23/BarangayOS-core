@@ -117,14 +117,14 @@ const CertificatesPage = () => {
       const finalTransaction: Transaction = {
           ...transactionData,
           id: docRef.id,
-          createdAt: transactionData.transactionDate,
+          createdAt: transactionData.transactionDate, // Use client-side timestamp for immediate display
           updatedAt: transactionData.transactionDate,
       }
 
       setNewTransaction(finalTransaction);
       
       toast({
-        title: "Record Saved",
+        title: "Record Saved Locally",
         description: `${certificateType} for ${selectedResident.displayName} is recorded.`,
       });
       
@@ -148,6 +148,8 @@ const CertificatesPage = () => {
     setPurpose('');
     setFees('0.00');
     setNewTransaction(null);
+    // Remove query params from URL to reset state on close
+    window.history.replaceState({}, '', '/certificates');
   }
   
   const handleClosePrintModal = () => {

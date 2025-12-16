@@ -20,6 +20,20 @@ import { Shield, FileText, Users, Briefcase, PlusCircle, Edit, Trash2, X, Wifi, 
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from "@/lib/utils";
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface ResidentProfileDrawerProps {
   resident: Resident | null;
@@ -84,12 +98,34 @@ const ResidentProfileDrawer = ({
   userRole,
 }: ResidentProfileDrawerProps) => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   
   if (!resident) return null;
 
   const handleEditClick = () => {
     onClose(); 
     setTimeout(() => onEdit(resident), 150);
+  };
+  
+  const handleArchive = async () => {
+    try {
+      const residentRef = doc(db, 'residents', resident.id);
+      await updateDoc(residentRef, {
+        status: 'archived'
+      });
+      toast({
+        title: "Resident Archived",
+        description: `${resident.displayName} has been archived and hidden from the main list.`,
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error archiving resident: ", error);
+      toast({
+        variant: "destructive",
+        title: "Archive Failed",
+        description: "Could not archive the resident. Please try again.",
+      });
+    }
   };
 
   const canSeeBlotter = userRole === 'SECRETARY' || userRole === 'BARANGAY_CAPTAIN' || userRole === 'SUPER_ADMIN';
@@ -122,9 +158,25 @@ const ResidentProfileDrawer = ({
                   <Printer className="mr-2 h-4 w-4" /> Issue Document
                 </Button>
               </Link>
-               <Button size="sm" variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Archive
-              </Button>
+               <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive">
+                      <Trash2 className="mr-2 h-4 w-4" /> Archive
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-slate-800 border-slate-700 text-white">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure you want to archive this resident?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will hide the resident from the main list but will not delete their record. You can find them later by searching for archived residents.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleArchive} className="bg-red-600 hover:bg-red-700">Archive</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
             </div>
           </div>
         </div>

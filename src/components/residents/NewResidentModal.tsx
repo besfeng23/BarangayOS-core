@@ -50,7 +50,7 @@ const NewResidentModal = ({ isOpen, onClose, residentToEdit }: NewResidentModalP
     setIsSaving(true);
     toast({
       title: isEditing ? "Updating..." : "Saving...",
-      description: `${isEditing ? 'Updating' : 'Adding'} resident in the database.`,
+      description: `Saved to device. Will sync when online.`,
     });
 
     try {
@@ -88,22 +88,26 @@ const NewResidentModal = ({ isOpen, onClose, residentToEdit }: NewResidentModalP
           },
           displayName: `${lastName.toUpperCase()}, ${firstName}`,
           displayNameLower: `${lastName.toLowerCase()}, ${firstName.toLowerCase()}`,
-          sex: 'M',
+          sex: 'M', // Default value
           addressSnapshot: {
-            purok: 'Purok 1',
-            addressLine: 'TBD',
+            purok: 'Purok 1', // Default value
+            addressLine: 'TBD', // Default value
           },
           status: 'active',
           consent: { signed: false },
-          createdBy: "SECRETARY-DEVICE-1",
-          updatedBy: "SECRETARY-DEVICE-1",
+          createdBy: "SECRETARY-DEVICE-1", // Mock User
+          updatedBy: "SECRETARY-DEVICE-1", // Mock User
         };
 
-        await addDoc(residentsRef, newResident);
+        await addDoc(residentsRef, {
+            ...newResident,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
         
         toast({
           title: "Resident Saved!",
-          description: `${firstName} ${lastName} has been added.`,
+          description: `${firstName} ${lastName} has been added to the index.`,
         });
       }
       
