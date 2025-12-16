@@ -84,7 +84,7 @@ const ResidentProfileDrawer = ({
   
   if (!resident) return null;
 
-  const canSeeBlotter = userRole === 'BARANGAY_CAPTAIN' || userRole === 'SECRETARY' || userRole === 'SUPER_ADMIN';
+  const canSeeBlotter = userRole === 'SECRETARY' || userRole === 'BARANGAY_CAPTAIN' || userRole === 'SUPER_ADMIN';
 
   const content = (
     <>
@@ -158,9 +158,9 @@ const ResidentProfileDrawer = ({
                 <div className="space-y-4">
                     <h3 className="font-bold text-xl mb-2">Sectoral Information</h3>
                     <div className="flex flex-wrap gap-2">
-                        {Object.entries(resident.sectorFlags || {}).map(([key, value]) => value && <Badge key={key}>{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</Badge>)}
+                        {resident.sectorFlags && Object.entries(resident.sectorFlags).map(([key, value]) => value && <Badge key={key}>{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</Badge>)}
                     </div>
-                    {Object.values(resident.sectorFlags || {}).every(v => !v) && <p className="text-slate-400">No sectoral tags.</p>}
+                    {(!resident.sectorFlags || Object.values(resident.sectorFlags).every(v => !v)) && <p className="text-slate-400">No sectoral tags.</p>}
                 </div>
             </TabsContent>
 

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, 'useState', 'useMemo', 'useEffect', 'useCallback } from 'react';
 import {
   Users,
   Search,
@@ -44,6 +44,7 @@ import { db } from '@/lib/firebase/client';
 import { residentConverter, type Resident as ResidentSchema } from '@/lib/firebase/schema';
 import { Skeleton } from '@/components/ui/skeleton';
 import NewResidentModal from './NewResidentModal';
+import { EmptyState } from '../ui/EmptyState';
 
 const PAGE_SIZE = 50;
 
@@ -152,7 +153,7 @@ const ResidentRecords = () => {
         selectedPuroks.size === 0 || selectedPuroks.has(resident.addressSnapshot.purok);
       const sectorMatch =
         selectedSectors.size === 0 ||
-        Array.from(selectedSectors).some((sector) => resident.sectorFlags[sector as keyof typeof resident.sectorFlags]);
+        Array.from(selectedSectors).some((sector) => resident.sectorFlags && resident.sectorFlags[sector as keyof typeof resident.sectorFlags]);
       const searchMatch =
         searchTerm === '' ||
         resident.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -198,7 +199,7 @@ const ResidentRecords = () => {
     );
   }
   
-  const renderLoadingSkeleton = (count = 5) => (
+  const renderLoadingSkeleton = (count = 10) => (
     Array.from({ length: count }).map((_, index) => (
       <TableRow key={index} className="border-slate-800 h-[80px]">
         <TableCell><Skeleton className="h-4 w-4" /></TableCell>
@@ -220,9 +221,15 @@ const ResidentRecords = () => {
     ))
   );
 
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSelectedPuroks(new Set());
+    setSelectedSectors(new Set());
+  };
+
 
   const renderDesktopView = () => (
-    <div className="flex-1 overflow-y-auto">
+    <div className="border border-slate-700 rounded-lg flex-1 overflow-y-auto">
       <Table>
         <TableHeader>
           <TableRow className="border-slate-700 hover:bg-slate-800/50">
@@ -236,7 +243,8 @@ const ResidentRecords = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loading ? renderLoadingSkeleton() : filteredResidents.map((resident) => {
+          {loading && renderLoadingSkeleton()}
+          {!loading && filteredResidents.map((resident) => {
             const age = getAge(resident.dateOfBirth);
             const tags = resident.sectorFlags ? Object.entries(resident.sectorFlags)
               .filter(([, value]) => value)
@@ -291,10 +299,21 @@ const ResidentRecords = () => {
           })}
         </TableBody>
       </Table>
-       {hasMore && (
-        <div className="flex justify-center p-4">
-            <Button onClick={fetchMoreResidents} disabled={loadingMore}>
-                {loadingMore ? 'Loading...' : 'Load More'}
+       {!loading && filteredResidents.length === 0 && (
+         <tr>
+            <td colSpan={7} className="p-10">
+                <EmptyState 
+                    type={searchTerm ? 'no-results' : 'no-data'} 
+                    query={searchTerm}
+                    onAction={searchTerm ? clearSearch : () => setIsNewResidentModalOpen(true)}
+                />
+            </td>
+        </tr>
+       )}
+       {hasMore && !loading && (
+        <div className="flex justify-center p-4 border-t border-slate-700">
+            <Button onClick={fetchMoreResidents} disabled={loadingMore} variant="outline" className="w-full">
+                {loadingMore ? 'Loading...' : 'Load More Results'}
             </Button>
         </div>
         )}
@@ -346,7 +365,16 @@ const ResidentRecords = () => {
                   </div>
               )
           })}
-          {hasMore && (
+           {!loading && filteredResidents.length === 0 && (
+             <div className="pt-10">
+                <EmptyState 
+                    type={searchTerm ? 'no-results' : 'no-data'} 
+                    query={searchTerm}
+                    onAction={searchTerm ? clearSearch : () => setIsNewResidentModalOpen(true)}
+                />
+            </div>
+           )}
+          {hasMore && !loading && (
             <div className="flex justify-center p-4">
                 <Button onClick={fetchMoreResidents} disabled={loadingMore} className="w-full">
                     {loadingMore ? 'Loading...' : 'Load More'}
@@ -378,42 +406,30 @@ const ResidentRecords = () => {
                 ))}
             </div>
         </div>
+         <Button onClick={clearSearch} variant="destructive" className="w-full">Clear All Filters</Button>
     </div>
   );
 
   return (
-    <div className="flex h-screen bg-slate-900 text-gray-200">
-      <div className="flex flex-col flex-1">
-        <header className="bg-slate-800/50 border-b border-slate-700 p-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Resident Records</h1>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-              </span>
-              Online
-            </div>
-          </div>
-        </header>
+    <div className="flex flex-col h-full bg-slate-900 text-gray-200">
 
         {/* Stats Panel */}
-        <div className="bg-slate-900 border-b border-slate-700 p-4">
+        <div className="p-4">
            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard title="Total Population" value="8,782" />
-            <StatCard title="Registered Voters" value="5,109" />
-            <StatCard title="Households" value="1,567" />
-            <StatCard title="Tagged Residents" value="560" />
+            <StatCard title="Total Population" value={loading ? '...' : allResidents.length} />
+            <StatCard title="Registered Voters" value={loading ? '...' : '5,109'} />
+            <StatCard title="Households" value={loading ? '...' : '1,567'} />
+            <StatCard title="Tagged Residents" value={loading ? '...' : '560'} />
           </div>
         </div>
 
         {/* Action & Filter Bar */}
-        <div className="p-4 bg-slate-800/50 border-b border-slate-700 flex flex-wrap items-center gap-4">
+        <div className="p-4 bg-slate-900/50 border-y border-slate-700 flex flex-wrap items-center gap-4">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               placeholder="Search by name or RBI ID..."
-              className="bg-slate-900 border-slate-600 text-white pl-10 h-12"
+              className="bg-slate-800 border-slate-600 text-white pl-10 h-12"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -425,6 +441,7 @@ const ResidentRecords = () => {
                 <Button variant="outline" className="h-12">
                   <Filter className="mr-2 h-4 w-4" />
                   Purok
+                  {selectedPuroks.size > 0 && <Badge variant="secondary" className="ml-2">{selectedPuroks.size}</Badge>}
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -447,6 +464,7 @@ const ResidentRecords = () => {
                 <Button variant="outline" className="h-12">
                   <Users className="mr-2 h-4 w-4" />
                   Sector
+                   {selectedSectors.size > 0 && <Badge variant="secondary" className="ml-2">{selectedSectors.size}</Badge>}
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -464,14 +482,14 @@ const ResidentRecords = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+             {(selectedPuroks.size > 0 || selectedSectors.size > 0 || searchTerm) && (
+              <Button variant="ghost" onClick={clearSearch}>Clear</Button>
+            )}
           </div>
 
           <div className="hidden md:flex justify-end gap-2">
             <Button variant="outline" className="h-12">
               <FileDown className="mr-2 h-4 w-4" /> Export
-            </Button>
-            <Button variant="outline" className="h-12">
-              <Printer className="mr-2 h-4 w-4" /> Print
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6" onClick={() => setIsNewResidentModalOpen(true)}>
               <Plus className="mr-2 h-6 w-6" /> New Resident
@@ -480,7 +498,7 @@ const ResidentRecords = () => {
         </div>
 
         {isMobile ? renderMobileView() : renderDesktopView()}
-      </div>
+      
 
       <ResidentProfileDrawer
         resident={selectedResident}
@@ -502,6 +520,7 @@ const ResidentRecords = () => {
                     <Button variant="ghost" className="flex flex-col h-auto">
                         <Filter className="h-6 w-6" />
                         <span className="text-xs">Filters</span>
+                         { (selectedPuroks.size > 0 || selectedSectors.size > 0) && <Badge variant="destructive" className="absolute top-0 right-2 w-4 h-4 p-0 text-xs">{selectedPuroks.size + selectedSectors.size}</Badge>}
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="bottom" className="bg-slate-900 border-t-slate-700 text-white">

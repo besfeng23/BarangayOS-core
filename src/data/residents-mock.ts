@@ -1,3 +1,4 @@
+
 import { Timestamp } from 'firebase/firestore';
 import type { Resident, Sector } from '@/types';
 
