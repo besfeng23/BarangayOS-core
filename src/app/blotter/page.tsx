@@ -94,11 +94,17 @@ const BlotterLogPage = () => {
                 />
             ))}
         </div>
+        <div className="p-4 border-t border-slate-700">
+             <Button className="bg-blue-600 hover:bg-blue-700 h-11 text-lg w-full" onClick={() => setIsNewEntryModalOpen(true)}>
+                <Plus className="mr-2 h-5 w-5"/>
+                New Entry
+            </Button>
+        </div>
      </div>
   );
 
   const MainContent = () => (
-    <div className="bg-slate-950 p-6 flex-1 flex flex-col">
+    <div className="bg-slate-950 p-6 flex-1 flex flex-col h-full">
         {selectedCase ? (
             <>
                 <div className="flex justify-between items-center pb-4 border-b border-slate-700">
@@ -133,20 +139,8 @@ const BlotterLogPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-slate-900 text-gray-200 font-sans">
-      
-      <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-slate-950/80 backdrop-blur-lg border-b border-slate-700 flex items-center justify-between px-4">
-        <Link href="/" passHref>
-          <Button variant="ghost">Back to Hub</Button>
-        </Link>
-        <h1 className="text-xl font-bold">Blotter Log Module</h1>
-        <Button className="bg-blue-600 hover:bg-blue-700 h-11 text-lg" onClick={() => setIsNewEntryModalOpen(true)}>
-          <Plus className="mr-2 h-5 w-5"/>
-          New Entry
-        </Button>
-      </header>
-
-      <main className="flex pt-16 h-full w-full">
+    <div className="flex h-full bg-slate-900 text-gray-200 font-sans">
+      <main className="flex h-full w-full">
         {isMobile ? (
           <div className="w-full">
             {selectedCase ? <MainContent /> : <SidebarContent />}

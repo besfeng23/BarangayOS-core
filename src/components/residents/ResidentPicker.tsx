@@ -83,7 +83,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
                         onSelectResident(resident);
                         setOpen(false);
                       }}
-                      className="aria-selected:bg-slate-700"
+                      className="aria-selected:bg-slate-700 cursor-pointer"
                     >
                       <Check
                         className={cn(
