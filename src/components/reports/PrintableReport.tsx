@@ -4,6 +4,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import type { ReportData } from '@/types/reports';
+import { useSettings } from '@/context/SettingsContext';
 
 interface PrintableReportProps {
   reportData: ReportData;
@@ -17,19 +18,23 @@ const MetricRow = ({ label, value }: { label: string; value: string | number }) 
 );
 
 const PrintableReport = React.forwardRef<HTMLDivElement, PrintableReportProps>(({ reportData }, ref) => {
-  // In a real app, this data would come from config or a parent `Barangay` document
-  const barangayName = "Dau";
-  const cityName = "Mabalacat";
-  const provinceName = "Pampanga";
+  const { settings } = useSettings();
+
+  if (!settings) {
+    return <div ref={ref}>Loading settings...</div>;
+  }
+  
+  const { barangayName, municipality, province, punongBarangay } = settings;
+
 
   return (
     <div ref={ref} id="print-area" className="bg-white text-black p-8 max-w-4xl mx-auto print-container">
       {/* Header */}
       <div className="text-center mb-12">
         <p className="text-sm">Republic of the Philippines</p>
-        <p className="text-sm">Province of {provinceName}</p>
-        <p className="text-sm">City of {cityName}</p>
-        <p className="font-bold text-lg mt-2">BARANGAY {barangayName.toUpperCase()}</p>
+        <p className="text-sm">Province of {province}</p>
+        <p className="text-sm">City of {municipality}</p>
+        <p className="font-bold text-lg mt-2">BARANGAY {barangayName?.toUpperCase()}</p>
         <p className="font-bold uppercase mt-1">OFFICE OF THE PUNONG BARANGAY</p>
       </div>
 
@@ -65,7 +70,7 @@ const PrintableReport = React.forwardRef<HTMLDivElement, PrintableReportProps>((
       <div className="mt-24 grid grid-cols-2 gap-24">
         <div className="text-center">
              <div className="border-t-2 border-black pt-2 mt-20">
-                <p className="font-bold text-lg">JUAN DELA CRUZ</p>
+                <p className="font-bold text-lg">{punongBarangay?.toUpperCase()}</p>
                 <p>Punong Barangay</p>
             </div>
         </div>

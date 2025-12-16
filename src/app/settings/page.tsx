@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -12,8 +12,9 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShieldAlert, Upload, KeyRound, Download, Bot } from 'lucide-react';
+import { ShieldAlert, Upload, KeyRound, Download, Bot, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useSettings } from '@/context/SettingsContext';
 
 // Mock data, in a real app this would come from an auth context and Firestore
 const mockUser = {
@@ -28,10 +29,22 @@ const mockUsers = [
 
 const SettingsPage = () => {
     const { toast } = useToast();
+    const { settings, updateSettings, loading: settingsLoading } = useSettings();
     
-    // In a real app, you would use the useAuth hook and check a custom claim for the role.
-    // const { user } = useAuth();
-    // const userRole = user?.customClaims?.role; 
+    // Form state
+    const [barangayName, setBarangayName] = useState('');
+    const [lguAddress, setLguAddress] = useState('');
+    const [captainName, setCaptainName] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (settings) {
+            setBarangayName(settings.barangayName || '');
+            setLguAddress(settings.municipality + ', ' + settings.province); // Combine for display
+            setCaptainName(settings.punongBarangay || '');
+        }
+    }, [settings]);
+    
     const userRole = mockUser.role;
 
     if (userRole !== 'Admin') {
@@ -48,8 +61,23 @@ const SettingsPage = () => {
         );
     }
     
-    const handleSaveIdentity = () => {
-        toast({ title: 'Settings Saved', description: 'Print identity has been updated.' });
+    const handleSaveIdentity = async () => {
+        setIsSaving(true);
+        try {
+            const [municipality, province] = lguAddress.split(',').map(s => s.trim());
+            await updateSettings({
+                barangayName,
+                punongBarangay: captainName,
+                municipality: municipality || '',
+                province: province || '',
+            });
+            toast({ title: 'Settings Saved', description: 'Print identity has been updated.' });
+        } catch (e) {
+            console.error(e);
+            toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not update settings.' });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleExport = () => {
@@ -77,30 +105,41 @@ const SettingsPage = () => {
                             <CardDescription>Set the global variables for all official printed documents.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="barangayName" className="text-lg">Barangay Name (Full Legal)</Label>
-                                    <Input id="barangayName" defaultValue="Barangay Dau" className="h-12 text-lg bg-slate-900 border-slate-600" />
+                            {settingsLoading ? (
+                                <div className="flex items-center justify-center h-48">
+                                    <Loader2 className="h-8 w-8 animate-spin" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="lguAddress" className="text-lg">LGU Address</Label>
-                                    <Input id="lguAddress" defaultValue="Mabalacat City, Pampanga" className="h-12 text-lg bg-slate-900 border-slate-600" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="captainName" className="text-lg">Punong Barangay Name</Label>
-                                <Input id="captainName" defaultValue="Hon. Juan Dela Cruz" className="h-12 text-lg bg-slate-900 border-slate-600" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-lg">Barangay Seal</Label>
-                                <Button variant="outline" className="w-full h-24 border-dashed flex-col">
-                                    <Upload className="h-8 w-8 text-slate-400 mb-1" />
-                                    <span>Upload Seal (PNG/JPEG)</span>
-                                </Button>
-                            </div>
-                            <div className="flex justify-end">
-                                <Button onClick={handleSaveIdentity} className="h-12 text-lg">Save Identity Settings</Button>
-                            </div>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="barangayName" className="text-lg">Barangay Name (Full Legal)</Label>
+                                            <Input id="barangayName" value={barangayName} onChange={e => setBarangayName(e.target.value)} className="h-12 text-lg bg-slate-900 border-slate-600" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="lguAddress" className="text-lg">LGU Address</Label>
+                                            <Input id="lguAddress" value={lguAddress} onChange={e => setLguAddress(e.target.value)} placeholder="e.g. Mabalacat City, Pampanga" className="h-12 text-lg bg-slate-900 border-slate-600" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="captainName" className="text-lg">Punong Barangay Name</Label>
+                                        <Input id="captainName" value={captainName} onChange={e => setCaptainName(e.target.value)} className="h-12 text-lg bg-slate-900 border-slate-600" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-lg">Barangay Seal</Label>
+                                        <Button variant="outline" className="w-full h-24 border-dashed flex-col">
+                                            <Upload className="h-8 w-8 text-slate-400 mb-1" />
+                                            <span>Upload Seal (PNG/JPEG)</span>
+                                        </Button>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <Button onClick={handleSaveIdentity} className="h-12 text-lg" disabled={isSaving}>
+                                            {isSaving && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                                            Save Identity Settings
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

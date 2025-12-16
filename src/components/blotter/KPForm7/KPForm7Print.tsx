@@ -4,6 +4,7 @@
 import React from 'react';
 import type { BlotterCase } from '@/types/blotter';
 import { format, parseISO } from 'date-fns';
+import { useSettings } from '@/context/SettingsContext';
 
 
 interface KPForm7PrintProps {
@@ -11,10 +12,14 @@ interface KPForm7PrintProps {
 }
 
 const KPForm7Print = React.forwardRef<HTMLDivElement, KPForm7PrintProps>(({ caseData }, ref) => {
-  const provinceName = "Pampanga"; // Placeholder
-  const cityName = "Mabalacat"; // Placeholder
-  const barangayName = "Dau"; // Placeholder
+  const { settings } = useSettings();
   const reportDate = new Date(); // Use current date for printing
+  
+  if (!settings) {
+    return <div ref={ref}>Loading settings...</div>;
+  }
+
+  const { barangayName, municipality, province } = settings;
   
   let incidentDate: Date;
   try {
@@ -30,8 +35,8 @@ const KPForm7Print = React.forwardRef<HTMLDivElement, KPForm7PrintProps>(({ case
       {/* Header */}
       <div className="text-center text-sm mb-12">
         <p>Republic of the Philippines</p>
-        <p>Province of {provinceName}</p>
-        <p>City/Municipality of {cityName}</p>
+        <p>Province of {province}</p>
+        <p>City/Municipality of {municipality}</p>
         <p>Barangay {barangayName}</p>
         <p className="font-bold uppercase mt-4">OFFICE OF THE LUPONG TAGAPAMAYAPA</p>
       </div>

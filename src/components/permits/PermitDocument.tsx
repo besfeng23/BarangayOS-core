@@ -4,6 +4,7 @@
 import React from 'react';
 import type { BusinessPermit, Resident } from '@/lib/firebase/schema';
 import { format } from 'date-fns';
+import { useSettings } from '@/context/SettingsContext';
 
 interface PermitDocumentProps {
   permit: BusinessPermit;
@@ -11,10 +12,13 @@ interface PermitDocumentProps {
 }
 
 const PermitDocument = React.forwardRef<HTMLDivElement, PermitDocumentProps>(({ permit, resident }, ref) => {
-  const provinceName = "Pampanga";
-  const cityName = "Mabalacat";
-  const barangayName = "Dau";
-  const barangaySealUrl = "https://picsum.photos/seed/seal/100"; // Placeholder
+  const { settings } = useSettings();
+
+  if (!settings) {
+    return <div ref={ref}>Loading settings...</div>;
+  }
+  
+  const { barangayName, municipality, province, punongBarangay, logoUrl } = settings;
 
   const issuedDate = permit.issuedAt ? new Date(permit.issuedAt.seconds * 1000) : new Date();
 
@@ -22,15 +26,15 @@ const PermitDocument = React.forwardRef<HTMLDivElement, PermitDocumentProps>(({ 
     <div ref={ref} id="print-area" className="bg-white text-black p-8 max-w-4xl mx-auto print-container">
       {/* Header */}
       <div className="text-center text-sm mb-12 flex items-center justify-center gap-8">
-        <img src={barangaySealUrl} alt="Seal" className="h-24 w-24" data-ai-hint="seal" />
+        <img src={logoUrl || "https://picsum.photos/seed/seal1/100"} alt="Seal" className="h-24 w-24" data-ai-hint="seal" />
         <div>
             <p>Republic of the Philippines</p>
-            <p>Province of {provinceName}</p>
-            <p>City of {cityName}</p>
-            <p className="font-bold text-lg mt-2">BARANGAY {barangayName.toUpperCase()}</p>
+            <p>Province of {province}</p>
+            <p>City of {municipality}</p>
+            <p className="font-bold text-lg mt-2">BARANGAY {barangayName?.toUpperCase()}</p>
             <p className="font-bold uppercase mt-1">OFFICE OF THE PUNONG BARANGAY</p>
         </div>
-        <img src={barangaySealUrl} alt="Seal" className="h-24 w-24" data-ai-hint="logo" />
+        <img src={logoUrl || "https://picsum.photos/seed/seal2/100"} alt="Seal" className="h-24 w-24" data-ai-hint="logo" />
       </div>
 
       {/* Body */}
@@ -39,7 +43,7 @@ const PermitDocument = React.forwardRef<HTMLDivElement, PermitDocumentProps>(({ 
       </div>
       
        <div className="text-justify text-base leading-loose indent-8 mb-8">
-          <p>This is to certify that the business detailed herein is a duly registered enterprise within the jurisdiction of Barangay {barangayName}, City of {cityName}, for the year {format(issuedDate, 'yyyy')}.</p>
+          <p>This is to certify that the business detailed herein is a duly registered enterprise within the jurisdiction of Barangay {barangayName}, City of {municipality}, for the year {format(issuedDate, 'yyyy')}.</p>
        </div>
        
         <table className="w-full text-left text-lg border-2 border-black my-8">
@@ -53,7 +57,7 @@ const PermitDocument = React.forwardRef<HTMLDivElement, PermitDocumentProps>(({ 
 
        <div className="text-justify text-base leading-loose indent-8 mb-12">
           <p>This certification is issued upon the request of the owner for whatever legal purpose it may serve.</p>
-          <p className="mt-4">Given this <span className="font-bold underline">{format(issuedDate, 'do')}</span> day of <span className="font-bold underline">{format(issuedDate, 'MMMM, yyyy')}</span> at the Office of the Punong Barangay, {barangayName}, {cityName}, Philippines.</p>
+          <p className="mt-4">Given this <span className="font-bold underline">{format(issuedDate, 'do')}</span> day of <span className="font-bold underline">{format(issuedDate, 'MMMM, yyyy')}</span> at the Office of the Punong Barangay, {barangayName}, {municipality}, Philippines.</p>
        </div>
 
 
@@ -67,7 +71,7 @@ const PermitDocument = React.forwardRef<HTMLDivElement, PermitDocumentProps>(({ 
         </div>
         <div className="text-center">
             <div className="border-t-2 border-black pt-2">
-                <p className="font-bold text-lg">JUAN DELA CRUZ</p>
+                <p className="font-bold text-lg">{punongBarangay?.toUpperCase()}</p>
                 <p className="text-sm">Punong Barangay</p>
             </div>
         </div>
@@ -87,4 +91,3 @@ const PermitDocument = React.forwardRef<HTMLDivElement, PermitDocumentProps>(({ 
 
 PermitDocument.displayName = 'PermitDocument';
 export default PermitDocument;
-

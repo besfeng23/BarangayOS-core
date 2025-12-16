@@ -9,6 +9,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/app-hub/Sidebar';
 import Header from '@/components/app-hub/Header';
+import { SettingsProvider } from '@/context/SettingsContext';
 
 
 export default function RootLayout({
@@ -34,6 +35,7 @@ export default function RootLayout({
         </head>
         <body className="font-sans antialiased">
           <AuthProvider>
+            <SettingsProvider>
               {isLoginPage ? (
                   children
               ) : (
@@ -42,6 +44,7 @@ export default function RootLayout({
                   </AuthGuard>
               )}
               <Toaster />
+            </SettingsProvider>
           </AuthProvider>
         </body>
       </html>
@@ -59,6 +62,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <AuthProvider>
+          <SettingsProvider>
             {isLoginPage ? (
                 children
             ) : (
@@ -75,6 +79,7 @@ export default function RootLayout({
                 </AuthGuard>
             )}
             <Toaster />
+          </SettingsProvider>
         </AuthProvider>
       </body>
     </html>

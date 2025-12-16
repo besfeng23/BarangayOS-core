@@ -5,6 +5,7 @@ import React from 'react';
 import type { Transaction } from '@/types/transactions';
 import type { Resident } from '@/lib/firebase/schema';
 import { format } from 'date-fns';
+import { useSettings } from '@/context/SettingsContext';
 
 interface PrintCertificateProps {
   transaction: Transaction;
@@ -36,30 +37,32 @@ const getBoilerplateText = (type: Transaction['type'], residentName: string, age
 
 
 const PrintCertificate = React.forwardRef<HTMLDivElement, PrintCertificateProps>(({ transaction, resident }, ref) => {
-  // Mock data, in a real app this would come from config or a parent `Barangay` document
-  const provinceName = "Pampanga";
-  const cityName = "Mabalacat";
-  const barangayName = "Dau";
-  const barangaySealUrl = "https://via.placeholder.com/100"; // Placeholder
+  const { settings } = useSettings();
   
+  if (!settings) {
+    return <div ref={ref} className="p-8">Loading settings...</div>;
+  }
+  
+  const { barangayName, municipality, province, punongBarangay, logoUrl } = settings;
+
   const transactionDate = transaction.transactionDate.toDate();
   const age = getAge(resident.dateOfBirth);
-  const fullAddress = `Purok ${resident.addressSnapshot.purok}, Barangay ${barangayName}, ${cityName}, ${provinceName}`;
+  const fullAddress = `Purok ${resident.addressSnapshot.purok}, Barangay ${barangayName}, ${municipality}, ${province}`;
   const boilerplate = getBoilerplateText(transaction.type, resident.displayName, age, resident.civilStatus, fullAddress);
 
   return (
     <div ref={ref} id="print-area" className="bg-white text-black p-8 max-w-4xl mx-auto print-container">
       {/* Header */}
       <div className="text-center text-sm mb-12 flex items-center justify-center gap-8">
-        <img src={barangaySealUrl} alt="Seal" className="h-24 w-24" />
+        <img src={logoUrl || "https://picsum.photos/seed/seal1/100"} alt="Seal" className="h-24 w-24" />
         <div>
             <p>Republic of the Philippines</p>
-            <p>Province of {provinceName}</p>
-            <p>City of {cityName}</p>
-            <p className="font-bold text-lg mt-2">BARANGAY {barangayName.toUpperCase()}</p>
+            <p>Province of {province}</p>
+            <p>City of {municipality}</p>
+            <p className="font-bold text-lg mt-2">BARANGAY {barangayName?.toUpperCase()}</p>
             <p className="font-bold uppercase mt-1">OFFICE OF THE PUNONG BARANGAY</p>
         </div>
-        <img src={barangaySealUrl} alt="Seal" className="h-24 w-24" />
+        <img src={logoUrl || "https://picsum.photos/seed/seal2/100"} alt="Seal" className="h-24 w-24" />
       </div>
 
       {/* Body */}
@@ -76,7 +79,7 @@ const PrintCertificate = React.forwardRef<HTMLDivElement, PrintCertificateProps>
        </div>
 
        <div className="text-justify text-base leading-loose indent-8 mb-12">
-          <p>Given this <span className="font-bold underline">{format(transactionDate, 'do')}</span> day of <span className="font-bold underline">{format(transactionDate, 'MMMM, yyyy')}</span> at the Office of the Punong Barangay, {barangayName}, {cityName}, Philippines.</p>
+          <p>Given this <span className="font-bold underline">{format(transactionDate, 'do')}</span> day of <span className="font-bold underline">{format(transactionDate, 'MMMM, yyyy')}</span> at the Office of the Punong Barangay, {barangayName}, {municipality}, Philippines.</p>
        </div>
 
 
@@ -90,7 +93,7 @@ const PrintCertificate = React.forwardRef<HTMLDivElement, PrintCertificateProps>
         </div>
         <div className="w-1/3 text-center">
             <div className="border-t-2 border-black pt-2">
-                <p className="font-bold text-lg">{transaction.officialSignee.toUpperCase()}</p>
+                <p className="font-bold text-lg">{punongBarangay?.toUpperCase()}</p>
                 <p className="text-sm">Punong Barangay</p>
             </div>
         </div>
