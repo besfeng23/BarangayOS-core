@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Sheet,
   SheetContent,
@@ -15,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Resident, UserRole, BlotterCaseSummary } from '@/types';
-import { Shield, FileText, Users, Briefcase, PlusCircle, Edit, Trash2, X, Wifi } from 'lucide-react';
+import { Shield, FileText, Users, Briefcase, PlusCircle, Edit, Trash2, X, Wifi, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ interface ResidentProfileDrawerProps {
   resident: Resident | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit: (resident: Resident) => void;
   userRole: UserRole;
 }
 
@@ -78,11 +80,17 @@ const ResidentProfileDrawer = ({
   resident,
   isOpen,
   onClose,
+  onEdit,
   userRole,
 }: ResidentProfileDrawerProps) => {
   const isMobile = useIsMobile();
   
   if (!resident) return null;
+
+  const handleEditClick = () => {
+    onClose(); 
+    setTimeout(() => onEdit(resident), 150);
+  };
 
   const canSeeBlotter = userRole === 'SECRETARY' || userRole === 'BARANGAY_CAPTAIN' || userRole === 'SUPER_ADMIN';
 
@@ -106,12 +114,14 @@ const ResidentProfileDrawer = ({
               RBI ID: {resident.rbiId} &middot; {resident.status.toUpperCase()}
             </SheetDescription>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button size="sm">
+              <Button size="sm" onClick={handleEditClick}>
                 <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
-              <Button size="sm" variant="outline">
-                <PlusCircle className="mr-2 h-4 w-4" /> Issue Document
-              </Button>
+              <Link href={`/certificates?residentId=${resident.id}&residentName=${encodeURIComponent(resident.displayName)}`} passHref>
+                <Button size="sm" variant="outline">
+                  <Printer className="mr-2 h-4 w-4" /> Issue Document
+                </Button>
+              </Link>
                <Button size="sm" variant="destructive">
                 <Trash2 className="mr-2 h-4 w-4" /> Archive
               </Button>

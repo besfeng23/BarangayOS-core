@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Users, FileClock, Scale, Plus } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -35,18 +36,24 @@ export default function Home() {
                 Quick Actions
             </h2>
              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <Button variant="outline" className="h-24 text-xl">
-                    <Plus className="mr-2 h-6 w-6"/>
-                    New Resident
-                </Button>
-                <Button variant="outline" className="h-24 text-xl">
-                    <Plus className="mr-2 h-6 w-6"/>
-                    File Blotter
-                </Button>
-                <Button variant="outline" className="h-24 text-xl">
-                    <Plus className="mr-2 h-6 w-6"/>
-                    Issue Clearance
-                </Button>
+                <Link href="/residents?action=new" passHref>
+                    <Button variant="outline" className="h-24 text-xl w-full">
+                        <Plus className="mr-2 h-6 w-6"/>
+                        New Resident
+                    </Button>
+                </Link>
+                <Link href="/blotter?action=new" passHref>
+                    <Button variant="outline" className="h-24 text-xl w-full">
+                        <Plus className="mr-2 h-6 w-6"/>
+                        File Blotter
+                    </Button>
+                </Link>
+                <Link href="/certificates?action=focus" passHref>
+                    <Button variant="outline" className="h-24 text-xl w-full">
+                        <Plus className="mr-2 h-6 w-6"/>
+                        Issue Clearance
+                    </Button>
+                </Link>
             </div>
         </section>
     </div>

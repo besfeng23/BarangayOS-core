@@ -1,7 +1,8 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ResidentPicker } from '@/components/residents/ResidentPicker';
 import type { Resident } from '@/lib/firebase/schema';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Save, User, FileText, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, Timestamp, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import type { Transaction } from '@/types/transactions';
 import PrintCertificateModal from '@/components/certificates/PrintCertificateModal';
@@ -20,6 +21,7 @@ import Link from 'next/link';
 type CertificateType = 'Barangay Clearance' | 'Certificate of Indigency' | 'Certificate of Residency';
 
 const CertificatesPage = () => {
+  const searchParams = useSearchParams();
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
   const [certificateType, setCertificateType] = useState<CertificateType | ''>('');
   const [purpose, setPurpose] = useState('');
@@ -29,6 +31,50 @@ const CertificatesPage = () => {
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [newTransaction, setNewTransaction] = useState<Transaction | null>(null);
+  const [isLoadingResident, setIsLoadingResident] = useState(false);
+
+  useEffect(() => {
+    const residentId = searchParams.get('residentId');
+    const residentName = searchParams.get('residentName');
+    const action = searchParams.get('action');
+
+    if (action === 'focus') {
+      // Logic to focus the ResidentPicker would go here.
+      // This might involve a ref and a useEffect. For now, we'll just log it.
+      console.log('Focus action triggered for ResidentPicker');
+    }
+    
+    if (residentId && residentName) {
+      const fetchResident = async () => {
+        setIsLoadingResident(true);
+        try {
+          const residentRef = doc(db, 'residents', residentId);
+          const residentSnap = await getDoc(residentRef);
+          if (residentSnap.exists()) {
+             setSelectedResident({ id: residentSnap.id, ...residentSnap.data() } as Resident);
+          } else {
+             toast({
+              variant: "destructive",
+              title: "Resident not found",
+              description: `Could not find resident with ID ${residentId}.`,
+            });
+            // Fallback to manual selection
+             setSelectedResident(null);
+          }
+        } catch (error) {
+           console.error("Error fetching resident from route params:", error);
+           toast({
+              variant: "destructive",
+              title: "Error fetching resident",
+              description: "There was a problem loading the resident data.",
+            });
+        } finally {
+            setIsLoadingResident(false);
+        }
+      };
+      fetchResident();
+    }
+  }, [searchParams, toast]);
 
 
   const handleSaveAndPreview = async () => {
@@ -71,7 +117,7 @@ const CertificatesPage = () => {
       const finalTransaction: Transaction = {
           ...transactionData,
           id: docRef.id,
-          createdAt: transactionData.transactionDate, // Use client-side timestamp for immediate use
+          createdAt: transactionData.transactionDate,
           updatedAt: transactionData.transactionDate,
       }
 
@@ -126,16 +172,19 @@ const CertificatesPage = () => {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Step 1: Resident Selection */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><User /> Step 1: Select a Resident</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResidentPicker
-              onSelectResident={(res) => setSelectedResident(res as Resident | null)}
-              selectedResident={selectedResident}
-            />
+            {isLoadingResident ? (
+                <p>Loading resident...</p>
+            ) : (
+                <ResidentPicker
+                  onSelectResident={(res) => setSelectedResident(res as Resident | null)}
+                  selectedResident={selectedResident}
+                />
+            )}
              {selectedResident && (
                 <div className="mt-4 p-4 bg-slate-900 rounded-lg">
                     <p className="font-bold text-lg">{selectedResident.displayName}</p>
@@ -146,7 +195,6 @@ const CertificatesPage = () => {
           </CardContent>
         </Card>
 
-        {/* Step 2: Transaction Details */}
         <Card className={`bg-slate-800/50 border-slate-700 transition-opacity ${!selectedResident ? 'opacity-50 pointer-events-none' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><FileText /> Step 2: Certificate Details</CardTitle>
@@ -177,7 +225,6 @@ const CertificatesPage = () => {
         </Card>
       </div>
 
-       {/* Step 3: Save & Preview */}
        <div className="flex justify-end">
             <Button 
                 className="bg-blue-600 hover:bg-blue-700 h-14 text-xl px-8" 

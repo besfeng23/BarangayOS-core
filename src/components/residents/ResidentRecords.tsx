@@ -1,14 +1,14 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Users,
   Search,
   Filter,
   Plus,
   FileDown,
-  Printer,
   ChevronDown,
   QrCode,
   MoreVertical,
@@ -45,6 +45,7 @@ import { residentConverter, type Resident as ResidentSchema } from '@/lib/fireba
 import { Skeleton } from '@/components/ui/skeleton';
 import NewResidentModal from './NewResidentModal';
 import { EmptyState } from '../ui/EmptyState';
+import { useToast } from '@/hooks/use-toast';
 
 const PAGE_SIZE = 50;
 
@@ -62,35 +63,38 @@ const StatCard = ({ title, value }: { title: string, value: string | number }) =
     </div>
 );
 
+function ResidentRecordsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
 
-const ResidentRecords = () => {
   const [allResidents, setAllResidents] = useState<ResidentSchema[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [selectedResident, setSelectedResident] = useState<Resident | null>(
-    null
-  );
+  const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isNewResidentModalOpen, setIsNewResidentModalOpen] = useState(false);
+  const [editingResident, setEditingResident] = useState<Resident | null>(null);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPuroks, setSelectedPuroks] = useState<Set<string>>(new Set());
-  const [selectedSectors, setSelectedSectors] = useState<Set<string>>(
-    new Set()
-  );
+  const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set());
 
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setIsNewResidentModalOpen(true);
+      // Optional: remove the query param from URL
+      router.replace('/residents', undefined);
+    }
+  }, [searchParams, router]);
 
   const buildQuery = useCallback(() => {
     const residentsRef = collection(db, 'residents').withConverter(residentConverter);
     let q: Query<DocumentData> = query(residentsRef, orderBy('displayName'), limit(PAGE_SIZE));
-
-    // Note: Firestore does not support inequality filters on multiple fields.
-    // Full-text search and complex filtering would require a dedicated search service like Algolia or Typesense.
-    // For this demo, we will only filter by search term on the client side after initial load.
-    // The pagination will be based on the ordered list of all residents.
-    
     return q;
   }, []);
 
@@ -147,7 +151,6 @@ const ResidentRecords = () => {
 
 
   const filteredResidents = useMemo(() => {
-    // Client-side filtering
     return allResidents.filter((resident) => {
       const purokMatch =
         selectedPuroks.size === 0 || selectedPuroks.has(resident.addressSnapshot.purok);
@@ -165,6 +168,11 @@ const ResidentRecords = () => {
   const handleRowClick = (resident: Resident) => {
     setSelectedResident(resident);
     setIsDrawerOpen(true);
+  };
+
+  const handleEditResident = (resident: Resident) => {
+    setEditingResident(resident);
+    setIsNewResidentModalOpen(true);
   };
 
   const handlePurokChange = (purok: string) => {
@@ -189,6 +197,11 @@ const ResidentRecords = () => {
       }
       return newSet;
     });
+  };
+
+  const handleCloseModal = () => {
+    setIsNewResidentModalOpen(false);
+    setEditingResident(null); // Clear editing state on close
   };
   
   const getAge = (dateOfBirth?: { seconds: number }) => {
@@ -413,7 +426,6 @@ const ResidentRecords = () => {
   return (
     <div className="flex flex-col h-full bg-slate-900 text-gray-200">
 
-        {/* Stats Panel */}
         <div className="p-4">
            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard title="Total Population" value={loading ? '...' : allResidents.length} />
@@ -423,7 +435,6 @@ const ResidentRecords = () => {
           </div>
         </div>
 
-        {/* Action & Filter Bar */}
         <div className="p-4 bg-slate-900/50 border-y border-slate-700 flex flex-wrap items-center gap-4">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -504,15 +515,16 @@ const ResidentRecords = () => {
         resident={selectedResident}
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
+        onEdit={handleEditResident}
         userRole="SECRETARY"
       />
       
       <NewResidentModal 
         isOpen={isNewResidentModalOpen}
-        onClose={() => setIsNewResidentModalOpen(false)}
+        onClose={handleCloseModal}
+        residentToEdit={editingResident}
       />
 
-      {/* Mobile Sticky Footer */}
       {isMobile && (
         <div className="fixed bottom-0 left-0 right-0 bg-slate-800/80 backdrop-blur-lg border-t border-slate-700 p-2 flex justify-around items-center">
             <Sheet>
@@ -555,6 +567,13 @@ const ResidentRecords = () => {
       )}
     </div>
   );
-};
+}
 
-export default ResidentRecords;
+
+export default function ResidentRecords() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ResidentRecordsContent />
+        </Suspense>
+    );
+}

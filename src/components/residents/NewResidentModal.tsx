@@ -1,13 +1,13 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, doc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { residentConverter, type Resident } from '@/lib/firebase/schema';
 import { Camera } from 'lucide-react';
@@ -15,13 +15,27 @@ import { Camera } from 'lucide-react';
 interface NewResidentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  residentToEdit?: Resident | null;
 }
 
-const NewResidentModal = ({ isOpen, onClose }: NewResidentModalProps) => {
+const NewResidentModal = ({ isOpen, onClose, residentToEdit }: NewResidentModalProps) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  const isEditing = !!residentToEdit;
+
+  useEffect(() => {
+    if (isEditing && residentToEdit) {
+      setFirstName(residentToEdit.fullName.first);
+      setLastName(residentToEdit.fullName.last);
+    } else {
+      setFirstName('');
+      setLastName('');
+    }
+  }, [residentToEdit, isEditing, isOpen]);
+
 
   const handleSave = async () => {
     if (!firstName || !lastName) {
@@ -35,53 +49,68 @@ const NewResidentModal = ({ isOpen, onClose }: NewResidentModalProps) => {
 
     setIsSaving(true);
     toast({
-      title: "Saving...",
-      description: "Adding new resident to the database.",
+      title: isEditing ? "Updating..." : "Saving...",
+      description: `${isEditing ? 'Updating' : 'Adding'} resident in the database.`,
     });
 
     try {
-      const residentsRef = collection(db, 'residents').withConverter(residentConverter);
-      
-      const newResident: Omit<Resident, 'id' | 'createdAt' | 'updatedAt'> = {
-        barangayId: "TEST-BARANGAY-1",
-        rbiId: `BRGY-${Date.now()}`, // Temporary ID
-        fullName: {
-          first: firstName,
-          last: lastName,
-        },
-        displayName: `${lastName.toUpperCase()}, ${firstName}`,
-        displayNameLower: `${lastName.toLowerCase()}, ${firstName.toLowerCase()}`,
-        sex: 'M', // Default value
-        addressSnapshot: {
-          purok: 'Purok 1', // Default value
-          addressLine: 'TBD', // Default value
-        },
-        status: 'active',
-        consent: { signed: false },
-        createdBy: "SECRETARY-DEVICE-1",
-        updatedBy: "SECRETARY-DEVICE-1",
-      };
-      
-      // The logic for image capture and compression would go here.
-      // The captured image would first be resized to a max-width of 1024px.
-      // Then, it would be compressed to 70% quality before being uploaded to Firebase Storage.
-      // This ensures bandwidth usage is minimized on metered connections.
-      // Optimized for Smart Enterprise Metered Plans.
+      if (isEditing && residentToEdit) {
+        // Update existing resident
+        const residentRef = doc(db, 'residents', residentToEdit.id).withConverter(residentConverter);
+        await setDoc(residentRef, {
+            ...residentToEdit,
+            fullName: {
+                ...residentToEdit.fullName,
+                first: firstName,
+                last: lastName,
+            },
+            displayName: `${lastName.toUpperCase()}, ${firstName}`,
+            displayNameLower: `${lastName.toLowerCase()}, ${firstName.toLowerCase()}`,
+            updatedBy: "SECRETARY-DEVICE-1", // Mock User
+            updatedAt: serverTimestamp(),
+        }, { merge: true });
 
-      await addDoc(residentsRef, newResident);
-      
-      toast({
-        title: "Resident Saved!",
-        description: `${firstName} ${lastName} has been added.`,
-      });
+        toast({
+            title: "Resident Updated!",
+            description: `${firstName} ${lastName} has been updated.`,
+        });
 
-      // Reset form and close
-      setFirstName('');
-      setLastName('');
+      } else {
+        // Create new resident
+        const residentsRef = collection(db, 'residents').withConverter(residentConverter);
+        
+        const newResident: Omit<Resident, 'id' | 'createdAt' | 'updatedAt'> = {
+          barangayId: "TEST-BARANGAY-1",
+          rbiId: `BRGY-${Date.now()}`,
+          fullName: {
+            first: firstName,
+            last: lastName,
+          },
+          displayName: `${lastName.toUpperCase()}, ${firstName}`,
+          displayNameLower: `${lastName.toLowerCase()}, ${firstName.toLowerCase()}`,
+          sex: 'M',
+          addressSnapshot: {
+            purok: 'Purok 1',
+            addressLine: 'TBD',
+          },
+          status: 'active',
+          consent: { signed: false },
+          createdBy: "SECRETARY-DEVICE-1",
+          updatedBy: "SECRETARY-DEVICE-1",
+        };
+
+        await addDoc(residentsRef, newResident);
+        
+        toast({
+          title: "Resident Saved!",
+          description: `${firstName} ${lastName} has been added.`,
+        });
+      }
+      
       onClose();
 
     } catch (error) {
-      console.error("Error adding resident: ", error);
+      console.error("Error saving resident: ", error);
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
@@ -96,9 +125,9 @@ const NewResidentModal = ({ isOpen, onClose }: NewResidentModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-slate-800 border-slate-700 text-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl">New Resident Record</DialogTitle>
+          <DialogTitle className="text-2xl">{isEditing ? 'Edit Resident Record' : 'New Resident Record'}</DialogTitle>
           <DialogDescription>
-            Enter the basic details for the new resident. More information can be added later.
+            {isEditing ? 'Update the details for this resident.' : 'Enter the basic details for the new resident. More information can be added later.'}
           </DialogDescription>
         </DialogHeader>
         
@@ -137,7 +166,7 @@ const NewResidentModal = ({ isOpen, onClose }: NewResidentModalProps) => {
             Cancel
           </Button>
           <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save Record'}
+            {isSaving ? (isEditing ? 'Updating...' : 'Saving...') : (isEditing ? 'Update Record' : 'Save Record')}
           </Button>
         </DialogFooter>
       </DialogContent>

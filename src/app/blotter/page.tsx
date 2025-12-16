@@ -1,14 +1,12 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, 'react';
 import {
   FileText,
   Search,
-  Filter,
   Plus,
   Printer,
-  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -19,49 +17,46 @@ import BlotterCaseCard from '@/components/blotter/BlotterCaseCard';
 import type { BlotterCase as BlotterCaseType } from '@/types/blotter';
 import NewEntryModal from '@/components/blotter/BlotterLogModule/NewEntryModal';
 import PrintPreviewModal from '@/components/blotter/KPForm7/PrintPreviewModal';
-
-const mockCases: BlotterCaseType[] = [
-  {
-    id: '1',
-    caseId: '2024-1001',
-    date: '2024-07-28',
-    complainant: 'Juan Dela Cruz',
-    respondent: 'Maria Santos',
-    nature: 'Gossip / Slander',
-    status: 'ACTIVE',
-    narrative: 'The complainant alleges that the respondent has been spreading malicious rumors about his family, causing distress.',
-    incidentAt: new Date(),
-  },
-  {
-    id: '2',
-    caseId: '2024-1002',
-    date: '2024-07-27',
-    complainant: 'Pedro Penduko',
-    respondent: 'Lito Lapid',
-    nature: 'Theft',
-    status: 'SETTLED',
-    narrative: 'Details of the theft case.',
-    incidentAt: new Date(),
-  },
-   {
-    id: '3',
-    caseId: '2024-1003',
-    date: '2024-07-26',
-    complainant: 'Ana Reyes',
-    respondent: 'John Doe',
-    nature: 'Property Damage',
-    status: 'ACTIVE',
-    narrative: 'Details of the property damage case.',
-    incidentAt: new Date(),
-  },
-];
+import { useSearchParams } from 'next/navigation';
+import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { blotterCaseConverter } from '@/lib/firebase/schema';
 
 const BlotterLogPage = () => {
-  const [selectedCase, setSelectedCase] = useState<BlotterCaseType | null>(mockCases[0]);
-  const [isNewEntryModalOpen, setIsNewEntryModalOpen] = useState(false);
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [cases, setCases] = React.useState<BlotterCaseType[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [selectedCase, setSelectedCase] = React.useState<BlotterCaseType | null>(null);
+  const [isNewEntryModalOpen, setIsNewEntryModalOpen] = React.useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = React.useState(false);
   const isMobile = useIsMobile();
-  const [isOnline, setIsOnline] = useState(true); // Mock connectivity
+  const [isOnline, setIsOnline] = React.useState(true); // Mock connectivity
+
+  const searchParams = useSearchParams();
+
+  React.useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setIsNewEntryModalOpen(true);
+    }
+  }, [searchParams]);
+
+  React.useEffect(() => {
+    const casesRef = collection(db, 'blotter_cases').withConverter(blotterCaseConverter);
+    const q = query(casesRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedCases = snapshot.docs.map(doc => doc.data() as BlotterCaseType);
+      setCases(fetchedCases);
+      if (fetchedCases.length > 0 && !selectedCase) {
+        setSelectedCase(fetchedCases[0]);
+      }
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching blotter cases: ", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [selectedCase]);
 
   const handlePrint = (caseData: BlotterCaseType) => {
     setSelectedCase(caseData);
@@ -85,7 +80,8 @@ const BlotterLogPage = () => {
             </div>
         </div>
         <div className="flex-1 overflow-y-auto space-y-2 px-4">
-            {mockCases.map(c => (
+            {loading && <p>Loading cases...</p>}
+            {cases.map(c => (
                 <BlotterCaseCard 
                     key={c.id} 
                     caseNumber={c.caseId}
@@ -93,7 +89,7 @@ const BlotterLogPage = () => {
                     respondent={c.respondent || ''}
                     type={c.nature}
                     status={c.status === 'ACTIVE' ? 'Pending' : 'Resolved'}
-                    date={c.date}
+                    date={new Date(c.incidentAt.seconds * 1000).toLocaleDateString()}
                     onSelect={() => setSelectedCase(c)}
                 />
             ))}
@@ -119,7 +115,7 @@ const BlotterLogPage = () => {
                 <div className="mt-6 space-y-4 text-lg">
                     <p><strong>Complainant:</strong> {selectedCase.complainant}</p>
                     <p><strong>Respondent:</strong> {selectedCase.respondent}</p>
-                    <p><strong>Date of Incident:</strong> {selectedCase.date}</p>
+                    <p><strong>Date of Incident:</strong> {new Date(selectedCase.incidentAt.seconds * 1000).toLocaleString()}</p>
                 </div>
                  <div className="mt-6">
                     <h3 className="font-bold text-xl mb-2">Narrative</h3>
@@ -139,7 +135,6 @@ const BlotterLogPage = () => {
   return (
     <div className="flex h-screen bg-slate-900 text-gray-200 font-sans">
       
-      {/* Top Header */}
       <header className="fixed top-0 left-0 right-0 z-20 h-16 bg-slate-950/80 backdrop-blur-lg border-b border-slate-700 flex items-center justify-between px-4">
         <Link href="/" passHref>
           <Button variant="ghost">Back to Hub</Button>
@@ -151,7 +146,6 @@ const BlotterLogPage = () => {
         </Button>
       </header>
 
-      {/* Main Content */}
       <main className="flex pt-16 h-full w-full">
         {isMobile ? (
           <div className="w-full">
