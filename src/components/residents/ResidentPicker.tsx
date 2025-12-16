@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,21 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
   const [open, setOpen] = useState(false);
   const [manualEntry, setManualEntry] = useState(false);
   const [manualName, setManualName] = useState('');
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [popoverRef]);
+
 
   if (selectedResident) {
     return (
@@ -50,61 +65,64 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between h-12 text-lg"
-        >
-          {selectedResident ? selectedResident.displayName : "Search and select a resident..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start" onMouseDown={(e) => e.preventDefault()}>
-        <ResidentSearch>
-          {({ residents, loading, searchTerm, setSearchTerm }) => (
-            <Command shouldFilter={false}>
-              <CommandInput
-                placeholder="Search by name or RBI ID..."
-                value={searchTerm}
-                onValueChange={setSearchTerm}
-              />
-              <CommandList>
-                {loading && <CommandItem>Loading...</CommandItem>}
-                <CommandEmpty>No resident found.</CommandEmpty>
-                <CommandGroup>
-                  {residents.map((resident) => (
-                    <CommandItem
-                      key={resident.id}
-                      value={resident.displayName}
-                      onSelect={() => {
-                        onSelectResident(resident);
-                        setOpen(false);
-                      }}
-                      className="aria-selected:bg-slate-700 cursor-pointer"
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedResident?.id === resident.id ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {resident.displayName}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-               <div className="p-2 border-t border-slate-700">
-                    <Button variant="link" onClick={() => { setManualEntry(true); setOpen(false); }}>
-                       {isRespondent ? 'Respondent is not a resident' : 'Enter manually for non-resident'}
-                    </Button>
-                </div>
-            </Command>
-          )}
-        </ResidentSearch>
-      </PopoverContent>
-    </Popover>
+    <div ref={popoverRef}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between h-12 text-lg"
+            onClick={() => setOpen(true)}
+          >
+            {selectedResident ? selectedResident.displayName : "Search and select a resident..."}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[400px] p-0" align="start">
+          <ResidentSearch>
+            {({ residents, loading, searchTerm, setSearchTerm }) => (
+              <Command shouldFilter={false}>
+                <CommandInput
+                  placeholder="Search by name or RBI ID..."
+                  value={searchTerm}
+                  onValueChange={setSearchTerm}
+                />
+                <CommandList>
+                  {loading && <CommandItem>Loading...</CommandItem>}
+                  <CommandEmpty>No resident found.</CommandEmpty>
+                  <CommandGroup>
+                    {residents.map((resident) => (
+                      <CommandItem
+                        key={resident.id}
+                        value={resident.displayName}
+                        onSelect={() => {
+                          onSelectResident(resident);
+                          setOpen(false);
+                        }}
+                        className="aria-selected:bg-slate-700 cursor-pointer"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedResident?.id === resident.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {resident.displayName}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+                 <div className="p-2 border-t border-slate-700">
+                      <Button variant="link" onClick={() => { setManualEntry(true); setOpen(false); }}>
+                         {isRespondent ? 'Respondent is not a resident' : 'Enter manually for non-resident'}
+                      </Button>
+                  </div>
+              </Command>
+            )}
+          </ResidentSearch>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 };
