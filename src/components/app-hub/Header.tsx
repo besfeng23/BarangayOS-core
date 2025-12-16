@@ -18,7 +18,6 @@ export default function Header() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('online');
   const { toast } = useToast();
 
-
   useEffect(() => {
     const getGreeting = () => {
       const hour = new Date().getHours();
@@ -28,16 +27,19 @@ export default function Header() {
     };
     setGreeting(getGreeting());
 
-    // Mock status changes for demonstration
-    const interval = setInterval(() => {
-      setSystemStatus(prevStatus => {
-        if (prevStatus === 'online') return 'offline';
-        if (prevStatus === 'offline') return 'error';
-        return 'online';
-      });
-    }, 10000); // Change status every 10 seconds
+    const handleOnline = () => setSystemStatus('online');
+    const handleOffline = () => setSystemStatus('offline');
 
-    return () => clearInterval(interval);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Set initial status
+    setSystemStatus(navigator.onLine ? 'online' : 'offline');
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
 
   }, []);
 
@@ -45,17 +47,17 @@ export default function Header() {
     let description = '';
     switch(systemStatus) {
       case 'online':
-        description = 'All data is up to date.';
+        description = 'All data is up to date and syncing with the cloud in real-time.';
         break;
       case 'offline':
-        description = 'Your data is saved locally and will sync when the signal returns.';
+        description = 'You are currently offline. All changes are being saved securely on this device and will sync automatically when the connection returns.';
         break;
       case 'error':
         description = 'There was an issue syncing. Please check your network connection.';
         break;
     }
     toast({
-      title: 'System Status',
+      title: `System Status: ${systemStatus.toUpperCase()}`,
       description,
     });
   };

@@ -16,14 +16,27 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Initialize Firestore with Offline Persistence
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-});
+// This enables multi-tab offline support, which is critical for the kiosk architecture.
+// Data will be saved locally and synced automatically when the connection is restored.
+let db;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+  console.log("✅ BOS Offline Persistence Enabled");
+} catch (error) {
+    if (error instanceof Error && 'code' in error && (error as {code: string}).code === 'failed-precondition') {
+        console.warn("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
+    } else {
+        console.error("Error enabling offline persistence: ", error);
+    }
+    // Fallback to in-memory persistence if offline fails
+    db = getFirestore(app);
+}
+
 
 const auth = getAuth(app);
-
-console.log("✅ BOS Offline Persistence Enabled");
 
 export { app, db, auth };
