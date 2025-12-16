@@ -9,6 +9,7 @@ import { rtdb } from '@/lib/firebase/client';
 import { usePathname } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 type SystemStatus = 'online' | 'offline' | 'reconnecting' | 'error';
 
