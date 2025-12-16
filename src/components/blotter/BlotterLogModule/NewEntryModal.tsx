@@ -11,7 +11,7 @@ import { Save } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { blotterCaseConverter, type BlotterCase } from '@/lib/firebase/schema';
+import { blotterCaseConverter, type BlotterCase, type Resident } from '@/lib/firebase/schema';
 
 interface NewEntryModalProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ const steps = ['The People', 'The Incident', 'The Narrative'];
 
 const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<BlotterCase>>({});
+  const [formData, setFormData] = useState<Partial<BlotterCase & { complainant?: Resident | { fullName: string }, respondent?: Resident | { fullName: string } }>>({});
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -39,6 +39,13 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
     }
   };
 
+  const getFullName = (person: Resident | { fullName: string } | undefined): string => {
+    if (!person) return 'Unknown';
+    if ('displayName' in person) return person.displayName;
+    if ('fullName' in person) return person.fullName;
+    return 'Unknown';
+  }
+
   const handleSave = async () => {
     setIsSaving(true);
     toast({
@@ -49,19 +56,18 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
     try {
         const { date, time, ...restOfData } = formData as any;
         
-        // Combine date and time for the incidentAt timestamp
         const incidentDateTime = new Date(`${date}T${time}`);
         const incidentAt = Timestamp.fromDate(incidentDateTime);
 
         const newCase: Omit<BlotterCase, 'id' | 'createdAt' | 'updatedAt'> = {
             caseId: `BC-${Date.now()}`,
-            complainant: formData.complainant || 'Unknown',
-            respondent: formData.respondent || 'Unknown',
+            complainant: getFullName(formData.complainant),
+            respondent: getFullName(formData.respondent),
             nature: formData.nature || 'Not Specified',
             narrative: formData.narrative || '',
             status: 'ACTIVE',
             incidentAt: incidentAt,
-            date: formData.date!, // from form
+            date: formData.date!,
             barangayId: "TEST-BARANGAY-1",
             createdBy: "SECRETARY-DEVICE-1",
         };
@@ -74,7 +80,6 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
             description: `Case #${newCase.caseId} has been saved.`,
         });
 
-        // Reset form and close
         setFormData({});
         setCurrentStep(1);
         onClose();

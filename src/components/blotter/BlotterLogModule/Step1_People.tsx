@@ -2,57 +2,37 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { ResidentPicker } from '@/components/residents/ResidentPicker';
+import type { Resident } from '@/lib/firebase/schema';
 
 const Step1People = ({ formData, setFormData }: { formData: any, setFormData: any }) => {
-  const [isRespondentUnknown, setIsRespondentUnknown] = useState(false);
+  const handleSelectComplainant = (resident: Resident | null) => {
+    setFormData({ ...formData, complainant: resident });
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+  const handleSelectRespondent = (resident: Resident | null) => {
+    setFormData({ ...formData, respondent: resident });
   };
   
-  const handleCheckboxChange = (checked: boolean | 'indeterminate') => {
-    setIsRespondentUnknown(Boolean(checked));
-    if(checked) {
-      const { respondent, ...rest } = formData;
-      setFormData({ ...rest, respondent: 'Unknown' });
-    } else {
-      const { respondent, ...rest } = formData;
-      setFormData(rest);
-    }
-  }
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       {/* Complainant Side */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-blue-400">Complainant</h3>
-        <div>
-          <Label htmlFor="complainant" className="text-lg">Full Name</Label>
-          <Input id="complainant" placeholder="e.g., Juan Dela Cruz" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" value={formData.complainant || ''} onChange={handleChange} />
-        </div>
-        <div>
-          <Label htmlFor="complainant-contact" className="text-lg">Contact #</Label>
-          <Input id="complainant-contact" placeholder="e.g., 09123456789" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" />
-        </div>
+        <h3 className="text-xl font-semibold text-blue-400">Complainant (Nagrereklamo)</h3>
+        <ResidentPicker
+          onSelectResident={handleSelectComplainant}
+          selectedResident={formData.complainant}
+        />
       </div>
 
       {/* Respondent Side */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold text-orange-400">Respondent</h3>
-        <div className="flex items-center space-x-2">
-          <Checkbox id="respondent-unknown" onCheckedChange={handleCheckboxChange} />
-          <Label htmlFor="respondent-unknown" className="text-lg">Respondent is Unknown</Label>
-        </div>
-
-        {!isRespondentUnknown && (
-          <div>
-            <Label htmlFor="respondent" className="text-lg">Full Name</Label>
-            <Input id="respondent" placeholder="e.g., Maria Santos" className="h-12 text-lg bg-slate-950 border-slate-600 mt-1" value={formData.respondent || ''} onChange={handleChange} />
-          </div>
-        )}
+        <h3 className="text-xl font-semibold text-orange-400">Respondent (Inirereklamo)</h3>
+        <ResidentPicker
+          onSelectResident={handleSelectRespondent}
+          selectedResident={formData.respondent}
+          isRespondent
+        />
       </div>
     </div>
   );
