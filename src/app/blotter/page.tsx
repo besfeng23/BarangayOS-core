@@ -139,23 +139,21 @@ const BlotterLogPage = () => {
   );
 
   return (
-    <div className="flex h-full bg-slate-900 text-gray-200 font-sans">
-      <main className="flex h-full w-full">
-        {isMobile ? (
-          <div className="w-full">
-            {selectedCase ? <MainContent /> : <SidebarContent />}
-          </div>
-        ) : (
-          <>
-            <aside className="w-96 border-r border-slate-700">
-              <SidebarContent />
-            </aside>
-            <section className="flex-1">
-              <MainContent />
-            </section>
-          </>
-        )}
-      </main>
+    <div className="flex h-full w-full bg-slate-900 text-gray-200 font-sans">
+      {isMobile ? (
+        <div className="w-full">
+          {selectedCase ? <MainContent /> : <SidebarContent />}
+        </div>
+      ) : (
+        <>
+          <aside className="w-96 border-r border-slate-700">
+            <SidebarContent />
+          </aside>
+          <section className="flex-1">
+            <MainContent />
+          </section>
+        </>
+      )}
 
       <NewEntryModal 
         isOpen={isNewEntryModalOpen} 
