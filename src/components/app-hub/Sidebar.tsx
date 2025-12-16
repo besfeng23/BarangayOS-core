@@ -12,7 +12,8 @@ import {
   Settings, 
   LogOut,
   Shield,
-  Home
+  Home,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ const menuItems = [
   { href: '/residents', icon: Users, label: 'Resident Index' },
   { href: '/blotter', icon: ClipboardList, label: 'Blotter Log' },
   { href: '/certificates', icon: FileBadge, label: 'Certificates' },
+  { href: '/permits', icon: Briefcase, label: 'Business Permits' },
   { href: '/reports', icon: BarChart3, label: 'Reports', badge: 'CAPTAIN' },
   { href: '/settings', icon: Settings, label: 'Settings', badge: 'ADMIN' },
 ];
