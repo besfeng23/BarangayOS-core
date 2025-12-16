@@ -1,18 +1,10 @@
 
+
 import { Timestamp } from 'firebase/firestore';
 
 export type ApplicationType = "NEW" | "RENEWAL" | "TRANSFER";
 
-export type PermitStatus = 
-  | "DRAFT" 
-  | "PENDING_REVIEW" 
-  | "FOR_PAYMENT" 
-  | "FOR_INSPECTION" 
-  | "FOR_APPROVAL" 
-  | "FOR_RELEASE" 
-  | "RELEASED" 
-  | "REJECTED" 
-  | "CANCELLED";
+export type PermitStatus = "Active" | "Inactive" | "Pending Renewal";
 
 export type PaymentStatus = "UNPAID" | "PARTIAL" | "PAID" | "WAIVED";
 
@@ -39,12 +31,8 @@ export interface BusinessPermit {
     address: string;
     residentId?: string;
   };
-  filedAt: Timestamp;
-  reviewedAt?: Timestamp;
-  approvedAt?: Timestamp;
-  releasedAt?: Timestamp;
-  validFrom: Timestamp;
-  validUntil: Timestamp;
+  issuedAt?: Timestamp;
+  validUntil?: Timestamp;
   requirements: {
     key: string;
     label: string;
@@ -55,19 +43,7 @@ export interface BusinessPermit {
     verifiedAt?: Timestamp;
     fileUrls: string[];
   }[];
-  fees: {
-    code: string;
-    label: string;
-    amount: number;
-    editable: boolean;
-    notes?: string;
-  }[];
-  totals: {
-    subtotal: number;
-    penalties: number;
-    discounts: number;
-    total: number;
-  };
+  feesCollected: number;
   payment: {
     status: PaymentStatus;
     orNo?: string;
@@ -85,9 +61,16 @@ export interface BusinessPermit {
   };
   assignedOfficerUid?: string;
   flags: string[]; // e.g., "MISSING_ID", "MISSING_DOCS"
-  createdByUid: string;
+  issuedBy: string; // UID
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
+  barangayId: string;
+  totals: {
+      subtotal: number;
+      penalties: number;
+      discounts: number;
+      total: number;
+  }
 }
 
 export interface ApplicationReceipt {
@@ -109,3 +92,4 @@ export interface PermitAuditLog {
   timestamp: Timestamp;
   details: object;
 }
+

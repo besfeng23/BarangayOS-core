@@ -5,16 +5,17 @@ import React, { useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
-import PrintApplicationReceipt from './PrintApplicationReceipt';
-import type { ApplicationReceipt } from '@/types/permits';
+import PermitDocument from './PermitDocument';
+import type { BusinessPermit, Resident } from '@/lib/firebase/schema';
 
-interface PrintReceiptModalProps {
+interface PrintPermitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  receiptData: ApplicationReceipt;
+  permit: BusinessPermit;
+  resident: Resident;
 }
 
-const PrintReceiptModal = ({ isOpen, onClose, receiptData }: PrintReceiptModalProps) => {
+const PrintPermitModal = ({ isOpen, onClose, permit, resident }: PrintPermitModalProps) => {
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
@@ -25,12 +26,11 @@ const PrintReceiptModal = ({ isOpen, onClose, receiptData }: PrintReceiptModalPr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-gray-200 border-gray-400 text-black max-w-5xl w-full h-[90vh] flex flex-col no-print">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-slate-900">Print Preview: Application Receipt</DialogTitle>
+          <DialogTitle className="text-2xl text-slate-900">Print Preview: Business Registration</DialogTitle>
         </DialogHeader>
         
         <div className="flex-1 overflow-y-auto bg-gray-500 p-8">
-          {/* This is the component that will be printed */}
-          <PrintApplicationReceipt ref={componentRef} receiptData={receiptData} />
+          <PermitDocument ref={componentRef} permit={permit} resident={resident} />
         </div>
 
         <DialogFooter className="mt-4">
@@ -47,4 +47,5 @@ const PrintReceiptModal = ({ isOpen, onClose, receiptData }: PrintReceiptModalPr
   );
 };
 
-export default PrintReceiptModal;
+export default PrintPermitModal;
+
