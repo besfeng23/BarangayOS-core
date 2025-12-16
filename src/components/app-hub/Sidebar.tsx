@@ -11,7 +11,8 @@ import {
   BarChart3, 
   Settings, 
   LogOut,
-  Shield
+  Shield,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { getAuth } from 'firebase/auth';
 
 const menuItems = [
+  { href: '/', icon: Home, label: 'App Hub' },
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/residents', icon: Users, label: 'Resident Index' },
   { href: '/blotter', icon: ClipboardList, label: 'Blotter Log' },
@@ -65,7 +67,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-72 bg-slate-900 border-r border-slate-700 flex flex-col">
+    <aside className="w-72 bg-slate-900 border-r border-slate-700 flex-col hidden md:flex">
       <div className="p-6 border-b border-slate-700">
         <div className="flex items-center gap-3">
           <Shield className="h-10 w-10 text-blue-400" />

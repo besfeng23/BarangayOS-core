@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -31,7 +32,13 @@ import {
   FileCheck2,
   Bot,
   Radio,
-  MessageSquare as MessageSquareIcon
+  MessageSquare as MessageSquareIcon,
+  LayoutDashboard,
+  Home,
+  Shield,
+  LogOut,
+  FileClock,
+  Scale
 } from 'lucide-react';
 
 // For performance and bundle size, we explicitly map only the icons we use.
@@ -66,6 +73,12 @@ const iconMap = {
   Bot,
   Radio,
   MessageSquareIcon,
+  LayoutDashboard,
+  Home,
+  Shield,
+  LogOut,
+  FileClock,
+  Scale
 };
 
 type IconName = keyof typeof iconMap;
