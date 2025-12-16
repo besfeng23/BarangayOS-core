@@ -35,13 +35,16 @@ const NavItem = ({ href, icon: Icon, label, badge }: (typeof menuItems)[0]) => {
   const pathname = usePathname();
   const isActive = pathname === href;
 
+  // For v1, settings page is under the same layout
+  const isSettingsActive = pathname.startsWith('/settings') && href === '/settings';
+
   return (
     <Link href={href} passHref>
       <div
         className={cn(
           'flex items-center p-4 rounded-lg cursor-pointer h-[52px]',
           'text-slate-300 hover:bg-slate-700 hover:text-white',
-          isActive && 'bg-blue-600/80 text-white font-semibold'
+          (isActive || isSettingsActive) && 'bg-blue-600/80 text-white font-semibold'
         )}
       >
         <Icon className="h-6 w-6 mr-4" />
