@@ -118,16 +118,16 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl w-full">
+      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl w-full flex flex-col h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl">New Blotter Entry - Step {currentStep}: {steps[currentStep - 1]}</DialogTitle>
         </DialogHeader>
         
-        <div className="py-6">
+        <div className="py-6 flex-grow overflow-y-auto">
           {renderStepContent()}
         </div>
 
-        <DialogFooter className="justify-between mt-4">
+        <DialogFooter className="justify-between mt-4 flex-shrink-0">
           <div>
             {currentStep > 1 && (
               <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={isSaving}>

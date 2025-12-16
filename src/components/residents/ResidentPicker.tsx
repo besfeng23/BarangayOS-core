@@ -62,7 +62,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start">
+      <PopoverContent className="w-[400px] p-0" align="start" onMouseDown={(e) => e.preventDefault()}>
         <ResidentSearch>
           {({ residents, loading, searchTerm, setSearchTerm }) => (
             <Command shouldFilter={false}>
@@ -83,6 +83,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
                         onSelectResident(resident);
                         setOpen(false);
                       }}
+                      className="aria-selected:bg-slate-700"
                     >
                       <Check
                         className={cn(
