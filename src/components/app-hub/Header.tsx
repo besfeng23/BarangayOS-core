@@ -7,17 +7,25 @@ import { useToast } from '@/hooks/use-toast';
 import { ref, onValue } from 'firebase/database';
 import { rtdb } from '@/lib/firebase/client';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
-type SystemStatus = 'online' | 'offline' | 'reconnecting' | 'error';
+type SystemStatus = 'online' | 'offline' | 'error';
 
-const statusConfig = {
-  online: { text: '🟢 SYNCED', className: 'bg-green-600/80 border-green-500/50 text-white' },
-  offline: { text: '🟡 SAVED ON DEVICE', className: 'bg-yellow-600/80 border-yellow-500/50 text-white' },
-  reconnecting: { text: '🟠 RECONNECTING...', className: 'bg-orange-600/80 border-orange-500/50 text-white' },
-  error: { text: '🔴 NEEDS SIGNAL', className: 'bg-red-600/80 border-red-500/50 text-white' },
+const statusConfig: Record<SystemStatus, { text: string; className: string; description: string }> = {
+  online: { 
+    text: '🟢 SYNCED', 
+    className: 'bg-green-600/80 border-green-500/50 text-white',
+    description: 'Your data is safe and backed up to the cloud in real-time.'
+  },
+  offline: { 
+    text: '🟡 SAVED ON DEVICE', 
+    className: 'bg-yellow-600/80 border-yellow-500/50 text-white',
+    description: "You're offline. Keep working! Your data is safe on this device and will sync when you reconnect."
+  },
+  error: { 
+    text: '🔴 SYNC FAILED', 
+    className: 'bg-red-600/80 border-red-500/50 text-white',
+    description: "Data is not syncing to the cloud. Please check your connection and tap here to retry."
+  },
 };
 
 const getPageTitle = (path: string): string => {
@@ -52,6 +60,7 @@ export default function Header() {
     window.addEventListener('offline', handleNavigatorStatusChange);
     handleNavigatorStatusChange(); 
 
+    // Firebase Realtime Database connection check
     const connectedRef = ref(rtdb, '.info/connected');
     const unsubscribe = onValue(connectedRef, (snap) => {
       const isConnected = snap.val() === true;
@@ -67,38 +76,38 @@ export default function Header() {
   }, []);
   
   useEffect(() => {
+    // This logic determines the final status based on both checks.
+    // The 'error' state would be triggered by failed writes, which we simulate here.
     if (!isNavigatorOnline) {
       setSystemStatus('offline');
     } else {
       if (isFirebaseConnected) {
         setSystemStatus('online');
       } else {
-        // This state indicates WiFi is on, but Firebase is unreachable.
-        setSystemStatus('reconnecting');
+        // We are connected to a network, but not to Firebase servers.
+        // This is a more specific error condition. For v1, we map this to 'offline' for simplicity.
+        // A future version could use this for a 'reconnecting' state.
+        setSystemStatus('offline'); 
       }
     }
   }, [isNavigatorOnline, isFirebaseConnected]);
 
   const handleStatusClick = () => {
-    let description = '';
-    switch(systemStatus) {
-      case 'online':
-        description = 'All data is up to date and syncing with the cloud in real-time.';
-        break;
-      case 'offline':
-        description = 'You are currently offline. All changes are being saved securely on this device and will sync automatically when connection returns.';
-        break;
-       case 'reconnecting':
-        description = 'You appear to be connected to a network, but we are having trouble reaching the server. Checking connection...';
-        break;
-      case 'error':
-        description = 'There was a persistent issue syncing. Please check your network connection.';
-        break;
+    const currentStatusInfo = statusConfig[systemStatus];
+    
+    // In a real implementation, clicking on 'error' would trigger a retry mechanism.
+    if (systemStatus === 'error') {
+       // e.g., retryPendingWrites();
+       toast({
+          title: "Retrying Sync...",
+          description: "Attempting to sync your pending data to the cloud.",
+        });
+    } else {
+       toast({
+        title: `Status: ${currentStatusInfo.text}`,
+        description: currentStatusInfo.description,
+      });
     }
-    toast({
-      title: `System Status: ${statusConfig[systemStatus].text}`,
-      description,
-    });
   };
 
   const currentStatus = statusConfig[systemStatus];
@@ -117,11 +126,6 @@ export default function Header() {
                  </>
              ) : (
                 <div className="flex items-center gap-4">
-                     <Link href="/" passHref>
-                        <Button variant="outline" size="icon">
-                            <ArrowLeft />
-                        </Button>
-                    </Link>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                         {pageTitle}
                     </h1>
