@@ -2,11 +2,14 @@
 'use client'
 
 import './globals.css';
-import './print.css'; // Import the print styles
+import './print.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/firebase/auth-provider';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { usePathname } from 'next/navigation';
+import Sidebar from '@/components/app-hub/Sidebar';
+import Header from '@/components/app-hub/Header';
+
 
 export default function RootLayout({
   children,
@@ -31,7 +34,15 @@ export default function RootLayout({
                 children
             ) : (
                 <AuthGuard>
-                    {children}
+                    <div className="flex h-screen bg-slate-950 text-gray-200">
+                        <Sidebar />
+                        <div className="flex flex-col flex-1 overflow-hidden">
+                            <Header />
+                            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                                {children}
+                            </main>
+                        </div>
+                    </div>
                 </AuthGuard>
             )}
             <Toaster />

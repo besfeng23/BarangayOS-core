@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ref, onValue } from 'firebase/database';
 import { rtdb } from '@/lib/firebase/client';
+import { usePathname } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 type SystemStatus = 'online' | 'offline' | 'reconnecting' | 'error';
 
@@ -16,12 +19,21 @@ const statusConfig = {
   error: { text: '🔴 NEEDS SIGNAL', className: 'bg-red-600/80 border-red-500/50 text-white' },
 };
 
+const getPageTitle = (path: string): string => {
+    if (path === '/') return 'App Hub';
+    const segment = path.split('/').pop()?.replace(/-/g, ' ');
+    return segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'Dashboard';
+}
+
 export default function Header() {
   const [greeting, setGreeting] = useState('');
   const [systemStatus, setSystemStatus] = useState<SystemStatus>('online');
   const [isNavigatorOnline, setIsNavigatorOnline] = useState(true);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(true);
   const { toast } = useToast();
+  const pathname = usePathname();
+  const pageTitle = getPageTitle(pathname);
+  const isHub = pathname === '/';
 
   useEffect(() => {
     const getGreeting = () => {
@@ -32,15 +44,13 @@ export default function Header() {
     };
     setGreeting(getGreeting());
 
-    // 1. Listen to browser's online/offline status
     const handleNavigatorStatusChange = () => {
         setIsNavigatorOnline(navigator.onLine);
     };
     window.addEventListener('online', handleNavigatorStatusChange);
     window.addEventListener('offline', handleNavigatorStatusChange);
-    handleNavigatorStatusChange(); // Set initial status
+    handleNavigatorStatusChange(); 
 
-    // 2. Listen to Firebase Realtime Database connectivity state
     const connectedRef = ref(rtdb, '.info/connected');
     const unsubscribe = onValue(connectedRef, (snap) => {
       const isConnected = snap.val() === true;
@@ -56,13 +66,13 @@ export default function Header() {
   }, []);
   
   useEffect(() => {
-    // Determine the final system status based on both listeners
     if (!isNavigatorOnline) {
       setSystemStatus('offline');
     } else {
       if (isFirebaseConnected) {
         setSystemStatus('online');
       } else {
+        // This state indicates WiFi is on, but Firebase is unreachable.
         setSystemStatus('reconnecting');
       }
     }
@@ -93,14 +103,29 @@ export default function Header() {
   const currentStatus = statusConfig[systemStatus];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-b">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700">
+      <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {greeting}
-            </h1>
-            <p className="text-muted-foreground">Welcome to the BarangayOS App Hub</p>
+             {isHub ? (
+                 <>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                        {greeting}
+                    </h1>
+                    <p className="text-muted-foreground">Welcome to the BarangayOS App Hub</p>
+                 </>
+             ) : (
+                <div className="flex items-center gap-4">
+                     <Link href="/" passHref>
+                        <Button variant="outline" size="icon">
+                            <ArrowLeft />
+                        </Button>
+                    </Link>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                        {pageTitle}
+                    </h1>
+                </div>
+             )}
           </div>
           <div className="ml-4">
              <Badge 
