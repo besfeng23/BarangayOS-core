@@ -59,5 +59,3 @@ const Step1People = ({ formData, setFormData }: { formData: any, setFormData: an
 };
 
 export default Step1People;
-
-    

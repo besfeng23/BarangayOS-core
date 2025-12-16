@@ -11,5 +11,5 @@ export interface BlotterCase {
   narrative: string;
   nature: string;
   status: CaseStatus;
-  incidentAt: Timestamp;
+  incidentAt: Date;
 }

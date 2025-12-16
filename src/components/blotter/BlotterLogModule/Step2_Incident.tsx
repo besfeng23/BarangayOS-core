@@ -52,5 +52,3 @@ const Step2Incident = ({ formData, setFormData }: { formData: any, setFormData: 
 };
 
 export default Step2Incident;
-
-    

@@ -7,6 +7,8 @@ import type { EmangoTypes } from './emango';
 import type { ClinicQueueTypes } from './clinic-queue';
 import type { FinancialsTypes } from './financials';
 import type { AnnouncementsTypes } from './announcements';
+import type { BusinessPermit } from './permits';
+import type { BlotterCase } from './blotter';
 
 export type BadgeInfo = {
   visible: boolean;
@@ -202,4 +204,4 @@ export interface AuditLog {
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
-export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes, AnnouncementsTypes };
+export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes, AnnouncementsTypes, BusinessPermit, BlotterCase };

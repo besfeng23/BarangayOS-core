@@ -98,5 +98,3 @@ const Step3Narrative = ({ formData, setFormData, isOnline }: Step3NarrativeProps
 };
 
 export default Step3Narrative;
-
-    

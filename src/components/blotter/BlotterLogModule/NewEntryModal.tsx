@@ -149,5 +149,3 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
 };
 
 export default NewEntryModal;
-
-    
