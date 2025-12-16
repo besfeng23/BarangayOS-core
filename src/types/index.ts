@@ -10,6 +10,7 @@ import type { AnnouncementsTypes } from './announcements';
 import type { BusinessPermit } from './permits';
 import type { BlotterCase } from './blotter';
 import type { Transaction } from './transactions';
+import type { ReportData } from './reports';
 
 export type BadgeInfo = {
   visible: boolean;
@@ -205,4 +206,4 @@ export interface AuditLog {
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
-export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes, AnnouncementsTypes, BusinessPermit, BlotterCase, Transaction };
+export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes, AnnouncementsTypes, BusinessPermit, BlotterCase, Transaction, ReportData };

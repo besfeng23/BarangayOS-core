@@ -19,7 +19,8 @@ export default function RootLayout({
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
 
-  const isSpecialLayout = ['/blotter', '/permits', '/city-health', '/city-health/queue'].includes(pathname);
+   // All pages except login now use the standard layout with Sidebar and Header.
+  const isSpecialLayout = ['/blotter-legacy', '/permits-legacy', '/city-health-legacy', '/city-health/queue-legacy'].includes(pathname);
 
    if (isSpecialLayout) {
     return (
