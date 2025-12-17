@@ -21,12 +21,12 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
   const [open, setOpen] = useState(false);
   const [manualEntry, setManualEntry] = useState(false);
   const [manualName, setManualName] = useState('');
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     }
@@ -34,7 +34,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [popoverRef]);
+  }, [wrapperRef]);
 
 
   if (selectedResident) {
@@ -65,7 +65,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
   }
 
   return (
-    <div ref={popoverRef}>
+    <div ref={wrapperRef}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -73,14 +73,13 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between h-12 text-lg"
-            onClick={() => setOpen(true)}
           >
             {selectedResident ? selectedResident.displayName : "Search and select a resident..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-            className="w-[400px] p-0" 
+            className="w-[400px] p-0 z-50"
             align="start"
             onMouseDown={(e) => e.preventDefault()}
         >

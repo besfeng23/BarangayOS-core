@@ -117,6 +117,13 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
     onClose();
   }
 
+  const isNextDisabled = () => {
+    if (currentStep === 1) {
+        return !formData.complainant || !formData.respondent;
+    }
+    return false;
+  }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
@@ -139,7 +146,7 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
           </div>
           <div>
             {currentStep < steps.length ? (
-              <Button className="h-12 text-lg" onClick={handleNext}>
+              <Button className="h-12 text-lg" onClick={handleNext} disabled={isNextDisabled()}>
                 Next
               </Button>
             ) : (

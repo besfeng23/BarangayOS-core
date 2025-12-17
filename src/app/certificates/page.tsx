@@ -157,6 +157,8 @@ const CertificatesPage = () => {
     resetForm();
   }
 
+  const isSaveDisabled = !selectedResident || !certificateType || !purpose || isSaving;
+
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
@@ -231,7 +233,7 @@ const CertificatesPage = () => {
             <Button 
                 className="bg-blue-600 hover:bg-blue-700 h-14 text-xl px-8" 
                 onClick={handleSaveAndPreview}
-                disabled={!selectedResident || !certificateType || !purpose || isSaving}
+                disabled={isSaveDisabled}
             >
                 <Save className="mr-2 h-6 w-6" />
                 {isSaving ? "Saving..." : "Save & Preview"}

@@ -73,7 +73,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-72 bg-slate-900 border-r border-slate-700 flex-col hidden md:flex">
-      <div className="p-6 border-b border-slate-700">
+      <div className="p-6">
         <div className="flex items-center gap-3">
           <Shield className="h-10 w-10 text-blue-400" />
           <div>
