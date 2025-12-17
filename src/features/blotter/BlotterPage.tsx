@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+"use client";
+import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useBlotterData } from "@/hooks/useBlotterData";
-import { Icon } from "@/components/icons";
+import { useBlotterIndex } from "@/hooks/useBlotterIndex";
+import { BlotterStatus } from "@/lib/bosDb";
 
-const CHIP_STATUS = ["ACTIVE", "SETTLED", "FILED_TO_COURT", "DISMISSED"] as const;
-const CHIP_TAGS = ["Debt", "Noise", "Theft", "Physical Injury", "Other"];
+const STATUS_CHIPS: BlotterStatus[] = ["ACTIVE", "SETTLED", "FILED_TO_COURT", "DISMISSED"];
+const TAG_CHIPS = ["Debt", "Noise", "Theft", "Physical Injury", "Trespassing", "Harassment"];
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
@@ -15,13 +16,21 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function Chip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
       className={`px-3 py-2 rounded-full border text-sm whitespace-nowrap
         ${active ? "bg-zinc-800 border-zinc-700 text-zinc-100" : "bg-zinc-950 border-zinc-800 text-zinc-300"}
-        focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950`}
+        focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950`}
       aria-label={`Filter ${label}`}
     >
       {label}
@@ -29,9 +38,20 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
   );
 }
 
+function statusPill(status: BlotterStatus) {
+  const base =
+    "ml-2 px-2 py-1 rounded text-xs font-medium border bg-zinc-900 border-zinc-700 text-zinc-300";
+  return base;
+}
+
 export default function BlotterPage() {
   const router = useRouter();
-  const { filters, setFilters, blotters, snapshot } = useBlotterData();
+  const { filters, setFilters, clearFilters, snapshot, blotters } = useBlotterIndex();
+
+  const [statsOpen, setStatsOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 640px)").matches;
+  });
 
   const hasFilters = useMemo(
     () => !!(filters.q || filters.status || filters.tag),
@@ -41,71 +61,98 @@ export default function BlotterPage() {
   return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
         <div className="max-w-6xl mx-auto px-4 pt-4 space-y-4">
+          {/* Snapshot */}
           <section aria-label="Blotter Snapshot">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <StatTile label="Total Cases" value={snapshot.total} />
-              <StatTile label="Active" value={snapshot.active} />
-              <StatTile label="Settled" value={snapshot.settled} />
-            </div>
+            <button
+              onClick={() => setStatsOpen((s) => !s)}
+              className="w-full flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3
+                focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+              aria-label="Toggle blotter snapshot"
+            >
+              <span className="font-medium">Blotter Snapshot</span>
+              <span className="text-zinc-400 text-sm">{statsOpen ? "Hide" : "Show"}</span>
+            </button>
+
+            {statsOpen && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                <StatTile label="Total Cases" value={snapshot.total} />
+                <StatTile label="Active" value={snapshot.active} />
+                <StatTile label="Settled" value={snapshot.settled} />
+              </div>
+            )}
           </section>
 
+          {/* Actions & Controls */}
           <section className="sticky top-[72px] z-20 bg-zinc-950 pb-2 pt-1">
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => router.push("/blotter/new")}
                   className="px-6 py-3 bg-zinc-100 text-zinc-950 font-bold rounded-2xl
-                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
+                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+                  aria-label="Create new blotter case"
                 >
                   New Case
                 </button>
 
                 <input
                   type="text"
-                  placeholder="Search case #, name, tag..."
+                  placeholder="Search case #, names, tags, narrative..."
                   value={filters.q}
                   onChange={(e) => setFilters((p) => ({ ...p, q: e.target.value }))}
                   className="flex-1 min-h-[48px] px-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-600
-                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
+                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+                  aria-label="Search blotter"
                 />
 
                 {hasFilters && (
                   <button
-                    onClick={() => setFilters({ q: "" })}
+                    onClick={clearFilters}
                     className="px-4 py-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-300
-                      focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
+                      focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+                    aria-label="Clear filters"
                   >
                     Clear
                   </button>
                 )}
               </div>
 
+              {/* Status chips */}
               <div className="flex gap-2 overflow-x-auto pb-1">
-                {CHIP_STATUS.map((st) => (
+                {STATUS_CHIPS.map((st) => (
                   <Chip
                     key={st}
                     label={st}
                     active={filters.status === st}
-                    onClick={() => setFilters((f) => ({ ...f, status: f.status === st ? undefined : st }))}
+                    onClick={() =>
+                      setFilters((f) => ({ ...f, status: f.status === st ? undefined : st }))
+                    }
                   />
                 ))}
-                <div className="w-px h-7 bg-zinc-800 my-auto mx-1" />
-                {CHIP_TAGS.map((t) => (
+              </div>
+
+              {/* Tag chips */}
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {TAG_CHIPS.map((t) => (
                   <Chip
                     key={t}
                     label={t}
                     active={filters.tag === t}
-                    onClick={() => setFilters((f) => ({ ...f, tag: f.tag === t ? undefined : t }))}
+                    onClick={() =>
+                      setFilters((f) => ({ ...f, tag: f.tag === t ? undefined : t }))
+                    }
                   />
                 ))}
               </div>
             </div>
           </section>
 
+          {/* List */}
           <section className="space-y-2">
             {blotters.length === 0 ? (
               <div className="p-8 text-center border border-dashed border-zinc-800 rounded-2xl text-zinc-500">
-                No blotter cases found. <br /> Create a new case to begin.
+                No cases found. <br /> Tap <span className="text-zinc-300 font-semibold">New Case</span>{" "}
+                to start a record.
               </div>
             ) : (
               blotters.map((b) => (
@@ -113,28 +160,29 @@ export default function BlotterPage() {
                   key={b.id}
                   onClick={() => router.push(`/blotter/${b.id}`)}
                   className="w-full text-left flex items-center p-4 bg-zinc-900 border border-zinc-800 rounded-2xl min-h-[48px]
-                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
+                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+                  aria-label={`Open case ${b.caseNumber}`}
                 >
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs mr-4 px-2 text-center">
+                    {b.caseNumber}
+                  </div>
+
                   <div className="flex-1 min-w-0">
-                    <div className="text-zinc-100 font-semibold truncate">
-                      {b.caseNumber} • {b.status}
-                    </div>
-                    <div className="text-zinc-400 text-sm truncate">
-                      Complainant: {(b.complainants?.[0]?.name || "—")} • Respondent: {(b.respondents?.[0]?.name || "—")}
-                    </div>
-                    <div className="text-zinc-400 text-sm truncate">
-                      Tags: {(b.tags || []).slice(0, 3).join(", ") || "—"}
-                    </div>
+                    <h3 className="text-lg font-semibold text-zinc-100 truncate">
+                      {(b.complainants?.[0]?.name || "Complainant")} vs {(b.respondents?.[0]?.name || "Respondent")}
+                    </h3>
+                    <p className="text-zinc-400 text-sm truncate">
+                      {new Date(b.incidentDate).toLocaleDateString()} • {b.tags?.slice(0, 3).join(", ") || "No tags"}
+                    </p>
+                    <p className="text-zinc-400 text-sm truncate">{b.narrative}</p>
                   </div>
-                  <div className="ml-2 px-2 py-1 rounded text-xs font-medium border bg-zinc-900 border-zinc-700 text-zinc-300">
-                    {new Date(b.createdAt).toLocaleDateString()}
-                  </div>
+
+                  <div className={statusPill(b.status)}>{b.status}</div>
                 </button>
               ))
             )}
           </section>
         </div>
-
       </div>
   );
 }

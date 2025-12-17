@@ -135,9 +135,6 @@ export function useBlotterData() {
       status: input.status as any,
       searchTokens,
       syncState: "queued",
-      caseNumberNorm: norm(caseNumber),
-      narrativeNorm: norm(input.narrative),
-      tagsNorm: (input.tags || []).map(norm),
     };
 
     await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, bosDb.activityLog, async () => {
