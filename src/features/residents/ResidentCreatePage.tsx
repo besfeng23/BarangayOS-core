@@ -1,13 +1,14 @@
+"use client";
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
-import { TerminalShell } from "@/components/shell/TerminalShell";
-import { SystemRail } from "@/components/shell/SystemRail";
-import { BottomNav } from "@/components/shell/BottomNav";
+import { TerminalShell } from "@/layouts/TerminalShell";
+import { SystemRail } from "@/components/SystemRail";
+import { BottomNav } from "@/components/BottomNav";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ResidentCreatePage() {
-  const nav = useNavigate();
+  const router = useRouter();
   const { createResident, checkDuplicateLocal, residentNewDraft, upsertDraft, clearDraft } = useResidentsData();
   const { showToast, ToastComponent } = useToast();
 
@@ -60,7 +61,10 @@ export default function ResidentCreatePage() {
 
       const rec = await createResident({ ...form, status: "ACTIVE" });
       await clearDraft("resident:new");
-      nav(`/residents/${rec.id}`, { state: { toast: "Resident saved offline — queued for sync" } });
+      // For Next.js, we can't pass state like this easily without a library.
+      // A simple approach is to use query params or rely on a global state/toast mechanism.
+      // For now, we'll just navigate. A global toast could be implemented for "queued for sync".
+      router.push(`/residents/${rec.id}`);
     } finally {
       setSaving(false);
     }
@@ -78,7 +82,7 @@ export default function ResidentCreatePage() {
                 <p className="text-zinc-400">New Record • Offline Ready</p>
               </div>
               <button
-                onClick={() => nav(-1)}
+                onClick={() => router.back()}
                 className="px-4 py-2 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-300
                   focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
               >
@@ -136,7 +140,7 @@ export default function ResidentCreatePage() {
             </p>
             <div className="space-y-3">
               <button
-                onClick={() => nav(`/residents/${dup.id}`)}
+                onClick={() => router.push(`/residents/${dup.id}`)}
                 className="w-full py-3 bg-zinc-800 text-zinc-100 font-semibold rounded-2xl border border-zinc-700
                   focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
               >

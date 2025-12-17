@@ -9,7 +9,6 @@ import { usePathname } from 'next/navigation';
 import { SettingsProvider } from '@/context/SettingsContext';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
 import { SyncProvider } from '@/context/SyncContext';
-import TerminalShell from '@/layouts/TerminalShell';
 
 export default function RootLayout({
   children,
@@ -46,10 +45,8 @@ export default function RootLayout({
             ) : (
               <AuthGuard>
                 <SyncProvider>
-                    <TerminalShell>
-                      <IdleScreensaver />
-                      {children}
-                    </TerminalShell>
+                  <IdleScreensaver />
+                  {children}
                 </SyncProvider>
               </AuthGuard>
             )}

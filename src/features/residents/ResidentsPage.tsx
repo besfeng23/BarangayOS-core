@@ -1,9 +1,10 @@
+"use client";
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
-import { TerminalShell } from "@/components/shell/TerminalShell";
-import { SystemRail } from "@/components/shell/SystemRail";
-import { BottomNav } from "@/components/shell/BottomNav";
+import { TerminalShell } from "@/layouts/TerminalShell";
+import { SystemRail } from "@/components/SystemRail";
+import { BottomNav } from "@/components/BottomNav";
 
 const CHIP_PUROK = ["Purok 1", "Purok 2", "Purok 3", "Purok 4"];
 const CHIP_SEX = ["Male", "Female", "Other"];
@@ -33,7 +34,7 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
 }
 
 export default function ResidentsPage() {
-  const nav = useNavigate();
+  const router = useRouter();
   const { filters, setFilters, residents, snapshot, residentNewDraft, clearDraft } = useResidentsData();
 
   const [statsOpen, setStatsOpen] = useState<boolean>(() => {
@@ -57,7 +58,7 @@ export default function ResidentsPage() {
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
                 <button
-                  onClick={() => nav("/residents/new")}
+                  onClick={() => router.push("/residents/new")}
                   className="flex-1 sm:flex-none px-4 py-2 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold
                     focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
                 >
@@ -101,7 +102,7 @@ export default function ResidentsPage() {
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => nav("/residents/new")}
+                  onClick={() => router.push("/residents/new")}
                   className="px-6 py-3 bg-zinc-100 text-zinc-950 font-bold rounded-2xl
                     focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
                   aria-label="Register resident"
@@ -172,7 +173,7 @@ export default function ResidentsPage() {
               residents.map((r) => (
                 <button
                   key={r.id}
-                  onClick={() => nav(`/residents/${r.id}`)}
+                  onClick={() => router.push(`/residents/${r.id}`)}
                   className="w-full text-left flex items-center p-4 bg-zinc-900 border border-zinc-800 rounded-2xl min-h-[48px]
                     focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
                   aria-label={`Open resident ${r.lastName}, ${r.firstName}`}

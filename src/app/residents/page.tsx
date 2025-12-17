@@ -1,6 +1,3 @@
-
-import ResidentRecords from '@/components/residents/ResidentRecords';
-
-export default function ResidentsPage() {
-  return <ResidentRecords />;
-}
+"use client";
+import ResidentsPage from "@/features/residents/ResidentsPage";
+export default function Page() { return <ResidentsPage />; }
