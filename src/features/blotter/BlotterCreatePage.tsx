@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useLocation } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useBlotterData } from "@/hooks/useBlotterData";
 import { Party } from "@/lib/bosDb";
@@ -22,6 +22,7 @@ function Field({ label, children }: any) {
 
 export default function BlotterCreatePage() {
   const router = useRouter();
+  const location = useLocation() as any;
   const { toast } = useToast();
   const { createBlotter, blotterNewDraft, upsertDraft, clearDraft } = useBlotterData();
 
@@ -35,6 +36,20 @@ export default function BlotterCreatePage() {
   });
 
   const [saving, setSaving] = useState(false);
+
+  // Prefill from Resident Profile -> Blotter Create
+  useEffect(() => {
+    const prefill = location?.state?.prefill;
+    if (!prefill) return;
+
+    setForm((p) => ({
+      ...p,
+      ...prefill,
+    }));
+
+    // Clear router state (kiosk-safe, prevents re-prefill on refresh)
+    router.replace("/blotter/new", { state: {} } as any);
+  }, [location, router]);
 
   // Restore draft
   useEffect(() => {

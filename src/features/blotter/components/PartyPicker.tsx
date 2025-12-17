@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Party, ResidentRecord } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { useResidentLookup } from "@/hooks/useResidentLookup";
@@ -7,15 +8,39 @@ const baseInput =
   "w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl text-zinc-100 " +
   "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";
 
-function Pill({ label, onRemove }: { label: string; onRemove: () => void }) {
+function PartyChip({
+  party,
+  onRemove,
+}: {
+  party: Party;
+  onRemove: () => void;
+}) {
+  const router = useRouter();
+
+  const open = () => {
+    if (party.residentId) router.push(`/residents/${party.residentId}`);
+  };
+
   return (
     <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-zinc-800 border border-zinc-700">
-      <span className="text-zinc-100 text-sm font-medium">{label}</span>
+      {party.residentId ? (
+        <button
+          onClick={open}
+          className="text-zinc-100 text-sm font-semibold underline underline-offset-4
+            focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded-full px-1"
+          aria-label={`Open resident ${party.name}`}
+        >
+          {party.name}
+        </button>
+      ) : (
+        <span className="text-zinc-100 text-sm font-medium">{party.name}</span>
+      )}
+
       <button
         onClick={onRemove}
         className="w-8 h-8 rounded-full bg-zinc-950 border border-zinc-800 text-zinc-300
           focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
-        aria-label={`Remove ${label}`}
+        aria-label={`Remove ${party.name}`}
       >
         ✕
       </button>
@@ -102,7 +127,7 @@ export function PartyPicker({
                 aria-label={`Select ${r.lastName}, ${r.firstName}`}
               >
                 <div className="text-zinc-100 font-semibold">
-                  {r.lastName.toUpperCase()}, {r.firstName}
+                  {r.lastName.toUpperCase()}, ${r.firstName}
                 </div>
                 <div className="text-zinc-400 text-sm truncate">
                   {r.purok} • {r.addressLine1}
@@ -134,9 +159,9 @@ export function PartyPicker({
         {parties?.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-1">
             {parties.map((p, idx) => (
-              <Pill
+              <PartyChip
                 key={(p.residentId || uuid()) + "::" + p.nameNorm + "::" + idx}
-                label={p.name}
+                party={p}
                 onRemove={() => removeAt(idx)}
               />
             ))}

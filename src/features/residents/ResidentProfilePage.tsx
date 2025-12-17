@@ -6,6 +6,7 @@ import { bosDb } from "@/lib/bosDb";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { SyncStatusBadge } from "@/features/residents/components/SyncStatusBadge";
 import { useToast } from "@/components/ui/Toast";
+import { norm } from "@/lib/uuid";
 
 export default function ResidentProfilePage() {
   const params = useParams();
@@ -32,7 +33,7 @@ export default function ResidentProfilePage() {
       toastShownRef.current = true;
       showToast(decodeURIComponent(toastMessage));
       // Clear the toast message from the URL without reloading
-      router.replace(`/residents/${id}`, undefined);
+      router.replace(`/residents/${id}`, { scroll: false });
     }
   }, [searchParams, showToast, router, id]);
 
@@ -88,7 +89,30 @@ export default function ResidentProfilePage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
                     <button className={btnPrimary} onClick={() => router.push(`/certificates/${resident.id}`)}>Issue Clearance</button>
                     <button className={btnPrimary}>Issue Certificate</button>
-                    <button className={btnSecondary}>Edit Profile</button>
+                    
+                    <button
+                      className={btnPrimary}
+                      onClick={() => {
+                        // Route to Blotter Create with a prefill (complainant = this resident).
+                        // BlotterCreatePage will autosave it as a draft.
+                        router.push("/blotter/new", {
+                          state: {
+                            prefill: {
+                              complainants: [
+                                {
+                                  residentId: resident.id,
+                                  name: `${resident.lastName.toUpperCase()}, ${resident.firstName}`,
+                                  nameNorm: norm(`${resident.lastName} ${resident.firstName}`),
+                                },
+                              ],
+                            },
+                          },
+                        } as any);
+                      }}
+                    >
+                      Create Blotter Case
+                    </button>
+
                     <button className={btnSecondary}>Print Record</button>
                   </div>
                 </div>
