@@ -38,6 +38,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const statusStyles: Record<string, string> = {
   Active: 'bg-green-600',
   Inactive: 'bg-red-600',
+  'Pending Renewal': 'bg-yellow-600',
 };
 
 
@@ -118,6 +119,9 @@ export default function BusinessPermitsPage() {
           <div className="flex gap-2">
               <Button variant="outline" className="h-12">
                   Type <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+               <Button variant="outline" className="h-12">
+                  Status <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
           </div>
           <div className="flex gap-2 ml-auto">

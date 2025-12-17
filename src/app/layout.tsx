@@ -12,6 +12,7 @@ import { SettingsProvider } from '@/context/SettingsContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Home, Printer } from 'lucide-react';
 import Link from 'next/link';
+import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
 
 
 export default function RootLayout({
@@ -38,6 +39,7 @@ export default function RootLayout({
                 children
             ) : (
                 <AuthGuard>
+                    <IdleScreensaver />
                     <div className="flex flex-col h-screen bg-background text-foreground">
                         <Header />
                         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">

@@ -6,7 +6,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { Button } from '@/components/ui/button';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { Users, FileClock, Scale, Plus, Edit, FileText, Briefcase } from 'lucide-react';
+import { Users, FileClock, Scale, Plus, Edit, FileText, Briefcase, Building } from 'lucide-react';
 import Link from 'next/link';
 import { residentConverter, blotterCaseConverter } from '@/lib/firebase/schema';
 import { useToast } from '@/hooks/use-toast';
@@ -87,6 +87,7 @@ export default function Home() {
   const [residentCount, setResidentCount] = useState(0);
   const [activeCasesCount, setActiveCasesCount] = useState(0);
   const [pendingClearancesCount, setPendingClearancesCount] = useState(0);
+  const [pendingPermitsCount, setPendingPermitsCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -116,11 +117,20 @@ export default function Home() {
         console.error("Error fetching pending clearances:", error);
     });
 
+    // Listener for pending business permits
+    const permitsQuery = query(collection(db, 'business_permits'), where('status', '==', 'Pending Renewal'));
+     const unsubscribePermits = onSnapshot(permitsQuery, (snapshot) => {
+        setPendingPermitsCount(snapshot.size);
+    }, (error) => {
+        console.error("Error fetching pending permits:", error);
+    });
+
 
     return () => {
       unsubscribeResidents();
       unsubscribeBlotter();
       unsubscribeCertificates();
+      unsubscribePermits();
     };
   }, [toast]);
 
@@ -151,7 +161,7 @@ export default function Home() {
         </section>
 
         <section>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <QuickActionCard 
                   title="Blotter"
                   description="Manage community disputes"
@@ -172,6 +182,13 @@ export default function Home() {
                   icon={Users}
                   href="/residents"
                   actionText="MANAGE RECORDS"
+                />
+                <QuickActionCard 
+                  title="Business Permits"
+                  description={`Renewals Pending: ${pendingPermitsCount}`}
+                  icon={Building}
+                  href="/permits?action=new"
+                  actionText="+ NEW PERMIT"
                 />
             </div>
         </section>

@@ -26,7 +26,7 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
   const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState('');
   const [address, setAddress] = useState('');
-  const [fees, setFees] = useState('0.00');
+  const [fees, setFees] = useState('500.00');
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [newPermit, setNewPermit] = useState<BusinessPermit | null>(null);
@@ -45,7 +45,7 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
       setBusinessName('');
       setBusinessType('');
       setAddress('');
-      setFees('0.00');
+      setFees('500.00');
       setNewPermit(null);
   }
 
@@ -214,4 +214,3 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
 };
 
 export default NewPermitModal;
-

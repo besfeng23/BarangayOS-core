@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -85,11 +86,22 @@ export default {
           '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
           '40%, 60%': { transform: 'translate3d(4px, 0, 0)' },
         },
+        'ken-burns': {
+            '0%': {
+              transform: 'scale(1) translateY(0)',
+              transformOrigin: 'center center',
+            },
+            '100%': {
+              transform: 'scale(1.1) translateY(-15px)',
+              transformOrigin: 'center center',
+            },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
+        'ken-burns': 'ken-burns 20s ease-out both',
       },
     },
   },

@@ -20,7 +20,7 @@ const PermitDocument = React.forwardRef<HTMLDivElement, PermitDocumentProps>(({ 
   
   const { barangayName, municipality, province, punongBarangay, logoUrl } = settings;
 
-  const issuedDate = permit.issuedAt ? new Date(permit.issuedAt.seconds * 1000) : new Date();
+  const issuedDate = permit.issuedAt ? new Date(permit.issuedAt as any) : new Date();
 
   return (
     <div ref={ref} id="print-area" className="bg-white text-black p-8 max-w-4xl mx-auto print-container">

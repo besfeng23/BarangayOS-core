@@ -47,5 +47,5 @@ const PrintPermitModal = ({ isOpen, onClose, permit, resident }: PrintPermitModa
   );
 };
 
-export default PrintPermitModal;
 
+export default PrintPermitModal;
