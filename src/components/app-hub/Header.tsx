@@ -13,7 +13,7 @@ type SystemStatus = 'online' | 'offline' | 'error';
 
 const statusConfig: Record<SystemStatus, { text: string; className: string; description: string, icon: React.ElementType }> = {
   online: { 
-    text: 'SYSTEM LIVE', 
+    text: 'Online', 
     className: 'bg-green-600/80 border-green-500/50 text-white',
     description: 'Your data is safe and backed up to the cloud in real-time.',
     icon: CheckCircle2
@@ -34,65 +34,11 @@ const statusConfig: Record<SystemStatus, { text: string; className: string; desc
 
 export default function Header() {
   const [time, setTime] = useState(new Date());
-  const [systemStatus, setSystemStatus] = useState<SystemStatus>('online');
-  const [isNavigatorOnline, setIsNavigatorOnline] = useState(true);
-  const [isFirebaseConnected, setIsFirebaseConnected] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const timerId = setInterval(() => setTime(new Date()), 1000);
-
-    const handleNavigatorStatusChange = () => {
-        setIsNavigatorOnline(navigator.onLine);
-    };
-    window.addEventListener('online', handleNavigatorStatusChange);
-    window.addEventListener('offline', handleNavigatorStatusChange);
-    handleNavigatorStatusChange(); 
-
-    const connectedRef = ref(rtdb, '.info/connected');
-    const unsubscribe = onValue(connectedRef, (snap) => {
-      const isConnected = snap.val() === true;
-      setIsFirebaseConnected(isConnected);
-    });
-
-    return () => {
-      clearInterval(timerId);
-      window.removeEventListener('online', handleNavigatorStatusChange);
-      window.removeEventListener('offline', handleNavigatorStatusChange);
-      unsubscribe();
-    };
-
-  }, []);
   
   useEffect(() => {
-    if (!isNavigatorOnline) {
-      setSystemStatus('offline');
-    } else {
-      if (isFirebaseConnected) {
-        setSystemStatus('online');
-      } else {
-        setSystemStatus('error');
-      }
-    }
-  }, [isNavigatorOnline, isFirebaseConnected]);
-
-  const handleStatusClick = () => {
-    const currentStatusInfo = statusConfig[systemStatus];
-    if (systemStatus === 'error') {
-       toast({
-          title: "Retrying Sync...",
-          description: "Attempting to sync your pending data to the cloud.",
-        });
-    } else {
-       toast({
-        title: `Status: ${currentStatusInfo.text}`,
-        description: currentStatusInfo.description,
-      });
-    }
-  };
-
-  const currentStatus = statusConfig[systemStatus];
-  const StatusIcon = currentStatus.icon;
+    const timerId = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timerId);
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-700 h-20 flex items-center px-6">
@@ -114,11 +60,10 @@ export default function Header() {
 
       <div className="flex items-center">
          <Badge 
-            className={`cursor-pointer transition-all duration-300 text-lg py-2 px-4 flex items-center gap-2 ${currentStatus.className}`}
-            onClick={handleStatusClick}
+            className={`transition-all duration-300 text-lg py-2 px-4 flex items-center gap-2 ${statusConfig.online.className}`}
           >
-          <StatusIcon className="w-5 h-5" />
-          {currentStatus.text}
+          <span className="w-3 h-3 rounded-full bg-white animate-pulse"></span>
+          {statusConfig.online.text}
         </Badge>
       </div>
     </header>
