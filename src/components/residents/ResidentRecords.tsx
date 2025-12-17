@@ -12,6 +12,7 @@ import {
   ChevronDown,
   QrCode,
   MoreVertical,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +40,7 @@ import { mockPuroks, mockSectors } from '@/data/residents-mock';
 import type { Resident } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { collection, onSnapshot, query, where, orderBy, limit, startAfter, getDocs, Query, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy, limit, startAfter, getDocs, Query, DocumentData, QueryDocumentSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { residentConverter, type Resident as ResidentSchema } from '@/lib/firebase/schema';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -63,6 +64,43 @@ const StatCard = ({ title, value }: { title: string, value: string | number }) =
     </div>
 );
 
+// --- Seeding Logic ---
+const firstNames = ["Juan", "Maria", "Jose", "Angel", "Mark", "Princess", "John", "Patricia", "Daniel", "Bea"];
+const lastNames = ["Dela Cruz", "Santos", "Reyes", "Garcia", "Dizon", "Lim", "Aquino", "Mendoza", "Perez", "Mercado"];
+const civilStatuses = ['single', 'married', 'widowed', 'separated'];
+
+const generateRandomResident = (): Omit<ResidentSchema, 'id' | 'createdAt' | 'updatedAt'> => {
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+  const displayName = `${lastName.toUpperCase()}, ${firstName}`;
+  const birthYear = new Date().getFullYear() - (18 + Math.floor(Math.random() * 63)); // Ages 18 to 80
+  const birthDate = new Date(birthYear, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+
+  return {
+    barangayId: "TEST-BARANGAY-1",
+    rbiId: `BRGY-DEMO-${Date.now() + Math.random()}`,
+    fullName: {
+      first: firstName,
+      last: lastName,
+    },
+    displayName: displayName,
+    displayNameLower: displayName.toLowerCase(),
+    sex: Math.random() > 0.5 ? 'M' : 'F',
+    dateOfBirth: new Date(birthDate.getTime()),
+    civilStatus: civilStatuses[Math.floor(Math.random() * civilStatuses.length)] as any,
+    addressSnapshot: {
+      purok: `Purok ${Math.floor(Math.random() * 7) + 1}`,
+      addressLine: 'TBD',
+    },
+    status: 'active',
+    consent: { signed: false },
+    createdBy: "SEED-SCRIPT",
+    updatedBy: "SEED-SCRIPT",
+  };
+};
+// --- End Seeding Logic ---
+
+
 function ResidentRecordsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -71,6 +109,7 @@ function ResidentRecordsContent() {
   const [allResidents, setAllResidents] = useState<ResidentSchema[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
@@ -226,6 +265,33 @@ function ResidentRecordsContent() {
     );
   }
   
+    const handleSeedData = async () => {
+        setIsSeeding(true);
+        toast({ title: "Seeding...", description: "Generating 30 new resident records." });
+
+        try {
+            const residentsRef = collection(db, 'residents').withConverter(residentConverter);
+            const newResidents = Array.from({ length: 30 }, generateRandomResident);
+
+            const writePromises = newResidents.map(resident =>
+                addDoc(residentsRef, {
+                    ...resident,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                })
+            );
+
+            await Promise.all(writePromises);
+
+            toast({ title: "Success!", description: "30 new residents have been added." });
+        } catch (error) {
+            console.error("Error seeding data:", error);
+            toast({ variant: "destructive", title: "Seeding Failed", description: "Could not add dummy data." });
+        } finally {
+            setIsSeeding(false);
+        }
+    };
+
   const renderLoadingSkeleton = (count = 10) => (
     Array.from({ length: count }).map((_, index) => (
       <TableRow key={index} className="border-slate-800 h-[80px]">
@@ -515,6 +581,10 @@ function ResidentRecordsContent() {
           <div className="hidden md:flex justify-end gap-2">
             <Button variant="outline" className="h-12">
               <FileDown className="mr-2 h-4 w-4" /> Export
+            </Button>
+             <Button variant="secondary" className="h-12 text-lg px-6" onClick={handleSeedData} disabled={isSeeding}>
+                {isSeeding ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : <Plus className="mr-2 h-6 w-6" />}
+                {isSeeding ? 'Seeding...' : 'Seed Data'}
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6" onClick={() => setIsNewResidentModalOpen(true)}>
               <Plus className="mr-2 h-6 w-6" /> New Resident
