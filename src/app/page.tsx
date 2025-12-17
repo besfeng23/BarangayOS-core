@@ -14,15 +14,17 @@ import {
   Building,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/Toast';
 import { useQueueCount } from '@/hooks/useQueueCount';
 import DraftBanner from '@/components/app-hub/DraftBanner';
 import ModuleCard from '@/components/app-hub/ModuleCard';
+import { PartnerTileGuard } from "@/components/dashboard/PartnerTileGuard";
+import { TrialBanner } from "@/components/system/TrialBanner";
 
 export default function Home() {
   const [activeBlotterCount, setActiveBlotterCount] = useState(0);
   const [pendingPermitsCount, setPendingPermitsCount] = useState(0);
-  const { toast } = useToast();
+  const { showToast, ToastComponent } = useToast();
   const pendingBlotterWrites = useQueueCount('blotter_cases');
   const pendingPermitWrites = useQueueCount('business_permits');
 
@@ -61,10 +63,11 @@ export default function Home() {
       unsubscribeBlotter();
       unsubscribePermits();
     };
-  }, [toast]);
+  }, [showToast]);
 
   const totalBlotterBadge = activeBlotterCount + pendingBlotterWrites;
   const totalPermitBadge = pendingPermitsCount + pendingPermitWrites;
+  const trialVisible = true; // Replace with real flag
 
   return (
     <div className="space-y-4 pb-24">
@@ -102,19 +105,33 @@ export default function Home() {
           badgeColor="red"
         />
 
-        <ModuleCard
-          title="Digital Payments"
-          description="eMango Wallet Integration"
-          icon={Briefcase}
-          href="/emango"
-        />
-        <ModuleCard
-          title="Health"
-          description="City Health EMR Integration"
-          icon={FileText}
-          href="/city-health"
-        />
+        <PartnerTileGuard
+          label="Online Required"
+          onBlocked={() => showToast("This module requires internet connection")}
+        >
+          <ModuleCard
+            title="Digital Payments"
+            description="eMango Wallet Integration"
+            icon={Briefcase}
+            href="/emango"
+          />
+        </PartnerTileGuard>
+        
+        <PartnerTileGuard
+          label="Online Required"
+          onBlocked={() => showToast("This module requires internet connection")}
+        >
+          <ModuleCard
+            title="Health"
+            description="City Health EMR Integration"
+            icon={FileText}
+            href="/city-health"
+          />
+        </PartnerTileGuard>
       </main>
+
+      <TrialBanner visible={trialVisible} message="Activation required to unlock partner integrations" />
+      <ToastComponent />
     </div>
   );
 }
