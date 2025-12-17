@@ -5,14 +5,12 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb } from "@/lib/bosDb";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { SyncStatusBadge } from "@/features/residents/components/SyncStatusBadge";
-import { TerminalShell } from "@/layouts/TerminalShell";
-import SystemRail from "@/components/SystemRail";
-import BottomNav from "@/components/BottomNav";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ResidentProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   
   const { logActivity } = useResidentsData();
@@ -28,12 +26,18 @@ export default function ResidentProfilePage() {
   }, [id, logActivity]);
   
   // This effect can be used to show a toast passed via query param or other means
-  // but for now, the original logic is removed to simplify for Next.js
+  useEffect(() => {
+    const toastMessage = searchParams.get('toast');
+    if (!toastShownRef.current && toastMessage) {
+      toastShownRef.current = true;
+      showToast(decodeURIComponent(toastMessage));
+      // Clear the toast message from the URL without reloading
+      router.replace(`/residents/${id}`, undefined);
+    }
+  }, [searchParams, showToast, router, id]);
 
   if (!resident) {
     return (
-      <TerminalShell>
-        <SystemRail />
         <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
           <div className="max-w-3xl mx-auto px-4 pt-6">
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -47,15 +51,11 @@ export default function ResidentProfilePage() {
               </button>
             </div>
           </div>
-          <BottomNav />
         </div>
-      </TerminalShell>
     );
   }
 
   return (
-    <TerminalShell>
-      <SystemRail />
       <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
         <div className="max-w-4xl mx-auto px-4 pt-6">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -94,11 +94,8 @@ export default function ResidentProfilePage() {
             </div>
           </div>
         </div>
-
-        <BottomNav />
+        <ToastComponent />
       </div>
-      <ToastComponent />
-    </TerminalShell>
   );
 }
 
@@ -108,3 +105,4 @@ const btnPrimary =
 const btnSecondary =
   "px-5 py-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 " +
   "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";
+

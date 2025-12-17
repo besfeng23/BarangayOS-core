@@ -2,9 +2,6 @@
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
-import { TerminalShell } from "@/layouts/TerminalShell";
-import SystemRail from "@/components/SystemRail";
-import BottomNav from "@/components/BottomNav";
 
 const CHIP_PUROK = ["Purok 1", "Purok 2", "Purok 3", "Purok 4"];
 const CHIP_SEX = ["Male", "Female", "Other"];
@@ -45,8 +42,6 @@ export default function ResidentsPage() {
   const hasFilters = useMemo(() => !!(filters.q || filters.purok || filters.sex || filters.status), [filters]);
 
   return (
-    <TerminalShell>
-      <SystemRail />
       <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
         <div className="max-w-6xl mx-auto px-4 pt-4 space-y-4">
           {/* Draft Banner */}
@@ -200,8 +195,6 @@ export default function ResidentsPage() {
           </section>
         </div>
 
-        <BottomNav />
       </div>
-    </TerminalShell>
   );
 }
