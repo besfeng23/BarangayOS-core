@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { TerminalShell } from "@/layouts/TerminalShell";
 import { SystemRail } from "@/components/SystemRail";
-import { BottomNav } from "@/components/BottomNav";
+import BottomNav from "@/components/BottomNav";
 
 const CHIP_PUROK = ["Purok 1", "Purok 2", "Purok 3", "Purok 4"];
 const CHIP_SEX = ["Male", "Female", "Other"];

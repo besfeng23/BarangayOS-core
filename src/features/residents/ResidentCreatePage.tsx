@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { TerminalShell } from "@/layouts/TerminalShell";
 import { SystemRail } from "@/components/SystemRail";
-import { BottomNav } from "@/components/BottomNav";
+import BottomNav from "@/components/BottomNav";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ResidentCreatePage() {

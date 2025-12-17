@@ -3,7 +3,7 @@ import SystemRail from "../components/SystemRail";
 import BottomNav from "../components/BottomNav";
 import { TerminalUIProvider } from "../contexts/TerminalUIContext";
 
-export default function TerminalShell({ children }: { children: React.ReactNode }) {
+export function TerminalShell({ children }: { children: React.ReactNode }) {
   return (
     <TerminalUIProvider>
       <div className="h-[100svh] w-full bg-zinc-950 text-zinc-100 flex flex-col font-sans overflow-hidden">

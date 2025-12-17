@@ -7,7 +7,7 @@ import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { SyncStatusBadge } from "@/features/residents/components/SyncStatusBadge";
 import { TerminalShell } from "@/layouts/TerminalShell";
 import { SystemRail } from "@/components/SystemRail";
-import { BottomNav } from "@/components/BottomNav";
+import BottomNav from "@/components/BottomNav";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ResidentProfilePage() {
