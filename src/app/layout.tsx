@@ -8,9 +8,9 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { usePathname } from 'next/navigation';
 import { SettingsProvider } from '@/context/SettingsContext';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
-import SystemRail from '@/components/app-hub/SystemRail';
-import BottomNav from '@/components/app-hub/BottomNav';
 import { SyncProvider } from '@/context/SyncContext';
+import { TerminalUIProvider } from '@/contexts/TerminalUIContext';
+import TerminalShell from '@/layouts/TerminalShell';
 
 export default function RootLayout({
   children,
@@ -47,14 +47,12 @@ export default function RootLayout({
             ) : (
               <AuthGuard>
                 <SyncProvider>
-                  <IdleScreensaver />
-                  <div className="flex flex-col h-screen bg-zinc-950 text-foreground">
-                    <SystemRail />
-                    <main className="flex-1 overflow-y-auto pt-14 pb-20">
+                  <TerminalUIProvider>
+                    <TerminalShell>
+                      <IdleScreensaver />
                       {children}
-                    </main>
-                    <BottomNav />
-                  </div>
+                    </TerminalShell>
+                  </TerminalUIProvider>
                 </SyncProvider>
               </AuthGuard>
             )}
