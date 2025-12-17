@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useLocation } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { useBlotterData } from "@/hooks/useBlotterData";
@@ -8,13 +6,13 @@ import { Party } from "@/lib/bosDb";
 import { PartyPicker } from "@/features/blotter/components/PartyPicker";
 
 const baseInput =
-  "w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 " +
-  "focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950";
+  "w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl text-zinc-100 " +
+  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950";
 
 function Field({ label, children }: any) {
   return (
     <div className="space-y-1">
-      <label className="text-xs text-slate-500 uppercase font-medium ml-1">{label}</label>
+      <label className="text-xs text-zinc-500 uppercase font-medium ml-1">{label}</label>
       {children}
     </div>
   );
@@ -26,28 +24,25 @@ export default function BlotterCreatePage() {
   const { toast } = useToast();
   const { createBlotter, blotterNewDraft, upsertDraft, clearDraft } = useBlotterData();
 
-  const [form, setForm] = useState({
-    incidentDateISO: "",
-    hearingDateISO: "",
+  const [form, setForm] = useState<any>({
+    barangayId: "default", // TODO: pull from Settings later
+    incidentDate: Date.now(),
+    hearingDate: undefined,
+    complainants: [],
+    respondents: [],
     narrative: "",
-    tags: ["Noise"] as string[],
-    complainants: [] as Party[],
-    respondents: [] as Party[],
+    tags: ["Other"],
+    status: "ACTIVE",
   });
 
   const [saving, setSaving] = useState(false);
 
-  // Prefill from Resident Profile -> Blotter Create
+  // Prefill from Resident Profile
   useEffect(() => {
     const prefill = location?.state?.prefill;
     if (!prefill) return;
 
-    setForm((p) => ({
-      ...p,
-      ...prefill,
-    }));
-
-    // Clear router state (kiosk-safe, prevents re-prefill on refresh)
+    setForm((p: any) => ({ ...p, ...prefill }));
     router.replace("/blotter/new", { state: {} } as any);
   }, [location, router]);
 
@@ -65,120 +60,136 @@ export default function BlotterCreatePage() {
       const hasAny =
         (form.complainants?.length || 0) > 0 ||
         (form.respondents?.length || 0) > 0 ||
-        !!form.narrative ||
-        !!form.incidentDateISO;
+        (form.narrative || "").trim().length > 0;
       if (hasAny) upsertDraft("blotter:new", form);
     }, 500);
     return () => clearTimeout(t);
   }, [form, upsertDraft]);
 
-  async function submit() {
-    if (!form.incidentDateISO || !form.narrative) return;
-    if (!form.complainants?.length || !form.respondents?.length) return;
+  const canSave = useMemo(() => {
+    return (
+      (form.complainants?.length || 0) > 0 &&
+      (form.respondents?.length || 0) > 0 &&
+      (form.narrative || "").trim().length >= 10
+    );
+  }, [form]);
 
+  async function submit() {
+    if (!canSave) return;
     setSaving(true);
     try {
-      const rec = await createBlotter({
-        incidentDateISO: form.incidentDateISO,
-        hearingDateISO: form.hearingDateISO || "",
-        complainants: form.complainants,
-        respondents: form.respondents,
-        narrative: form.narrative,
-        tags: form.tags,
-        status: "ACTIVE",
-      });
-
+      const rec = await createBlotter(form);
       await clearDraft("blotter:new");
-      router.push(`/blotter/${rec.id}?toast=${encodeURIComponent("Case saved offline — queued for sync")}`);
+      router.push(`/blotter/${rec.id}?toast=${encodeURIComponent("Blotter saved offline — queued for sync")}`);
     } finally {
       setSaving(false);
     }
   }
 
   return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 pb-24">
-        <div className="max-w-2xl mx-auto px-4 pt-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
+        <div className="max-w-3xl mx-auto px-4 pt-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-bold text-slate-100">New Blotter Case</h1>
-                <p className="text-slate-400">Search Resident OR Type Name • Offline Ready</p>
+                <h1 className="text-2xl font-bold text-zinc-100">New Blotter Case</h1>
+                <p className="text-zinc-400">Offline Ready • Hybrid Parties</p>
               </div>
               <button
                 onClick={() => router.back()}
-                className="px-4 py-2 rounded-2xl bg-slate-950 border border-slate-800 text-slate-300
-                  focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                className="px-4 py-2 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-300
+                  focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
               >
                 Cancel
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 mt-6">
-              <PartyPicker
-                label="Who is complaining? *"
-                parties={form.complainants}
-                onChange={(next) => setForm((p) => ({ ...p, complainants: next }))}
-              />
+            <PartyPicker
+              label="Who is complaining? *"
+              parties={form.complainants}
+              onChange={(next) => setForm((p: any) => ({ ...p, complainants: next }))}
+            />
 
-              <PartyPicker
-                label="Against whom? *"
-                parties={form.respondents}
-                onChange={(next) => setForm((p) => ({ ...p, respondents: next }))}
-              />
+            <PartyPicker
+              label="Against whom? *"
+              parties={form.respondents}
+              onChange={(next) => setForm((p: any) => ({ ...p, respondents: next }))}
+            />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Incident Date *">
-                  <input
-                    type="date"
-                    className={baseInput}
-                    value={form.incidentDateISO}
-                    onChange={(e) => setForm((p) => ({ ...p, incidentDateISO: e.target.value }))}
-                  />
-                </Field>
-                <Field label="Hearing Date (optional)">
-                  <input
-                    type="date"
-                    className={baseInput}
-                    value={form.hearingDateISO}
-                    onChange={(e) => setForm((p) => ({ ...p, hearingDateISO: e.target.value }))}
-                  />
-                </Field>
-              </div>
-
-              <Field label="What happened? *">
-                <textarea
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Incident Date *">
+                <input
+                  type="datetime-local"
                   className={baseInput}
-                  rows={6}
-                  value={form.narrative}
-                  onChange={(e) => setForm((p) => ({ ...p, narrative: e.target.value }))}
+                  value={new Date(form.incidentDate).toISOString().slice(0, 16)}
+                  onChange={(e) => setForm((p: any) => ({ ...p, incidentDate: new Date(e.target.value).getTime() }))}
                 />
               </Field>
 
-              <Field label="Tag (quick)">
+              <Field label="Hearing Date (optional)">
+                <input
+                  type="datetime-local"
+                  className={baseInput}
+                  value={form.hearingDate ? new Date(form.hearingDate).toISOString().slice(0, 16) : ""}
+                  onChange={(e) =>
+                    setForm((p: any) => ({
+                      ...p,
+                      hearingDate: e.target.value ? new Date(e.target.value).getTime() : undefined,
+                    }))
+                  }
+                />
+              </Field>
+            </div>
+
+            <Field label="What happened? * (min 10 chars)">
+              <textarea
+                className={baseInput + " min-h-[140px]"}
+                value={form.narrative}
+                onChange={(e) => setForm((p: any) => ({ ...p, narrative: e.target.value }))}
+                placeholder="Type the narrative..."
+              />
+            </Field>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Status *">
                 <select
                   className={baseInput}
-                  value={form.tags[0]}
-                  onChange={(e) => setForm((p) => ({ ...p, tags: [e.target.value] }))}
+                  value={form.status}
+                  onChange={(e) => setForm((p: any) => ({ ...p, status: e.target.value }))}
                 >
-                  <option>Noise</option>
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="SETTLED">SETTLED</option>
+                  <option value="FILED_TO_COURT">FILED_TO_COURT</option>
+                  <option value="DISMISSED">DISMISSED</option>
+                </select>
+              </Field>
+
+              <Field label="Tag *">
+                <select
+                  className={baseInput}
+                  value={form.tags?.[0] || "Other"}
+                  onChange={(e) => setForm((p: any) => ({ ...p, tags: [e.target.value] }))}
+                >
                   <option>Debt</option>
+                  <option>Noise</option>
                   <option>Theft</option>
                   <option>Physical Injury</option>
-                  <option>Property</option>
+                  <option>Other</option>
                 </select>
               </Field>
             </div>
 
             <button
-              disabled={saving}
+              disabled={saving || !canSave}
               onClick={submit}
-              className="w-full mt-6 py-4 rounded-2xl bg-slate-100 text-slate-950 font-bold text-lg disabled:opacity-60
-                focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+              className="w-full mt-2 py-4 rounded-2xl bg-zinc-100 text-zinc-950 font-bold text-lg disabled:opacity-60
+                focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
             >
               {saving ? "Saving..." : "Save Case"}
             </button>
           </div>
         </div>
+
       </div>
   );
 }

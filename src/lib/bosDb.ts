@@ -150,20 +150,28 @@ class BOSDexie extends Dexie {
       drafts: "id, module, key, updatedAt, [module+key]",
     });
 
-    // v3: hard schema residents + blotter + print logs + multiEntry searchTokens
+    // v3: hard schema residents + print logs + multiEntry searchTokens
     this.version(3).stores({
       residents:
         "id, createdAt, lastUpdated, status, purok, sex, isoDate, fullNameNorm, *searchTokens",
-      blotters:
-        "id, createdAt, lastUpdated, status, caseNumber, caseNumberNorm, incidentDateISO, hearingDateISO, *tags, *searchTokens",
       printLogs:
-        "id, createdAt, docType, controlNo, status",
-      syncQueue:
-        "id, createdAt, status, entityType, entityId, [entityType+entityId]",
-      activityLog:
-        "id, createdAt, type, entityType, entityId",
-      drafts:
-        "id, module, key, updatedAt, [module+key]",
+        "id, createdAt, docType, controlNo, residentId, status",
+      syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
+      activityLog: "id, createdAt, type, entityType, entityId",
+      drafts: "id, module, key, updatedAt, [module+key]",
+    });
+
+    // v4 blotter + blotter print logs
+    this.version(4).stores({
+      residents:
+        "id, createdAt, lastUpdated, status, purok, sex, birthdateISO, fullNameNorm, *searchTokens",
+      blotters:
+        "id, createdAt, updatedAt, barangayId, caseNumber, status, incidentDate, hearingDate, *searchTokens",
+      printLogs:
+        "id, createdAt, barangayId, docType, controlNo, residentId, blotterId, status",
+      syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
+      activityLog: "id, createdAt, type, entityType, entityId",
+      drafts: "id, module, key, updatedAt, [module+key]",
     });
   }
 }
