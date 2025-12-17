@@ -5,9 +5,8 @@ export type CivilStatus = "Single" | "Married" | "Widowed" | "Separated" | "Unkn
 export type ResidentStatus = "ACTIVE" | "INACTIVE";
 
 export type Party = {
-  // Hybrid link: either residentId OR raw name
-  residentId?: string;
-  name: string;
+  id?: string; // residentId when linked
+  name: string; // always present for display
   nameNorm: string;
 };
 
@@ -41,26 +40,30 @@ export type BlotterStatus = "ACTIVE" | "SETTLED" | "FILED_TO_COURT" | "DISMISSED
 
 export type BlotterRecord = {
   id: string;
+  barangayId: string;
+
   createdAt: number;
-  lastUpdated: number;
+  updatedAt: number;
 
-  barangayId?: string;
-
-  caseNumber: string;        // YYYY-MM-XXXXXX
-  caseNumberNorm: string;    // lowercased for search
-  incidentDateISO: string;   // yyyy-mm-dd
-  hearingDateISO?: string;   // yyyy-mm-dd (optional)
+  caseNumber: string; // YYYY-MM-XXXXXX hash format
+  caseNumberNorm: string;
 
   complainants: Party[];
   respondents: Party[];
 
+  incidentDate: number; // epoch ms
+  hearingDate?: number; // epoch ms optional
+
   narrative: string;
-  tags: string[];            // ["Noise","Debt",...]
-  searchTokens: string[];    // tokenized case#, names, tags, incident date, etc.
+  narrativeNorm: string;
 
   status: BlotterStatus;
-  settlementTerms?: string;
-  settledAt?: number;
+
+  tags: string[];
+  tagsNorm: string[]; // normalized tokens for search
+
+  settlementSummary?: string;
+  settlementSummaryNorm?: string;
 
   syncState?: "queued" | "synced" | "failed";
 };
@@ -117,7 +120,8 @@ export type ActivityLogItem = {
     | "BLOTTER_CREATE"
     | "BLOTTER_VIEW"
     | "BLOTTER_UPDATE"
-    | "BLOTTER_PRINT";
+    | "BLOTTER_PRINT"
+    | "BLOTTER_STATUS_UPDATE";
   entityType: "resident" | "blotter" | "print_log";
   entityId: string;
   meta?: any;
@@ -150,28 +154,30 @@ class BOSDexie extends Dexie {
       drafts: "id, module, key, updatedAt, [module+key]",
     });
 
-    // v3: hard schema residents + print logs + multiEntry searchTokens
+    // v3 blotters
     this.version(3).stores({
       residents:
-        "id, createdAt, lastUpdated, status, purok, sex, isoDate, fullNameNorm, *searchTokens",
-      printLogs:
-        "id, createdAt, docType, controlNo, residentId, status",
+        "id, createdAt, updatedAt, lastNameNorm, firstNameNorm, purok, status, sex, birthdate",
+      blotters:
+        "id, barangayId, createdAt, lastUpdated, caseNumberNorm, status, incidentDate, hearingDate, *tagsNorm",
       syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
       activityLog: "id, createdAt, type, entityType, entityId",
       drafts: "id, module, key, updatedAt, [module+key]",
     });
-
-    // v4 blotter + blotter print logs
+    
+    // v4 blotter + print logs
     this.version(4).stores({
       residents:
-        "id, createdAt, lastUpdated, status, purok, sex, birthdateISO, fullNameNorm, *searchTokens",
-      blotters:
-        "id, createdAt, updatedAt, barangayId, caseNumber, status, incidentDate, hearingDate, *searchTokens",
-      printLogs:
-        "id, createdAt, barangayId, docType, controlNo, residentId, blotterId, status",
+        "id, createdAt, updatedAt, lastUpdated, lastNameNorm, firstNameNorm, fullNameNorm, purok, status, sex, birthdateISO",
       syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
       activityLog: "id, createdAt, type, entityType, entityId",
       drafts: "id, module, key, updatedAt, [module+key]",
+      printLogs: "id, createdAt, docType, controlNo, residentId, status",
+
+      blotters:
+        "id, createdAt, updatedAt, lastUpdated, caseNumber, status, incidentDate, hearingDate, *searchTokens",
+      blotterPrintLogs:
+        "id, createdAt, docType, controlNo, blotterId, status",
     });
   }
 }

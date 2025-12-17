@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb, ActivityLogItem, BlotterRecord, Party } from "@/lib/bosDb";
+import { bosDb, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { generateCaseNumber, tokenise } from "@/lib/blotterUtils";
 
@@ -135,6 +135,9 @@ export function useBlotterData() {
       status: input.status as any,
       searchTokens,
       syncState: "queued",
+      caseNumberNorm: norm(caseNumber),
+      narrativeNorm: norm(input.narrative),
+      tagsNorm: (input.tags || []).map(norm),
     };
 
     await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, bosDb.activityLog, async () => {
@@ -163,6 +166,51 @@ export function useBlotterData() {
 
     return record;
   }
+  
+  const updateBlotterStatus = useCallback(
+    async (blotterId: string, nextStatus: BlotterStatus, settlementSummary?: string) => {
+      const now = Date.now();
+      const existing = await bosDb.blotters.get(blotterId);
+      if (!existing) throw new Error("Blotter not found");
+
+      const updated: BlotterRecord = {
+        ...existing,
+        status: nextStatus,
+        settlementSummary: settlementSummary || undefined,
+        settlementSummaryNorm: settlementSummary ? norm(settlementSummary) : undefined,
+        updatedAt: now,
+        syncState: "queued",
+      };
+
+      await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, bosDb.activityLog, async () => {
+        await bosDb.blotters.put(updated);
+
+        await bosDb.syncQueue.add({
+          id: uuid(),
+          entityType: "blotter",
+          entityId: blotterId,
+          op: "UPSERT",
+          payload: updated,
+          createdAt: now,
+          updatedAt: now,
+          status: "pending",
+          tryCount: 0,
+        } as any);
+
+        await bosDb.activityLog.add({
+          id: uuid(),
+          createdAt: now,
+          type: "BLOTTER_STATUS_UPDATE",
+          entityType: "blotter",
+          entityId: blotterId,
+          meta: { from: existing.status, to: nextStatus, hasSummary: !!settlementSummary },
+        } as any);
+      });
+
+      return updated;
+    },
+    []
+  );
 
   return {
     filters,
@@ -176,5 +224,7 @@ export function useBlotterData() {
     clearDraft,
 
     createBlotter,
+    updateBlotterStatus,
+    logActivity,
   };
 }
