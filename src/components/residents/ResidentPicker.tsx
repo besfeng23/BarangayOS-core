@@ -21,6 +21,8 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
   const [open, setOpen] = useState(false);
   const [manualEntry, setManualEntry] = useState(false);
   const [manualName, setManualName] = useState('');
+  
+  // This wrapper ref is no longer strictly necessary for the new fix but is harmless to keep
   const wrapperRef = useRef<HTMLDivElement>(null);
 
 
@@ -81,7 +83,6 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
         <PopoverContent 
             className="w-[400px] p-0 z-50"
             align="start"
-            onMouseDown={(e) => e.preventDefault()}
         >
           <ResidentSearch>
             {({ residents, loading, searchTerm, setSearchTerm }) => (
@@ -90,32 +91,45 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
                   placeholder="Search by name or RBI ID..."
                   value={searchTerm}
                   onValueChange={setSearchTerm}
+                  autoFocus
                 />
-                <CommandList>
-                  {loading && <CommandItem>Loading...</CommandItem>}
-                  <CommandEmpty>No resident found.</CommandEmpty>
-                  <CommandGroup>
-                    {residents.map((resident) => (
-                      <CommandItem
-                        key={resident.id}
-                        value={resident.displayName}
-                        onSelect={() => {
-                          onSelectResident(resident);
-                          setOpen(false);
-                        }}
-                        className="aria-selected:bg-slate-700 cursor-pointer"
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedResident?.id === resident.id ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {resident.displayName}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
+                 <div
+                    onPointerDownCapture={(e) => {
+                      const target = e.target as HTMLElement;
+                      // Allow interaction with the input field
+                      if (target.closest("input")) {
+                        return;
+                      }
+                      // Prevent the popover from closing when interacting with the list
+                      e.preventDefault();
+                    }}
+                  >
+                    <CommandList>
+                      {loading && <CommandItem>Loading...</CommandItem>}
+                      <CommandEmpty>No resident found.</CommandEmpty>
+                      <CommandGroup>
+                        {residents.map((resident) => (
+                          <CommandItem
+                            key={resident.id}
+                            value={resident.displayName}
+                            onSelect={() => {
+                              onSelectResident(resident);
+                              setOpen(false);
+                            }}
+                            className="aria-selected:bg-slate-700 cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedResident?.id === resident.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {resident.displayName}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </div>
                  <div className="p-2 border-t border-slate-700">
                       <Button variant="link" onClick={() => { setManualEntry(true); setOpen(false); }}>
                          {isRespondent ? 'Respondent is not a resident' : 'Enter manually for non-resident'}
