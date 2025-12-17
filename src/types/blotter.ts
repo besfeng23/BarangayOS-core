@@ -1,3 +1,4 @@
+
 import { Timestamp } from 'firebase/firestore';
 
 export type CaseStatus = 'ACTIVE' | 'SETTLED' | 'FOR_HEARING';
@@ -15,8 +16,12 @@ export interface BlotterCase {
   complainant: string;
   respondent?: string;
   narrative: string; // This can be a concatenated version for display
-  blotterUpdates: BlotterUpdate[]; // Append-only array for edits
+  blotterUpdates?: BlotterUpdate[]; // Append-only array for edits
   nature: string;
   status: CaseStatus;
-  incidentAt: Date;
+  incidentAt: Timestamp;
+  barangayId: string;
+  createdBy: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
