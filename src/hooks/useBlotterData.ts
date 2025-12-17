@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb, BlotterRecord, Party } from "@/lib/bosDb";
 import { uuid, norm } from "@/lib/uuid";
-import { generateCaseNumber } from "@/lib/caseUtils";
+import { generateCaseNumber } from "@/lib/blotterUtils";
 import { buildTokens } from "@/lib/tokenize";
 
 export type BlotterFilterState = {
@@ -116,6 +116,29 @@ export function useBlotterData() {
     return record;
   }, []);
 
+  const updateBlotter = useCallback(async (id: string, changes: Partial<BlotterRecord>) => {
+    const now = Date.now();
+    await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, async () => {
+      const existing = await bosDb.blotters.get(id);
+      if (existing) {
+        const updatedRecord = { ...existing, ...changes, updatedAt: now, lastUpdated: now };
+        await bosDb.blotters.put(updatedRecord);
+        
+        await bosDb.syncQueue.add({
+          id: uuid(),
+          entityType: "resident", // Using a generic type for now
+          entityId: id,
+          op: "UPSERT",
+          payload: { ...changes, __entityType: "blotter" }, // Only send changes
+          createdAt: now,
+          updatedAt: now,
+          status: "pending",
+          tryCount: 0,
+        } as any);
+      }
+    });
+  }, []);
+
   const logBlotterPrint = useCallback(async (blotterId: string, docType: "SUMMONS" | "AMICABLE_SETTLEMENT", controlNo: string, meta?: any) => {
     const now = Date.now();
     const id = uuid();
@@ -153,6 +176,7 @@ export function useBlotterData() {
     setFilters,
     blotters: blotters || [],
     createBlotter,
+    updateBlotter,
     logBlotterPrint,
   };
 }

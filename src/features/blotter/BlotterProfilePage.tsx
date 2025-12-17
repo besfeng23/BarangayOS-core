@@ -2,56 +2,77 @@ import React, { useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb } from "@/lib/bosDb";
-import { PrintFrame } from "@/components/print/PrintFrame";
-import { generateControlNumber } from "@/lib/certUtils";
 import { useBlotterData } from "@/hooks/useBlotterData";
-import { BlotterSummonsTemplate } from "@/features/blotter/print/BlotterSummonsTemplate";
+import { useBlotterPrint } from "@/hooks/useBlotterPrint";
+import { BlotterPrintFrame } from "@/features/blotter/components/BlotterPrintFrame";
 
 export default function BlotterProfilePage() {
   const router = useRouter();
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { logBlotterPrint } = useBlotterData();
+  const { updateBlotter } = useBlotterData();
 
   const blotter = useLiveQuery(() => bosDb.blotters.get(id), [id], undefined);
-  const [printData, setPrintData] = useState<any>(null);
+  const { printData, printNow } = useBlotterPrint();
 
-  const title = useMemo(() => (blotter ? blotter.caseNumber : "Blotter"), [blotter]);
-
-  async function printSummons() {
-    if (!blotter) return;
-
-    const controlNo = generateControlNumber();
-    await logBlotterPrint(blotter.id, "SUMMONS", controlNo, { caseNumber: blotter.caseNumber });
-
-    const data = {
-      controlNo,
-      caseNumber: blotter.caseNumber,
-      complainants: blotter.complainants.map((p) => p.name).join(", "),
-      respondents: blotter.respondents.map((p) => p.name).join(", "),
-      hearingDate: blotter.hearingDate || "",
-      incidentDate: blotter.incidentDate,
-      narrative: blotter.narrative,
-      signer: "HON. __________",
-    };
-
-    setPrintData(data);
-    setTimeout(() => window.print(), 80);
+  function partiesToText(arr: any[]) {
+    return (arr || []).map((p) => p.name).join(", ");
   }
+
+  async function onPrintSummons() {
+    if (!blotter) return;
+    const caseNumber = blotter.caseNumber;
+    await printNow(
+      {
+        docType: "BLOTTER_SUMMONS",
+        caseNumber,
+        dateIssued: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+        complainantsText: partiesToText(blotter.complainants),
+        respondentsText: partiesToText(blotter.respondents),
+        incidentDate: blotter.incidentDate,
+        hearingDate: blotter.hearingDate || "",
+      },
+      { blotterId: blotter.id, caseNumber, docType: "BLOTTER_SUMMONS" }
+    );
+  }
+
+  async function onSettleAndPrint() {
+    if (!blotter) return;
+    // 1) update status locally (you likely already have updateBlotter)
+    await updateBlotter(blotter.id, { status: "SETTLED" });
+
+    // 2) print settlement doc
+    const caseNumber = blotter.caseNumber;
+    await printNow(
+      {
+        docType: "BLOTTER_SETTLEMENT",
+        caseNumber,
+        dateIssued: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+        complainantsText: partiesToText(blotter.complainants),
+        respondentsText: partiesToText(blotter.respondents),
+        narrative: blotter.narrative,
+        terms: (blotter as any).settlementTerms || "",
+      },
+      { blotterId: blotter.id, caseNumber, docType: "BLOTTER_SETTLEMENT" }
+    );
+  }
+
 
   if (!blotter) {
     return (
-        <div className="max-w-3xl mx-auto px-4 pt-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <div className="text-slate-100 font-semibold">Case not found.</div>
-            <button
-              onClick={() => router.push("/blotter")}
-              className="mt-4 px-5 py-3 rounded-2xl bg-slate-800 border border-slate-700 text-slate-100 font-semibold
-                focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
-            >
-              Back to Blotter
-            </button>
-          </div>
+        <div className="min-h-screen bg-slate-950 text-slate-100 pb-24">
+            <div className="max-w-3xl mx-auto px-4 pt-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <div className="text-slate-100 font-semibold">Case not found.</div>
+                <button
+                onClick={() => router.push("/blotter")}
+                className="mt-4 px-5 py-3 rounded-2xl bg-slate-800 border border-slate-700 text-slate-100 font-semibold
+                    focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                >
+                Back to Blotter
+                </button>
+            </div>
+            </div>
         </div>
     );
   }
@@ -92,27 +113,23 @@ export default function BlotterProfilePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
               <button
-                onClick={printSummons}
+                onClick={onPrintSummons}
                 className="px-5 py-4 rounded-2xl bg-slate-800 border border-slate-700 text-slate-100 font-semibold
                   focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
               >
                 Print Summons
               </button>
               <button
-                className="px-5 py-4 rounded-2xl bg-slate-950 border border-slate-800 text-slate-100
+                 onClick={onSettleAndPrint}
+                className="px-5 py-4 rounded-2xl bg-slate-800 border border-slate-700 text-emerald-400 font-semibold
                   focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
               >
-                Mark as Settled
+                Mark Settled & Print
               </button>
             </div>
           </div>
         </div>
-
-        {printData && (
-          <PrintFrame>
-            <BlotterSummonsTemplate {...printData} />
-          </PrintFrame>
-        )}
+        <BlotterPrintFrame data={printData} />
       </div>
   );
 }
