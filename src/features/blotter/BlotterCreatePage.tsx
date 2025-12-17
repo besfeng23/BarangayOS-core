@@ -346,8 +346,6 @@ export default function BlotterCreatePage() {
             </div>
           )}
         </div>
-
       </div>
-    </TerminalShell>
   );
 }
