@@ -58,6 +58,10 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
         });
         return;
     }
+    
+    if (!window.confirm("Are you sure you want to issue this permit?")) {
+        return;
+    }
       
     setIsSaving(true);
     toast({
@@ -196,7 +200,7 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={isSaving || !selectedResident}>
                 <Save className="mr-2 h-5 w-5" />
-                {isSaving ? 'Saving...' : 'Save & Preview'}
+                {isSaving ? 'Saving...' : 'Review & Save'}
             </Button>
           </DialogFooter>
         </DialogContent>

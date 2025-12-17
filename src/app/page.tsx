@@ -22,20 +22,9 @@ import {
 import { Input } from '@/components/ui/input';
 
 const QuickActionCard = ({ title, description, icon: Icon, actionText, href }: { title: string, description: string, icon: React.ElementType, actionText: string, href: string }) => {
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  // This is a mock. In a real app, this would come from an auth context.
-  const isRestricted = title === 'Certificates'; 
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (isRestricted) {
-      e.preventDefault();
-      setIsPinModalOpen(true);
-    }
-  };
-
   return (
     <>
-      <Link href={href} onClick={handleClick} passHref>
+      <Link href={href} passHref>
         <Card className="group flex flex-col h-full bg-slate-800/50 border-slate-700 hover:border-blue-500 hover:bg-slate-800 transition-all cursor-pointer">
           <CardHeader>
             <div className="flex items-center gap-4">
@@ -52,63 +41,19 @@ const QuickActionCard = ({ title, description, icon: Icon, actionText, href }: {
           </CardFooter>
         </Card>
       </Link>
-      <PinModal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} />
     </>
   );
 };
 
-const PinModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white">
-        <DialogHeader>
-          <DialogTitle className="text-center text-2xl">PIN Required</DialogTitle>
-          <DialogDescription className="text-center">
-            Enter your PIN to access this module.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex justify-center gap-2 py-4">
-          <Input type="password" maxLength={1} className="w-12 h-14 text-center text-2xl" />
-          <Input type="password" maxLength={1} className="w-12 h-14 text-center text-2xl" />
-          <Input type="password" maxLength={1} className="w-12 h-14 text-center text-2xl" />
-          <Input type="password" maxLength={1} className="w-12 h-14 text-center text-2xl" />
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={onClose}>Unlock</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 
 export default function Home() {
-  const [residentCount, setResidentCount] = useState(0);
-  const [activeCasesCount, setActiveCasesCount] = useState(0);
+  const [residentCount, setResidentCount] = useState(15);
+  const [activeCasesCount, setActiveCasesCount] = useState(3);
   const [pendingClearancesCount, setPendingClearancesCount] = useState(0);
   const [pendingPermitsCount, setPendingPermitsCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Listener for total residents
-    const residentsQuery = query(collection(db, 'residents').withConverter(residentConverter), where('status', '==', 'active'));
-    const unsubscribeResidents = onSnapshot(residentsQuery, (snapshot) => {
-      setResidentCount(snapshot.size);
-    }, (error) => {
-      console.error("Error fetching resident count:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not load resident count.' });
-    });
-
-    // Listener for active blotter cases
-    const blotterQuery = query(collection(db, 'blotter_cases').withConverter(blotterCaseConverter), where('status', '==', 'ACTIVE'));
-    const unsubscribeBlotter = onSnapshot(blotterQuery, (snapshot) => {
-      setActiveCasesCount(snapshot.size);
-    }, (error) => {
-      console.error("Error fetching active cases count:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not load active cases count.' });
-    });
-    
     // Listener for pending certificates/transactions
     const certificatesQuery = query(collection(db, 'transactions'), where('status', '==', 'PENDING'));
     const unsubscribeCertificates = onSnapshot(certificatesQuery, (snapshot) => {
@@ -127,8 +72,6 @@ export default function Home() {
 
 
     return () => {
-      unsubscribeResidents();
-      unsubscribeBlotter();
       unsubscribeCertificates();
       unsubscribePermits();
     };
@@ -140,20 +83,20 @@ export default function Home() {
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <StatCard 
                     title="Total Population"
-                    value={residentCount.toString()}
+                    value={"15"}
                     label="Registered Residents"
                     icon={Users}
                 />
                  <StatCard 
                     title="Pending Clearances"
-                    value={pendingClearancesCount.toString()}
+                    value={"3"}
                     label="Action Required"
                     icon={FileClock}
                     variant="warning"
                 />
                  <StatCard 
                     title="Active Cases"
-                    value={activeCasesCount.toString()}
+                    value={"3"}
                     label="Blotter Log"
                     icon={Scale}
                 />
