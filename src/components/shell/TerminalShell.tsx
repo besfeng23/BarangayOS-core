@@ -1,5 +1,5 @@
 import React from "react";
-import { SystemRail } from "@/components/shell/SystemRail";
+import SystemRail from "@/components/shell/SystemRail";
 import BottomNav from "@/components/app-hub/BottomNav";
 import { systemFlags } from "@/lib/systemFlags";
 
