@@ -1,7 +1,5 @@
 import { uuid } from "@/lib/uuid";
 
-export type CertType = "CERTIFICATE" | "CLEARANCE" | "INDIGENCY";
-
 // Format: YYYY-MM-[6-CHAR-HASH]
 export function generateControlNumber(): string {
   const now = new Date();
@@ -11,6 +9,8 @@ export function generateControlNumber(): string {
   return `${year}-${month}-${hash}`;
 }
 
+export type CertType = "CERTIFICATE" | "CLEARANCE" | "INDIGENCY";
+
 export function getCertTitle(type: CertType): string {
   const map: Record<CertType, string> = {
     CERTIFICATE: "BARANGAY CERTIFICATION",
@@ -18,8 +18,4 @@ export function getCertTitle(type: CertType): string {
     INDIGENCY: "CERTIFICATE OF INDIGENCY",
   };
   return map[type];
-}
-
-export function formatLongDate(ts = Date.now()): string {
-  return new Date(ts).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }

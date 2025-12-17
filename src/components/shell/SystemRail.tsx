@@ -1,4 +1,4 @@
 import React from "react";
-export default function BottomNav() {
+export function SystemRail() {
   return null;
 }

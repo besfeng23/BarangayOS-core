@@ -1,42 +1,43 @@
-import React from 'react';
+import React from "react";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useSyncHealth } from "@/hooks/useSyncHealth";
 
-type Props = {
-  isOnline: boolean;
-  firebaseConnected: boolean;
-  syncFailed: boolean;
-  onRetrySync: () => void;
-};
+export function StatusIndicator() {
+  const online = useOnlineStatus();
+  const { state } = useSyncHealth(); // "synced" | "failed" | "syncing"
 
-export function StatusIndicator({ isOnline, firebaseConnected, syncFailed, onRetrySync }: Props) {
-  // Offline always wins
-  if (!isOnline) {
+  // Offline dominates everything
+  if (!online) {
     return (
-      <div
-        className="px-3 py-2 rounded-full text-xs font-semibold bg-slate-800 border border-slate-700 text-yellow-300"
-        aria-label="Offline Mode"
-      >
-        🟡 Offline Mode
+      <div className="h-10 px-3 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center gap-2">
+        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+        <span className="text-xs font-semibold text-zinc-100">Offline Mode</span>
       </div>
     );
   }
 
-  if (isOnline && firebaseConnected && syncFailed) {
+  if (state === "failed") {
     return (
-      <button
-        onClick={onRetrySync}
-        className="px-3 py-2 rounded-full text-xs font-semibold bg-slate-800 border border-slate-700 text-red-300
-          focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-        aria-label="Sync Failed. Tap to retry."
-      >
-        🔴 Sync Failed
-      </button>
+      <div className="h-10 px-3 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center gap-2">
+        <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+        <span className="text-xs font-semibold text-zinc-100">Sync Failed</span>
+      </div>
     );
   }
 
-  // Default "Synced" if online + firebaseConnected and not failed
+  if (state === "syncing") {
+    return (
+      <div className="h-10 px-3 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center gap-2">
+        <span className="h-2.5 w-2.5 rounded-full bg-zinc-400" />
+        <span className="text-xs font-semibold text-zinc-200">Syncing…</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="px-3 py-2 rounded-full text-xs font-semibold text-emerald-300" aria-label="Synced">
-      🟢 Synced
+    <div className="h-10 px-3 rounded-2xl bg-transparent border border-zinc-800 flex items-center gap-2">
+      <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+      <span className="text-xs font-semibold text-zinc-100">Synced</span>
     </div>
   );
 }

@@ -1,18 +1,19 @@
-import React from 'react';
-import { systemFlags } from '@/lib/systemFlags';
+import React from "react";
+import { useSettings } from "@/hooks/useSettings";
 
 export function TrialBanner() {
-  const { isTrialAccount, trialDaysRemaining, supportText } = systemFlags;
-  if (!isTrialAccount) return null;
+  const { settings } = useSettings();
+  const isTrial = !!settings?.trial?.isTrialAccount;
+
+  if (!isTrial) return null;
+
+  const days = settings?.trial?.daysRemaining ?? 5;
 
   return (
-    <div
-      className="fixed left-0 right-0 bottom-0 h-8 z-50 bg-yellow-500 text-black text-xs font-bold
-        flex items-center justify-center border-t border-yellow-400"
-      role="status"
-      aria-live="polite"
-    >
-      TRIAL MODE: {trialDaysRemaining} Days Remaining. {supportText}
-    </div>
+    <footer className="fixed bottom-0 left-0 right-0 z-50 h-8 bg-yellow-500 text-black">
+      <div className="max-w-6xl mx-auto px-4 h-full flex items-center justify-center text-xs font-extrabold">
+        TRIAL MODE: {days} Days Remaining. Contact support to activate.
+      </div>
+    </footer>
   );
 }

@@ -1,61 +1,70 @@
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
-export function SettingsDropdown({
-  open,
-  onClose,
-  staffMode,
-  setStaffMode,
-}: {
-  open: boolean;
-  onClose: () => void;
-  staffMode: boolean;
-  setStaffMode: (v: boolean) => void;
-}) {
+export function SettingsDropdown() {
   const router = useRouter();
-  if (!open) return null;
+  const [open, setOpen] = useState(false);
+
+  const initials = useMemo(() => "A", []);
 
   return (
-    <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl shadow-black overflow-hidden z-60">
-      <div className="px-4 py-3 text-xs text-slate-400 uppercase">Account</div>
-
+    <div className="relative">
       <button
-        className="w-full text-left px-4 py-3 text-slate-100 hover:bg-slate-800/60
-          focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-        onClick={() => {
-          onClose();
-          router.push('/settings');
-        }}
+        onClick={() => setOpen((s) => !s)}
+        className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold
+          focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+        aria-label="Open profile menu"
       >
-        Settings
+        {initials}
       </button>
 
-      <div className="px-4 py-2 border-t border-slate-700">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-200 font-semibold">Staff Mode</div>
+      {open && (
+        <div
+          className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl shadow-black z-50 overflow-hidden"
+          role="menu"
+        >
           <button
-            onClick={() => setStaffMode(!staffMode)}
-            className={`min-h-[40px] px-3 rounded-full border text-xs font-bold
-              ${staffMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'bg-slate-950 border-slate-700 text-slate-300'}
-              focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900`}
-            aria-label="Toggle Staff Mode"
+            onClick={() => {
+              setOpen(false);
+              router.push("/settings");
+            }}
+            className="w-full text-left px-4 py-3 hover:bg-zinc-800 min-h-[48px] text-zinc-100"
+            role="menuitem"
           >
-            {staffMode ? 'ON' : 'OFF'}
+            Settings
+            <div className="text-xs text-zinc-400">Barangay info • Trial</div>
+          </button>
+
+          <div className="px-4 py-2 text-xs text-zinc-500 border-t border-zinc-800">
+            Role Switch (moved here)
+          </div>
+
+          <button
+            onClick={() => {
+              // placeholder; wire real role logic later
+              setOpen(false);
+              alert("Role switching will be wired to RBAC later.");
+            }}
+            className="w-full text-left px-4 py-3 hover:bg-zinc-800 min-h-[48px] text-zinc-100"
+            role="menuitem"
+          >
+            Toggle Staff/Admin
+          </button>
+
+          <div className="border-t border-zinc-800" />
+
+          <button
+            onClick={() => {
+              setOpen(false);
+              alert("Logout hook here.");
+            }}
+            className="w-full text-left px-4 py-3 hover:bg-zinc-800 min-h-[48px] text-zinc-100"
+            role="menuitem"
+          >
+            Log out
           </button>
         </div>
-        <div className="text-xs text-slate-400 mt-1">Role switching lives here to prevent accidental toggles.</div>
-      </div>
-
-      <button
-        className="w-full text-left px-4 py-3 text-slate-100 hover:bg-slate-800/60 border-t border-slate-700
-          focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-        onClick={() => {
-          onClose();
-          alert('Logout (wire later)');
-        }}
-      >
-        Logout
-      </button>
+      )}
     </div>
   );
 }

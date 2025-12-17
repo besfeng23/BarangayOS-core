@@ -5,8 +5,9 @@ export type CivilStatus = "Single" | "Married" | "Widowed" | "Separated" | "Unkn
 export type ResidentStatus = "ACTIVE" | "INACTIVE";
 
 export type Party = {
-  id?: string; // residentId when linked
-  name: string; // always present for display
+  // Hybrid link: either residentId OR raw name
+  residentId?: string;
+  name: string;
   nameNorm: string;
 };
 
@@ -44,15 +45,16 @@ export type BlotterRecord = {
 
   createdAt: number;
   updatedAt: number;
+  lastUpdated: number;
 
-  caseNumber: string; // YYYY-MM-XXXXXX hash format
+  caseNumber: string; // YYYY-MM-6HASH
   caseNumberNorm: string;
 
   complainants: Party[];
   respondents: Party[];
 
   incidentDate: number; // epoch ms
-  hearingDate?: number; // epoch ms optional
+  hearingDate?: number; // epoch ms
 
   narrative: string;
   narrativeNorm: string;
@@ -64,27 +66,24 @@ export type BlotterRecord = {
 
   settlementSummary?: string;
   settlementSummaryNorm?: string;
+  settledAt?: number;
 
   syncState?: "queued" | "synced" | "failed";
 };
 
+
 export type PrintLogItem = {
   id: string;
+  barangayId: string;
   createdAt: number;
-  docType:
-    | "CERTIFICATE"
-    | "CLEARANCE"
-    | "INDIGENCY"
-    | "BLOTTER_SUMMONS"
-    | "BLOTTER_SETTLEMENT";
-  controlNo: string; // control no or case number
+  docType: "CERTIFICATE" | "CLEARANCE" | "INDIGENCY" | "SUMMONS" | "AMICABLE";
+  controlNo: string;
   residentId?: string;
   blotterId?: string;
-
+  meta?: any;
   status: "pending" | "syncing" | "failed" | "synced";
   tryCount: number;
   lastError?: string;
-  meta?: any;
 };
 
 // widen queue entityType for multi-module
@@ -127,10 +126,28 @@ export type ActivityLogItem = {
   meta?: any;
 };
 
+export type BOSSettings = {
+  id: string;
+  key: "barangay";
+  value: {
+    barangayName: string;
+    barangayAddress: string;
+    punongBarangay: string;
+    secretaryName: string;
+    trial?: {
+      isTrialAccount: boolean;
+      daysRemaining: number;
+    };
+  };
+  updatedAt: number;
+};
+
+
 class BOSDexie extends Dexie {
   residents!: Table<ResidentRecord, string>;
   blotters!: Table<BlotterRecord, string>;
   printLogs!: Table<PrintLogItem, string>;
+  settings!: Table<BOSSettings, string>;
 
   syncQueue!: Table<SyncQueueItem, string>;
   activityLog!: Table<ActivityLogItem, string>;
@@ -154,30 +171,34 @@ class BOSDexie extends Dexie {
       drafts: "id, module, key, updatedAt, [module+key]",
     });
 
-    // v3 blotters
+    // v3: hard schema residents + blotter + print logs + multiEntry searchTokens
     this.version(3).stores({
       residents:
-        "id, createdAt, updatedAt, lastNameNorm, firstNameNorm, purok, status, sex, birthdate",
+        "id, createdAt, lastUpdated, status, purok, sex, isoDate, fullNameNorm, *searchTokens",
       blotters:
-        "id, barangayId, createdAt, lastUpdated, caseNumberNorm, status, incidentDate, hearingDate, *tagsNorm",
-      syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
-      activityLog: "id, createdAt, type, entityType, entityId",
-      drafts: "id, module, key, updatedAt, [module+key]",
+        "id, createdAt, lastUpdated, status, caseNumber, caseNumberNorm, incidentDate, hearingDate, *tags, *searchTokens",
+      printLogs:
+        "id, createdAt, docType, controlNo, status",
+      syncQueue:
+        "id, createdAt, status, entityType, entityId, [entityType+entityId]",
+      activityLog:
+        "id, createdAt, type, entityType, entityId",
+      drafts:
+        "id, module, key, updatedAt, [module+key]",
     });
     
-    // v4 blotter + print logs
+    // v4 FINAL for v1 DEMO
     this.version(4).stores({
       residents:
-        "id, createdAt, updatedAt, lastUpdated, lastNameNorm, firstNameNorm, fullNameNorm, purok, status, sex, birthdateISO",
+        "id, createdAt, lastUpdated, status, purok, sex, birthdate, fullNameNorm, *searchTokens",
+      blotters:
+        "id, createdAt, updatedAt, lastUpdated, barangayId, caseNumber, caseNumberNorm, status, incidentDate, hearingDate, *tagsNorm, *searchTokens",
+      printLogs:
+        "id, createdAt, barangayId, docType, controlNo, residentId, blotterId, status",
+      settings: "id, key, updatedAt",
       syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
       activityLog: "id, createdAt, type, entityType, entityId",
       drafts: "id, module, key, updatedAt, [module+key]",
-      printLogs: "id, createdAt, docType, controlNo, residentId, status",
-
-      blotters:
-        "id, createdAt, updatedAt, lastUpdated, caseNumber, status, incidentDate, hearingDate, *searchTokens",
-      blotterPrintLogs:
-        "id, createdAt, docType, controlNo, blotterId, status",
     });
   }
 }
