@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
-import { generateCaseNumber, tokenise } from "@/lib/blotterUtils";
+import { generateCaseNumber, tokenize } from "@/lib/blotterUtils";
 
 export type BlotterFilterState = {
   q: string;
@@ -112,7 +112,7 @@ export function useBlotterData() {
       ...(input.respondents || []).map((p) => p.name),
     ].join(" ");
 
-    const searchTokens = tokenise(
+    const searchTokens = tokenize(
       caseNumber,
       input.narrative,
       (input.tags || []).join(" "),
