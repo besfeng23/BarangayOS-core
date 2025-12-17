@@ -41,9 +41,9 @@ import { mockPuroks, mockSectors } from '@/data/residents-mock';
 import type { Resident } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { collection, onSnapshot, query, where, orderBy, limit, startAfter, getDocs, Query, DocumentData, QueryDocumentSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, orderBy, limit, startAfter, getDocs, Query, DocumentData, QueryDocumentSnapshot, addDoc, serverTimestamp, writeBatch, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { residentConverter, type Resident as ResidentSchema } from '@/lib/firebase/schema';
+import { residentConverter, type Resident as ResidentSchema, blotterCaseConverter, businessPermitConverter } from '@/lib/firebase/schema';
 import { Skeleton } from '@/components/ui/skeleton';
 import NewResidentModal from './NewResidentModal';
 import { EmptyState } from '../ui/EmptyState';
@@ -65,40 +65,66 @@ const StatCard = ({ title, value }: { title: string, value: string | number }) =
     </div>
 );
 
-// --- Seeding Logic ---
-const firstNames = ["Juan", "Maria", "Jose", "Angel", "Mark", "Princess", "John", "Patricia", "Daniel", "Bea"];
-const lastNames = ["Dela Cruz", "Santos", "Reyes", "Garcia", "Dizon", "Lim", "Aquino", "Mendoza", "Perez", "Mercado"];
-const civilStatuses = ['single', 'married', 'widowed', 'separated'];
+// --- Golden Data Seeding Logic ---
+const goldenResidents = [
+  {
+    "firstName": "Juan", "lastName": "Dela Cruz", "middleName": "Santos",
+    "birthDate": "1980-06-12", "sex": "Male", "civilStatus": "Married",
+    "address": "123 Mabini St.", "purok": "Purok 1", "tags": ["Voter", "Indigent"],
+    "systemId": "BOS-2025-001"
+  },
+  {
+    "firstName": "Maria", "lastName": "Clara", "middleName": "Rizal",
+    "birthDate": "1995-02-14", "sex": "Female", "civilStatus": "Single",
+    "address": "45 Rizal Ave.", "purok": "Purok 2", "tags": ["Voter", "Scholar"],
+    "systemId": "BOS-2025-002"
+  },
+  {
+    "firstName": "Pedro", "lastName": "Penduko", "middleName": "Magaling",
+    "birthDate": "1955-11-30", "sex": "Male", "civilStatus": "Widowed",
+    "address": "88 Bonifacio St.", "purok": "Purok 3", "tags": ["Senior Citizen", "PWD"],
+    "systemId": "BOS-2025-003"
+  }
+];
 
-const generateRandomResident = (): Omit<ResidentSchema, 'id' | 'createdAt' | 'updatedAt'> => {
-  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-  const displayName = `${lastName.toUpperCase()}, ${firstName}`;
-  const birthYear = new Date().getFullYear() - (18 + Math.floor(Math.random() * 63)); // Ages 18 to 80
-  const birthDate = new Date(birthYear, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+const goldenBlotter = [
+  {
+    "complainant": "Juan Dela Cruz", "respondent": "Pedro Penduko",
+    "natureOfCase": "Noise Complaint", "status": "ACTIVE",
+    "dateOfIncident": "2025-12-16",
+    "narrative": "Respondent was playing videoke loudly past 10:00 PM."
+  },
+  {
+    "complainant": "Maria Clara", "respondent": "Unknown",
+    "natureOfCase": "Lost Property", "status": "SETTLED",
+    "dateOfIncident": "2025-12-10",
+    "narrative": "Complainant reported a lost government ID."
+  }
+];
 
-  return {
-    barangayId: "TEST-BARANGAY-1",
-    rbiId: `BRGY-DEMO-${Date.now() + Math.random()}`,
-    fullName: {
-      first: firstName,
-      last: lastName,
-    },
-    displayName: displayName,
-    displayNameLower: displayName.toLowerCase(),
-    sex: Math.random() > 0.5 ? 'M' : 'F',
-    dateOfBirth: new Date(birthDate.getTime()),
-    civilStatus: civilStatuses[Math.floor(Math.random() * civilStatuses.length)] as any,
-    addressSnapshot: {
-      purok: `Purok ${Math.floor(Math.random() * 7) + 1}`,
-      addressLine: 'TBD',
-    },
-    status: 'active',
-    consent: { signed: false },
-    createdBy: "SEED-SCRIPT",
-    updatedBy: "SEED-SCRIPT",
-  };
-};
+const goldenPermits = [
+  {
+    "businessName": "Aling Nena's Sari-Sari Store",
+    "owner": "Juan Dela Cruz", "type": "Retail",
+    "status": "Active", "feesCollected": 500, "purok": "Purok 1"
+  },
+  {
+    "businessName": "Pedro's Vulcanizing Shop",
+    "owner": "Pedro Penduko", "type": "Service",
+    "status": "Pending Renewal", "feesCollected": 0, "purok": "Purok 3"
+  }
+];
+
+async function wipeCollection(collectionName: string) {
+    const collectionRef = collection(db, collectionName);
+    const q = query(collectionRef);
+    const querySnapshot = await getDocs(q);
+    const batch = writeBatch(db);
+    querySnapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+    await batch.commit();
+}
 // --- End Seeding Logic ---
 
 
@@ -256,40 +282,107 @@ function ResidentRecordsContent() {
     setEditingResident(null); // Clear editing state on close
   };
   
-  const getAge = (dateOfBirth?: { seconds: number }) => {
+  const getAge = (dateOfBirth?: { seconds: number } | Date) => {
     if(!dateOfBirth) return 'N/A';
+    const dob = dateOfBirth instanceof Date ? dateOfBirth : new Date(dateOfBirth.seconds * 1000);
     return Math.floor(
-      (new Date() - new Date(dateOfBirth.seconds * 1000)) /
+      (new Date().getTime() - dob.getTime()) /
       (1000 * 60 * 60 * 24 * 365.25)
     );
   }
   
-    const handleSeedData = async () => {
-        setIsSeeding(true);
-        toast({ title: "Seeding...", description: "Generating 30 new resident records." });
+  const handleSeedData = async () => {
+    setIsSeeding(true);
+    toast({ title: "Seeding...", description: "Wiping and inserting golden sample data." });
 
-        try {
-            const residentsRef = collection(db, 'residents').withConverter(residentConverter);
-            const newResidents = Array.from({ length: 30 }, generateRandomResident);
+    try {
+        // 1. WIPE
+        await wipeCollection('residents');
+        await wipeCollection('blotter_cases');
+        await wipeCollection('business_permits');
+        toast({ title: "Wipe Complete", description: "Cleared old demo data." });
 
-            const writePromises = newResidents.map(resident =>
-                addDoc(residentsRef, {
-                    ...resident,
-                    createdAt: serverTimestamp(),
-                    updatedAt: serverTimestamp(),
-                })
-            );
-
-            await Promise.all(writePromises);
-
-            toast({ title: "Success!", description: "30 new residents have been added." });
-        } catch (error) {
-            console.error("Error seeding data:", error);
-            toast({ variant: "destructive", title: "Seeding Failed", description: "Could not add dummy data." });
-        } finally {
-            setIsSeeding(false);
+        // 2. SEED RESIDENTS
+        const residentsRef = collection(db, 'residents').withConverter(residentConverter);
+        for (const r of goldenResidents) {
+            const newResident = {
+                barangayId: "TEST-BARANGAY-1",
+                rbiId: r.systemId,
+                fullName: { first: r.firstName, last: r.lastName, middle: r.middleName },
+                displayName: `${r.lastName.toUpperCase()}, ${r.firstName}`,
+                displayNameLower: `${r.lastName.toLowerCase()}, ${r.firstName.toLowerCase()}`,
+                sex: r.sex === 'Male' ? 'M' : 'F',
+                dateOfBirth: Timestamp.fromDate(new Date(r.birthDate)),
+                civilStatus: r.civilStatus.toLowerCase(),
+                addressSnapshot: { purok: r.purok, addressLine: r.address },
+                status: 'active',
+                consent: { signed: true, signedAt: serverTimestamp() },
+                createdBy: "SEED-SCRIPT",
+                updatedBy: "SEED-SCRIPT",
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                sectorFlags: r.tags.reduce((acc, tag) => {
+                    if (tag === 'Senior Citizen') acc.senior = true;
+                    if (tag === 'PWD') acc.pwd = true;
+                    return acc;
+                }, {} as any)
+            };
+            await addDoc(residentsRef, newResident);
         }
-    };
+
+        // 3. SEED BLOTTER
+        const blotterRef = collection(db, 'blotter_cases').withConverter(blotterCaseConverter);
+        for (const b of goldenBlotter) {
+             const newCase = {
+                caseId: `BC-DEMO-${Date.now() + Math.random()}`,
+                complainant: b.complainant,
+                respondent: b.respondent,
+                nature: b.natureOfCase,
+                narrative: b.narrative,
+                status: b.status.toUpperCase(),
+                incidentAt: Timestamp.fromDate(new Date(b.dateOfIncident)),
+                date: b.dateOfIncident,
+                barangayId: "TEST-BARANGAY-1",
+                createdBy: "SEED-SCRIPT",
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+            await addDoc(blotterRef, newCase);
+        }
+
+        // 4. SEED PERMITS
+        const permitsRef = collection(db, 'business_permits').withConverter(businessPermitConverter);
+        for (const p of goldenPermits) {
+            const newPermit = {
+                permitNo: `BP-DEMO-${Date.now() + Math.random()}`,
+                status: p.status,
+                businessName: p.businessName,
+                businessAddress: { purok: p.purok, street: "TBD", barangay: "Dau", city: "Mabalacat", province: "Pampanga" },
+                owner: { fullName: p.owner, contactNo: 'N/A', address: 'N/A', residentId: 'N/A'},
+                feesCollected: p.feesCollected,
+                barangayId: "TEST-BARANGAY-1",
+                issuedBy: "SEED-SCRIPT",
+                category: p.type,
+                applicationType: 'NEW',
+                payment: { status: 'PAID' },
+                totals: { total: p.feesCollected, subtotal: p.feesCollected, penalties: 0, discounts: 0},
+                issuedAt: serverTimestamp(),
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                requirements: [],
+                flags: []
+            };
+            await addDoc(permitsRef, newPermit as any);
+        }
+
+        toast({ title: "Success!", description: "Golden sample data has been seeded." });
+    } catch (error) {
+        console.error("Error seeding data:", error);
+        toast({ variant: "destructive", title: "Seeding Failed", description: "Could not add demo data." });
+    } finally {
+        setIsSeeding(false);
+    }
+  };
 
   const renderLoadingSkeleton = (count = 10) => (
     Array.from({ length: count }).map((_, index) => (
