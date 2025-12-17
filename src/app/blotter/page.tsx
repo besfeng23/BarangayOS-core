@@ -30,6 +30,7 @@ const BlotterLogPage = () => {
   const [isPrintModalOpen, setIsPrintModalOpen] = React.useState(false);
   const isMobile = useIsMobile();
   const [isOnline, setIsOnline] = React.useState(true); // Mock connectivity
+  const [searchTerm, setSearchTerm] = React.useState('');
 
   const searchParams = useSearchParams();
 
@@ -63,6 +64,15 @@ const BlotterLogPage = () => {
     setIsPrintModalOpen(true);
   };
   
+  const filteredCases = React.useMemo(() => {
+    if (!searchTerm) return cases;
+    return cases.filter(c => 
+        c.caseId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.complainant.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.respondent && c.respondent.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [cases, searchTerm]);
+  
   const SidebarContent = () => (
      <div className="bg-slate-900 h-full flex flex-col">
         <div className="p-4 border-b border-slate-700">
@@ -71,7 +81,12 @@ const BlotterLogPage = () => {
          <div className="p-4">
              <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input placeholder="Search Case..." className="bg-slate-800 border-slate-600 text-white pl-10 h-11" />
+                <Input 
+                  placeholder="Search Case..." 
+                  className="bg-slate-800 border-slate-600 text-white pl-10 h-11"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
              <div className="flex gap-2 mt-2">
                 <Button variant="outline" className="flex-1">All Cases</Button>
@@ -81,7 +96,7 @@ const BlotterLogPage = () => {
         </div>
         <div className="flex-1 overflow-y-auto space-y-2 px-4">
             {loading && <p>Loading cases...</p>}
-            {cases.map(c => (
+            {filteredCases.map(c => (
                 <BlotterCaseCard 
                     key={c.id} 
                     caseNumber={c.caseId}
