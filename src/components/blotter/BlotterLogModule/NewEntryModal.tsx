@@ -58,7 +58,7 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
     try {
         const { date, time, ...restOfData } = formData as any;
         
-        const incidentDateTime = new Date(`${date}T${time}`);
+        const incidentDateTime = new Date(`${date}T${time || '00:00'}`);
         const incidentAt = Timestamp.fromDate(incidentDateTime);
 
         const newCase: Omit<BlotterCase, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -120,6 +120,9 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
   const isNextDisabled = () => {
     if (currentStep === 1) {
         return !formData.complainant || !formData.respondent;
+    }
+    if (currentStep === 2) {
+        return !formData.nature || !formData.date;
     }
     return false;
   }
