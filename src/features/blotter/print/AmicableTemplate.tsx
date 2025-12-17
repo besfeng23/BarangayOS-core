@@ -1,7 +1,7 @@
 import React from "react";
 import { BlotterRecord } from "@/lib/bosDb";
 
-export function SummonsTemplate({
+export function AmicableTemplate({
   blotter,
   controlNo,
   dateIssued,
@@ -12,7 +12,7 @@ export function SummonsTemplate({
   blotter: BlotterRecord;
   controlNo: string;
   dateIssued: string;
-  barangayLine: string; // placeholder; later from Settings
+  barangayLine: string;
   signerName: string;
   signerTitle: string;
 }) {
@@ -25,7 +25,7 @@ export function SummonsTemplate({
         <div className="text-sm">REPUBLIC OF THE PHILIPPINES</div>
         <div className="text-sm">OFFICE OF THE BARANGAY</div>
         <div className="text-sm font-semibold">{barangayLine}</div>
-        <div className="mt-3 text-xl font-bold tracking-wide">SUMMONS</div>
+        <div className="mt-3 text-xl font-bold tracking-wide">AMICABLE SETTLEMENT</div>
       </div>
 
       <div className="mt-6 flex justify-between text-sm">
@@ -37,37 +37,44 @@ export function SummonsTemplate({
       </div>
 
       <div className="mt-6 text-sm leading-6">
-        <div className="font-semibold">TO:</div>
-        <div className="mt-1">
-          <div><span className="font-semibold">Respondent(s):</span> {respondents || "—"}</div>
-        </div>
+        <div><span className="font-semibold">Complainant(s):</span> {complainants || "—"}</div>
+        <div><span className="font-semibold">Respondent(s):</span> {respondents || "—"}</div>
 
         <p className="mt-4">
-          You are hereby required to appear before the Barangay for mediation/conciliation
-          regarding the complaint filed by:
+          This amicable settlement is entered into voluntarily by the parties above in relation to the
+          incident described in the blotter case referenced herein.
         </p>
 
-        <div className="mt-2"><span className="font-semibold">Complainant(s):</span> {complainants || "—"}</div>
-
-        <div className="mt-4">
-          <div><span className="font-semibold">Incident Date:</span> {new Date(blotter.incidentDate).toLocaleString()}</div>
-          <div><span className="font-semibold">Hearing Schedule:</span> {blotter.hearingDate ? new Date(blotter.hearingDate).toLocaleString() : "To be scheduled"}</div>
+        <div className="mt-6">
+          <div className="font-semibold">Terms of Settlement</div>
+          <div className="mt-2 border border-black/20 p-3 min-h-[180px]">
+            {/* v1: typed later / handwritten after print */}
+            <div className="text-black/60 text-xs">
+              (Write the settlement terms here after printing, or encode in v2.)
+            </div>
+          </div>
         </div>
-
-        <p className="mt-4">
-          Failure to appear without valid reason may lead to appropriate action in accordance
-          with applicable barangay mediation procedures.
-        </p>
 
         <div className="mt-8">
-          <div className="font-semibold">Brief Narrative (Reference):</div>
+          <div className="font-semibold">Narrative Reference</div>
           <div className="mt-2 border border-black/20 p-3 min-h-[120px] whitespace-pre-wrap">
             {blotter.narrative || "—"}
           </div>
         </div>
 
+        <div className="mt-10 grid grid-cols-2 gap-8">
+          <div className="text-center">
+            <div className="border-t border-black pt-2 font-semibold">Complainant Signature</div>
+            <div className="text-xs">Printed Name: {complainants || "—"}</div>
+          </div>
+          <div className="text-center">
+            <div className="border-t border-black pt-2 font-semibold">Respondent Signature</div>
+            <div className="text-xs">Printed Name: {respondents || "—"}</div>
+          </div>
+        </div>
+
         <div className="mt-10 flex justify-end">
-          <div className="text-center w-[240px]">
+          <div className="text-center w-[260px]">
             <div className="border-t border-black pt-2 font-semibold">{signerName}</div>
             <div className="text-xs">{signerTitle}</div>
           </div>

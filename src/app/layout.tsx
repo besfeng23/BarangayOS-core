@@ -10,6 +10,7 @@ import { SettingsProvider } from '@/context/SettingsContext';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
 import { SyncProvider } from '@/context/SyncContext';
 import MainLayout from '@/components/shell/MainLayout';
+import "@/styles/print.css";
 
 export default function RootLayout({
   children,

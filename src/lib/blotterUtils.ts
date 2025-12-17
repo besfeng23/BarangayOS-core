@@ -1,5 +1,6 @@
 import { uuid, norm } from "@/lib/uuid";
 
+// Format: YYYY-MM-[6-CHAR-HASH] (same as certs)
 export function generateCaseNumber(): string {
   const now = new Date();
   const year = now.getFullYear();

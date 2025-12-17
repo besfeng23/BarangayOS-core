@@ -1,0 +1,95 @@
+import { useCallback, useEffect, useState } from "react";
+import { bosDb, BlotterRecord } from "@/lib/bosDb";
+import { uuid } from "@/lib/uuid";
+import { generateControlNumber } from "@/lib/certUtils";
+
+type DocType = "SUMMONS" | "AMICABLE";
+
+export function useBlotterDocs() {
+  const [printJob, setPrintJob] = useState<null | {
+    docType: DocType;
+    controlNo: string;
+    dateIssued: string;
+    signerName: string;
+    signerTitle: string;
+    barangayLine: string;
+    blotter: BlotterRecord;
+  }>(null);
+
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  // Clean up printing state safely
+  useEffect(() => {
+    const onAfter = () => {
+      setIsPrinting(false);
+      setPrintJob(null);
+    };
+    window.addEventListener("afterprint", onAfter);
+    return () => window.removeEventListener("afterprint", onAfter);
+  }, []);
+
+  const issueAndPrint = useCallback(async (blotter: BlotterRecord, docType: DocType) => {
+    const now = Date.now();
+    const controlNo = generateControlNumber();
+    const logId = uuid();
+
+    // v1 placeholders (later from Settings)
+    const barangayLine = "BARANGAY (SETTINGS PENDING)";
+    const signerName = "Hon. Barangay Captain";
+    const signerTitle = "Punong Barangay";
+
+    // 1) Audit to local printLogs + syncQueue (atomic)
+    await bosDb.transaction("rw", bosDb.printLogs, bosDb.syncQueue, async () => {
+      await bosDb.printLogs.add({
+        id: logId,
+        barangayId: blotter.barangayId,
+        createdAt: now,
+        docType,
+        controlNo,
+        blotterId: blotter.id,
+        status: "pending",
+        tryCount: 0,
+        meta: { signerName, signerTitle, caseNumber: blotter.caseNumber },
+      });
+
+      await bosDb.syncQueue.add({
+        id: uuid(),
+        entityType: "print_log" as any,
+        entityId: logId,
+        op: "UPSERT",
+        payload: {
+          id: logId,
+          barangayId: blotter.barangayId,
+          createdAt: now,
+          docType,
+          controlNo,
+          blotterId: blotter.id,
+          meta: { signerName, signerTitle, caseNumber: blotter.caseNumber },
+        },
+        createdAt: now,
+        updatedAt: now,
+        status: "pending",
+        tryCount: 0,
+      } as any);
+    });
+
+    // 2) Prepare DOM data then print
+    setIsPrinting(true);
+    setPrintJob({
+      docType,
+      controlNo,
+      dateIssued: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+      signerName,
+      signerTitle,
+      barangayLine,
+      blotter,
+    });
+
+    // ensure DOM commits before print
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
+  }, []);
+
+  return { printJob, isPrinting, issueAndPrint };
+}

@@ -4,10 +4,10 @@
   }
 
   body {
-    background: white !important;
-    color: black !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    background: white;
+    color: black;
+    margin: 0;
+    padding: 0;
   }
 
   #print-container,
@@ -21,7 +21,7 @@
     top: 0;
     width: 100%;
     margin: 0;
-    padding: 20mm;
+    padding: 18mm;
   }
 
   .page-break {

@@ -1,8 +1,13 @@
 import React, { useEffect, useRef } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useLocation, useNavigate, useParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb } from "@/lib/bosDb";
 import { useToast } from "@/hooks/use-toast";
+import { useBlotterData } from "@/hooks/useBlotterData";
+import { PrintFrame } from "@/components/print/PrintFrame";
+import { useBlotterDocs } from "@/hooks/useBlotterDocs";
+import { SummonsTemplate } from "@/features/blotter/print/SummonsTemplate";
+import { AmicableTemplate } from "@/features/blotter/print/AmicableTemplate";
 
 const btnPrimary =
   "px-5 py-4 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold " +
@@ -15,19 +20,29 @@ export default function BlotterProfilePage() {
   const { id = "" } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const location = useLocation() as any;
+
+  const { logActivity, updateBlotter } = useBlotterData();
   const { toast } = useToast();
   const toastShownRef = useRef(false);
 
-  const blotter = useLiveQuery(() => bosDb.blotters.get(id as string), [id], undefined);
+  const { printJob, issueAndPrint } = useBlotterDocs();
+
+  const blotter = useLiveQuery(() => bosDb.blotters.get(id as string), [id], undefined as any);
 
   useEffect(() => {
-    const msg = searchParams.get('toast');
+    if (!id) return;
+    logActivity({ type: "BLOTTER_VIEW", entityType: "blotter", entityId: id as string });
+  }, [id, logActivity]);
+
+  useEffect(() => {
+    const msg = location?.state?.toast || searchParams.get('toast');
     if (!toastShownRef.current && msg) {
       toastShownRef.current = true;
-      toast({ title: decodeURIComponent(msg) });
-      router.replace(`/blotter/${id}`, { scroll: false });
+      toast({ title: msg });
+      router.replace(`/blotter/${id}`, { state: {} });
     }
-  }, [location, toast, router, id, searchParams]);
+  }, [location, searchParams, toast, router, id]);
 
   if (!blotter) {
     return (
@@ -38,7 +53,7 @@ export default function BlotterProfilePage() {
               <button
                 onClick={() => router.push("/blotter")}
                 className="mt-4 px-5 py-3 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold
-                  focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
+                  focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
               >
                 Back to Blotter
               </button>
@@ -55,7 +70,7 @@ export default function BlotterProfilePage() {
             <button
               onClick={() => router.push("/blotter")}
               className="text-sm text-zinc-400 mb-4
-                focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950 rounded-2xl px-2 py-1"
+                focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded-2xl px-2 py-1"
             >
               ← Back to Blotter
             </button>
@@ -69,14 +84,14 @@ export default function BlotterProfilePage() {
               <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4">
                 <div className="text-zinc-500 text-xs uppercase">Complainants</div>
                 <div className="mt-1 text-zinc-100 font-semibold">
-                  {(blotter.complainants || []).map((p) => p.name).join(", ") || "—"}
+                  {(blotter.complainants || []).map((p: any) => p.name).join(", ") || "—"}
                 </div>
               </div>
 
               <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4">
                 <div className="text-zinc-500 text-xs uppercase">Respondents</div>
                 <div className="mt-1 text-zinc-100 font-semibold">
-                  {(blotter.respondents || []).map((p) => p.name).join(", ") || "—"}
+                  {(blotter.respondents || []).map((p: any) => p.name).join(", ") || "—"}
                 </div>
               </div>
             </div>
@@ -88,13 +103,48 @@ export default function BlotterProfilePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-              <button className={btnPrimary}>Print Summons</button>
-              <button className={btnPrimary}>Print Amicable</button>
+              <button
+                className={btnPrimary}
+                onClick={() => issueAndPrint(blotter, "SUMMONS")}
+              >
+                Print Summons
+              </button>
+
+              <button
+                className={btnPrimary}
+                onClick={() => issueAndPrint(blotter, "AMICABLE")}
+              >
+                Print Amicable
+              </button>
+
               <button className={btnSecondary}>Edit Case</button>
               <button className={btnSecondary}>Mark Settled</button>
             </div>
           </div>
         </div>
+        <PrintFrame>
+            {printJob?.docType === "SUMMONS" && (
+              <SummonsTemplate
+                blotter={printJob.blotter}
+                controlNo={printJob.controlNo}
+                dateIssued={printJob.dateIssued}
+                barangayLine={printJob.barangayLine}
+                signerName={printJob.signerName}
+                signerTitle={printJob.signerTitle}
+              />
+            )}
+
+            {printJob?.docType === "AMICABLE" && (
+              <AmicableTemplate
+                blotter={printJob.blotter}
+                controlNo={printJob.controlNo}
+                dateIssued={printJob.dateIssued}
+                barangayLine={printJob.barangayLine}
+                signerName={printJob.signerName}
+                signerTitle={printJob.signerTitle}
+              />
+            )}
+        </PrintFrame>
       </div>
   );
 }
