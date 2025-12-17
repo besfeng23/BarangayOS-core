@@ -46,3 +46,7 @@ firestore-debug.lognode_modules/
 .env
 .DS_Store
 dist/
+node_modules/
+.env
+.DS_Store
+dist/
