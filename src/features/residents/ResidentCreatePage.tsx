@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
-import { TerminalShell } from "@/components/shell/TerminalShell";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ResidentCreatePage() {
@@ -66,7 +65,7 @@ export default function ResidentCreatePage() {
   }
 
   return (
-    <TerminalShell>
+    <>
       <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
         <div className="max-w-2xl mx-auto px-4 pt-6">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -149,7 +148,7 @@ export default function ResidentCreatePage() {
           </div>
         </div>
       )}
-    </TerminalShell>
+    </>
   );
 }
 

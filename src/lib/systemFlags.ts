@@ -1,5 +1,7 @@
-// v1: hard-coded flags (wire to real backend later)
 export const systemFlags = {
-  isTrial: true,
+  isTrialAccount: true,
   trialDaysRemaining: 5,
+
+  // optional: wire later
+  supportText: "Contact support to activate.",
 };

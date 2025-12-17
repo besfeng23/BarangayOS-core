@@ -5,7 +5,6 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb } from "@/lib/bosDb";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { SyncStatusBadge } from "@/features/residents/components/SyncStatusBadge";
-import { TerminalShell } from "@/components/shell/TerminalShell";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ResidentProfilePage() {
@@ -39,7 +38,6 @@ export default function ResidentProfilePage() {
 
   if (!resident) {
     return (
-      <TerminalShell>
         <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
           <div className="max-w-3xl mx-auto px-4 pt-6">
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -54,12 +52,11 @@ export default function ResidentProfilePage() {
             </div>
           </div>
         </div>
-      </TerminalShell>
     );
   }
 
   return (
-      <TerminalShell>
+      <>
         <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
           <div className="max-w-4xl mx-auto px-4 pt-6">
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -100,7 +97,7 @@ export default function ResidentProfilePage() {
           </div>
         </div>
         <ToastComponent />
-      </TerminalShell>
+      </>
   );
 }
 

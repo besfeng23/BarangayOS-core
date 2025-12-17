@@ -9,9 +9,7 @@ import { usePathname } from 'next/navigation';
 import { SettingsProvider } from '@/context/SettingsContext';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
 import { SyncProvider } from '@/context/SyncContext';
-import SystemRail from '@/components/app-hub/SystemRail';
-import BottomNav from '@/components/app-hub/BottomNav';
-import { TerminalUIProvider } from '@/contexts/TerminalUIContext';
+import MainLayout from '@/components/shell/MainLayout';
 
 export default function RootLayout({
   children,
@@ -22,7 +20,7 @@ export default function RootLayout({
   const isLoginPage = pathname === '/login';
 
   return (
-    <html lang="en" className="dark bg-zinc-950">
+    <html lang="en" className="dark bg-slate-950">
       <head>
         <title>BarangayOS Digital Terminal</title>
         <meta
@@ -48,16 +46,10 @@ export default function RootLayout({
             ) : (
               <AuthGuard>
                 <SyncProvider>
-                  <TerminalUIProvider>
-                    <IdleScreensaver />
-                    <div className="flex flex-col h-screen">
-                      <SystemRail />
-                      <main className="flex-1 overflow-y-auto pt-14">
-                        {children}
-                      </main>
-                      <BottomNav />
-                    </div>
-                  </TerminalUIProvider>
+                  <IdleScreensaver />
+                   <MainLayout>
+                      {children}
+                   </MainLayout>
                 </SyncProvider>
               </AuthGuard>
             )}
