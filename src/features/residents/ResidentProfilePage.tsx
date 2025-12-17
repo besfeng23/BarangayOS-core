@@ -86,7 +86,7 @@ export default function ResidentProfilePage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-                    <button className={btnPrimary}>Issue Clearance</button>
+                    <button className={btnPrimary} onClick={() => router.push(`/certificates/${resident.id}`)}>Issue Clearance</button>
                     <button className={btnPrimary}>Issue Certificate</button>
                     <button className={btnSecondary}>Edit Profile</button>
                     <button className={btnSecondary}>Print Record</button>

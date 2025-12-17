@@ -1,0 +1,30 @@
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #print-container,
+  #print-container * {
+    visibility: visible;
+  }
+
+  #print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20mm;
+  }
+
+  .page-break {
+    page-break-after: always;
+  }
+}

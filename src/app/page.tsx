@@ -90,7 +90,7 @@ export default function Home() {
           title="Blotter"
           description="Log and manage community disputes"
           icon={Scale}
-          href="/blotter?action=new"
+          href="/blotter"
           badgeCount={totalBlotterBadge}
           badgeLabel="Active"
           badgeColor="amber"
