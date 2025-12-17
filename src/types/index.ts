@@ -1,4 +1,3 @@
-
 import { Timestamp } from 'firebase/firestore';
 import type { CityHealthTypes } from './city-health';
 import type { JobsPortalTypes } from './jobs-portal';
@@ -52,7 +51,6 @@ export type UserRole =
   | 'tanod'
   | 'Captain'
   | 'Treasurer';
-
 
 export interface UserProfile {
   uid: string;
@@ -170,13 +168,12 @@ export interface DocIssued {
 }
 
 export interface BlotterCaseSummary {
-    caseId: string;
-    caseNo: string;
-    title: string;
-    status: 'pending' | 'settled' | 'archived';
-    role: 'complainant' | 'respondent';
+  caseId: string;
+  caseNo: string;
+  title: string;
+  status: 'pending' | 'settled' | 'archived';
+  role: 'complainant' | 'respondent';
 }
-
 
 export interface AuditLog {
   id: string;
@@ -206,4 +203,23 @@ export interface AuditLog {
 
 export type Sector = 'senior' | 'pwd' | 'soloParent' | 'indigent' | 'fourPs' | 'osy';
 
-export type { CityHealthTypes, JobsPortalTypes, HealthEMRTypes, EmangoTypes, ClinicQueueTypes, FinancialsTypes, AnnouncementsTypes, BusinessPermit, BlotterCase, Transaction, ReportData };
+export interface ActivityLogItem {
+    id: string;
+    message: string;
+    createdAt: string; // ISO string
+}
+
+
+export type {
+  CityHealthTypes,
+  JobsPortalTypes,
+  HealthEMRTypes,
+  EmangoTypes,
+  ClinicQueueTypes,
+  FinancialsTypes,
+  AnnouncementsTypes,
+  BusinessPermit,
+  BlotterCase,
+  Transaction,
+  ReportData,
+};

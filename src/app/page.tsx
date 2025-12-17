@@ -1,162 +1,120 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { Button } from '@/components/ui/button';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { Users, FileClock, Scale, Plus, Edit, FileText, Briefcase, Building } from 'lucide-react';
-import Link from 'next/link';
-import { residentConverter, blotterCaseConverter } from '@/lib/firebase/schema';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-
-const QuickActionCard = ({ title, description, icon: Icon, actionText, href }: { title: string, description: string, icon: React.ElementType, actionText: string, href: string }) => {
-  return (
-    <>
-      <Link href={href} passHref>
-        <Card className="group flex flex-col h-full bg-slate-800/50 border-slate-700 hover:border-blue-500 hover:bg-slate-800 transition-all cursor-pointer">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Icon className="w-10 h-10 text-slate-400 group-hover:text-blue-400 transition-colors" />
-              <div>
-                <CardTitle className="text-2xl">{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="flex-grow"></CardContent>
-          <CardFooter className="bg-slate-800/70 p-4 mt-auto">
-            <p className="font-bold text-lg text-blue-400 group-hover:underline">{actionText}</p>
-          </CardFooter>
-        </Card>
-      </Link>
-    </>
-  );
-};
-
+  Users,
+  FileClock,
+  Scale,
+  Plus,
+  Edit,
+  FileText,
+  Briefcase,
+  Building,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import { useQueueCount } from '@/hooks/useQueueCount';
+import DraftBanner from '@/components/app-hub/DraftBanner';
+import ModuleCard from '@/components/app-hub/ModuleCard';
 
 export default function Home() {
-  const [residentCount, setResidentCount] = useState(15);
-  const [activeCasesCount, setActiveCasesCount] = useState(3);
-  const [pendingClearancesCount, setPendingClearancesCount] = useState(0);
+  const [activeBlotterCount, setActiveBlotterCount] = useState(0);
   const [pendingPermitsCount, setPendingPermitsCount] = useState(0);
   const { toast } = useToast();
+  const pendingBlotterWrites = useQueueCount('blotter_cases');
+  const pendingPermitWrites = useQueueCount('business_permits');
 
   useEffect(() => {
-    // Listener for pending certificates/transactions
-    const certificatesQuery = query(collection(db, 'transactions'), where('status', '==', 'PENDING'));
-    const unsubscribeCertificates = onSnapshot(certificatesQuery, (snapshot) => {
-        setPendingClearancesCount(snapshot.size);
-    }, (error) => {
-        console.error("Error fetching pending clearances:", error);
-    });
+    // Listener for active blotter cases
+    const blotterQuery = query(
+      collection(db, 'blotter_cases'),
+      where('status', '==', 'ACTIVE')
+    );
+    const unsubscribeBlotter = onSnapshot(
+      blotterQuery,
+      (snapshot) => {
+        setActiveBlotterCount(snapshot.size);
+      },
+      (error) => {
+        console.error('Error fetching active blotter cases:', error);
+      }
+    );
 
     // Listener for pending business permits
-    const permitsQuery = query(collection(db, 'business_permits'), where('status', '==', 'Pending Renewal'));
-     const unsubscribePermits = onSnapshot(permitsQuery, (snapshot) => {
+    const permitsQuery = query(
+      collection(db, 'business_permits'),
+      where('status', '==', 'Pending Renewal')
+    );
+    const unsubscribePermits = onSnapshot(
+      permitsQuery,
+      (snapshot) => {
         setPendingPermitsCount(snapshot.size);
-    }, (error) => {
-        console.error("Error fetching pending permits:", error);
-    });
-
+      },
+      (error) => {
+        console.error('Error fetching pending permits:', error);
+      }
+    );
 
     return () => {
-      unsubscribeCertificates();
+      unsubscribeBlotter();
       unsubscribePermits();
     };
   }, [toast]);
 
+  const totalBlotterBadge = activeBlotterCount + pendingBlotterWrites;
+  const totalPermitBadge = pendingPermitsCount + pendingPermitWrites;
+
   return (
-    <div className="space-y-8 pb-24">
-        <section>
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatCard 
-                    title="Total Population"
-                    value={"15"}
-                    label="Registered Residents"
-                    icon={Users}
-                />
-                 <StatCard 
-                    title="Pending Clearances"
-                    value={"3"}
-                    label="Action Required"
-                    icon={FileClock}
-                    variant="warning"
-                />
-                 <StatCard 
-                    title="Active Cases"
-                    value={"3"}
-                    label="Blotter Log"
-                    icon={Scale}
-                />
-            </div>
-        </section>
+    <div className="space-y-4 pb-24">
+      <DraftBanner />
 
-        <section>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <QuickActionCard 
-                  title="Blotter"
-                  description="Manage community disputes"
-                  icon={Scale}
-                  href="/blotter?action=new"
-                  actionText="+ FILE BLOTTER"
-                />
-                <QuickActionCard 
-                  title="Certificates"
-                  description="Issue official documents"
-                  icon={FileText}
-                  href="/certificates?action=focus"
-                  actionText="+ ISSUE CLEARANCE"
-                />
-                <QuickActionCard 
-                  title="Residents"
-                  description="View & manage resident data"
-                  icon={Users}
-                  href="/residents"
-                  actionText="MANAGE RECORDS"
-                />
-                <QuickActionCard 
-                  title="Business Permits"
-                  description={`Renewals Pending: ${pendingPermitsCount}`}
-                  icon={Building}
-                  href="/permits?action=new"
-                  actionText="+ NEW PERMIT"
-                />
-            </div>
-        </section>
+      <main className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 px-3 py-4">
+        <ModuleCard
+          title="Residents"
+          description="View, add, or manage resident records"
+          icon={Users}
+          href="/residents"
+        />
+        <ModuleCard
+          title="Certificates"
+          description="Issue official barangay documents"
+          icon={FileText}
+          href="/certificates?action=focus"
+        />
+        <ModuleCard
+          title="Blotter"
+          description="Log and manage community disputes"
+          icon={Scale}
+          href="/blotter?action=new"
+          badgeCount={totalBlotterBadge}
+          badgeLabel="Active"
+          badgeColor="amber"
+        />
+        <ModuleCard
+          title="Business Permits"
+          description="Register or renew business permits"
+          icon={Building}
+          href="/permits?action=new"
+          badgeCount={totalPermitBadge}
+          badgeLabel="Renewals"
+          badgeColor="red"
+        />
 
-        <section>
-            <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl mb-6">
-                Official Integrations
-            </h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 <QuickActionCard 
-                  title="Digital Payments"
-                  description="eMango Wallet Integration"
-                  icon={Briefcase}
-                  href="/emango"
-                  actionText="OPEN"
-                />
-                 <QuickActionCard 
-                  title="Health Request"
-                  description="City Health Integration"
-                  icon={FileText}
-                  href="/city-health"
-                  actionText="OPEN"
-                />
-            </div>
-        </section>
+        <ModuleCard
+          title="Digital Payments"
+          description="eMango Wallet Integration"
+          icon={Briefcase}
+          href="/emango"
+        />
+        <ModuleCard
+          title="Health"
+          description="City Health EMR Integration"
+          icon={FileText}
+          href="/city-health"
+        />
+      </main>
     </div>
   );
 }
