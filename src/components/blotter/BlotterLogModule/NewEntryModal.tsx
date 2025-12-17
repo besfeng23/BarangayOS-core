@@ -57,6 +57,16 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
 
     try {
         const { date, time, ...restOfData } = formData as any;
+
+        if (!date) {
+            toast({
+                variant: "destructive",
+                title: "Missing Incident Date",
+                description: "Please go back and select a date for the incident.",
+            });
+            setIsSaving(false);
+            return;
+        }
         
         const incidentDateTime = new Date(`${date}T${time || '00:00'}`);
         const incidentAt = Timestamp.fromDate(incidentDateTime);
