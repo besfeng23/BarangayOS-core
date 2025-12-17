@@ -1,17 +1,16 @@
-import React from "react";
-import { useLocation, useNavigate } from "next/navigation";
-import { StatusIndicator } from "@/components/shell/StatusIndicator";
-import { TrialBanner } from "@/components/shell/TrialBanner";
-import { SettingsDropdown } from "@/components/shell/SettingsDropdown";
-import { usePathname } from "next/navigation";
+import React from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { StatusIndicator } from '@/components/shell/StatusIndicator';
+import { TrialBanner } from '@/components/shell/TrialBanner';
+import { SettingsDropdown } from '@/components/shell/SettingsDropdown';
 
 function titleFromPath(pathname: string): string | null {
-  if (pathname === "/" || pathname.startsWith("/dashboard")) return null;
-  if (pathname.startsWith("/residents")) return "Residents";
-  if (pathname.startsWith("/blotter")) return "Blotter";
-  if (pathname.startsWith("/certificates")) return "Certificates";
-  if (pathname.startsWith("/settings")) return "Settings";
-  return "BarangayOS";
+  if (pathname === '/' || pathname.startsWith('/dashboard')) return null;
+  if (pathname.startsWith('/residents')) return 'Residents';
+  if (pathname.startsWith('/blotter')) return 'Blotter';
+  if (pathname.startsWith('/certificates')) return 'Certificates';
+  if (pathname.startsWith('/settings')) return 'Settings';
+  return 'BarangayOS';
 }
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +25,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <div className="h-full max-w-6xl mx-auto px-4 flex items-center gap-3">
           {/* Home / Brand */}
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push('/')}
             className="h-12 w-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-zinc-100
               focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
             aria-label="Back to Dashboard"
@@ -39,11 +38,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {title ? (
             <div className="min-w-0">
               <div className="text-zinc-100 font-semibold truncate">{title}</div>
-              <div className="text-zinc-400 text-xs truncate">Offline-first workstation</div>
+              <div className="text-zinc-400 text-xs truncate">
+                Offline-first workstation
+              </div>
             </div>
           ) : (
             <div className="min-w-0">
-              <div className="text-zinc-100 font-semibold truncate">BarangayOS</div>
+              <div className="text-zinc-100 font-semibold truncate">
+                BarangayOS
+              </div>
               <div className="text-zinc-400 text-xs truncate">Dashboard</div>
             </div>
           )}
@@ -59,9 +62,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </header>
 
       {/* Content */}
-      <main className="pt-16 pb-10">
-        {children}
-      </main>
+      <main className="pt-16 pb-10">{children}</main>
 
       {/* Trial Footer */}
       <TrialBanner />
