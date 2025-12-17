@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Home, Printer } from 'lucide-react';
 import Link from 'next/link';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
+import { Analytics } from '@vercel/analytics/next';
 
 
 export default function RootLayout({
@@ -70,6 +71,7 @@ export default function RootLayout({
             <Toaster />
           </SettingsProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
