@@ -51,7 +51,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
     const lowercasedQuery = queryTerm.toLowerCase();
     return allResidents.filter(resident =>
       resident.displayName.toLowerCase().includes(lowercasedQuery) ||
-      resident.rbiId.includes(lowercasedQuery)
+      (resident.rbiId && resident.rbiId.includes(lowercasedQuery))
     ).slice(0, 10);
   }, [queryTerm, allResidents]);
 
@@ -95,8 +95,13 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
      )
   }
 
+  const pick = (resident: Resident) => {
+    handleSelect(resident);
+    setOpen(false);
+  };
+
   return (
-    <div data-resident-picker>
+    <div data-resident-picker className="pointer-events-auto">
       <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
           <Button
@@ -110,11 +115,10 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-            className="w-[400px] p-0 z-50"
+            className="w-[400px] p-0 z-50 pointer-events-auto"
             align="start"
             onInteractOutside={(e) => {
               const target = e.target as HTMLElement;
-              // Prevent closing if the interaction is within an element marked for the picker
               if (target.closest('[data-resident-picker]')) {
                 e.preventDefault();
               }
@@ -135,20 +139,24 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
                     <CommandItem
                       key={resident.id}
                       value={resident.displayName}
-                      onPointerDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleSelect(resident);
-                      }}
-                      className="cursor-pointer"
+                      className="p-0"
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          displayName === resident.displayName ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {resident.displayName}
+                      <button
+                        type="button"
+                        className="w-full text-left px-3 py-2 cursor-pointer pointer-events-auto flex items-center"
+                        onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
+                        onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
+                        onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
+                      >
+                         <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              displayName === resident.displayName ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {resident.displayName}
+                      </button>
                     </CommandItem>
                   ))}
                 </CommandGroup>
