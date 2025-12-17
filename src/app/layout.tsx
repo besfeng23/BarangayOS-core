@@ -3,6 +3,7 @@
 
 import './globals.css';
 import './print.css';
+import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/firebase/auth-provider';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -70,6 +71,7 @@ export default function RootLayout({
             <Toaster />
           </SettingsProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
