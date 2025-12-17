@@ -58,7 +58,7 @@ const NewEntryModal = ({ isOpen, onClose, isOnline }: NewEntryModalProps) => {
     try {
         const { date, time, ...restOfData } = formData as any;
 
-        if (!date) {
+        if (!date || date.trim() === '') {
             toast({
                 variant: "destructive",
                 title: "Missing Incident Date",

@@ -63,7 +63,6 @@ export const blotterCaseConverter: FirestoreDataConverter<BlotterCase> = {
     const { id, ...data } = blotterCase;
     return {
       ...data,
-      incidentAt: data.incidentAt ? Timestamp.fromDate(new Date(data.incidentAt)) : serverTimestamp(),
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt : serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
