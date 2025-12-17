@@ -163,8 +163,8 @@ function ResidentRecordsContent() {
     // Base query that filters out archived residents
     let q: Query<DocumentData> = query(
       residentsRef,
+      where('status', '==', 'active'),
       orderBy('displayName'),
-      where('status', '!=', 'archived'),
       limit(PAGE_SIZE)
     );
     return q;
@@ -206,8 +206,8 @@ function ResidentRecordsContent() {
     const residentsRef = collection(db, 'residents').withConverter(residentConverter);
     const nextQuery = query(
         residentsRef, 
+        where('status', '==', 'active'),
         orderBy('displayName'), 
-        where('status', '!=', 'archived'),
         startAfter(lastVisible), 
         limit(PAGE_SIZE)
     );
