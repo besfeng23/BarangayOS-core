@@ -1,22 +1,22 @@
-import React, { useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { useFirebaseConnected } from "@/hooks/useFirebaseConnected";
-import { StatusIndicator } from "@/components/shell/StatusIndicator";
-import { SettingsDropdown } from "@/components/shell/SettingsDropdown";
-import { TrialBanner } from "@/components/shell/TrialBanner";
+import React from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useFirebaseConnected } from '@/hooks/useFirebaseConnected';
+import { StatusIndicator } from '@/components/shell/StatusIndicator';
+import { SettingsDropdown } from '@/components/shell/SettingsDropdown';
+import { TrialBanner } from '@/components/shell/TrialBanner';
 
 function getContext(pathname: string): { title: string; showTitle: boolean; backTo?: string } {
-  if (pathname === "/" || pathname.startsWith("/dashboard")) return { title: "", showTitle: false };
-  if (pathname.startsWith("/residents/new")) return { title: "Register Resident", showTitle: true, backTo: "/residents" };
-  if (pathname.startsWith("/residents/")) return { title: "Resident Profile", showTitle: true, backTo: "/residents" };
-  if (pathname.startsWith("/residents")) return { title: "Residents", showTitle: true, backTo: "/" };
+  if (pathname === '/' || pathname.startsWith('/dashboard')) return { title: '', showTitle: false };
+  if (pathname.startsWith('/residents/new')) return { title: 'Register Resident', showTitle: true, backTo: '/residents' };
+  if (pathname.startsWith('/residents/')) return { title: 'Resident Profile', showTitle: true, backTo: '/residents' };
+  if (pathname.startsWith('/residents')) return { title: 'Residents', showTitle: true, backTo: '/' };
 
-  if (pathname.startsWith("/blotter")) return { title: "Blotter", showTitle: true, backTo: "/" };
-  if (pathname.startsWith("/certificates")) return { title: "Certificates", showTitle: true, backTo: "/" };
-  if (pathname.startsWith("/permits")) return { title: "Business Permits", showTitle: true, backTo: "/" };
+  if (pathname.startsWith('/blotter')) return { title: 'Blotter', showTitle: true, backTo: '/' };
+  if (pathname.startsWith('/certificates')) return { title: 'Certificates', showTitle: true, backTo: '/' };
+  if (pathname.startsWith('/permits')) return { title: 'Business Permits', showTitle: true, backTo: '/' };
 
-  return { title: "Module", showTitle: true, backTo: "/" };
+  return { title: 'Module', showTitle: true, backTo: '/' };
 }
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -26,17 +26,17 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const firebaseConnected = useFirebaseConnected();
 
   // v1 placeholder: set true only if sync queue reports failed
-  const [syncFailed, setSyncFailed] = useState(false);
+  const [syncFailed, setSyncFailed] = React.useState(false);
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [staffMode, setStaffMode] = useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [staffMode, setStaffMode] = React.useState(false);
 
-  const ctx = useMemo(() => getContext(pathname), [pathname]);
+  const ctx = React.useMemo(() => getContext(pathname), [pathname]);
 
   function retrySync() {
     // v1 placeholder: wire to real syncQueue retry
     setSyncFailed(false);
-    alert("Retry sync (wire to syncQueue)");
+    alert('Retry sync (wire to syncQueue)');
   }
 
   return (
@@ -46,7 +46,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <div className="max-w-6xl mx-auto px-3 h-16 flex items-center gap-3">
           {/* Home */}
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push('/')}
             className="min-h-[48px] min-w-[48px] rounded-2xl bg-slate-950 border border-slate-800
               text-slate-100 font-black flex items-center justify-center
               focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"

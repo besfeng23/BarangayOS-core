@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 // Best-practice is RTDB ".info/connected". This is implemented via a dynamic import
 // so builds won't crash if RTDB isn't installed yet.
@@ -13,9 +13,9 @@ export function useFirebaseConnected() {
     (async () => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const dbMod: any = await import("firebase/database");
+        const dbMod: any = await import('firebase/database');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const appMod: any = await import("firebase/app");
+        const appMod: any = await import('firebase/app');
 
         // If your project already exports a firebaseApp, prefer importing it.
         // Otherwise, initialize elsewhere. Here we assume app is already initialized by the host app.
@@ -23,7 +23,7 @@ export function useFirebaseConnected() {
         if (!app) return;
 
         const db = dbMod.getDatabase(app);
-        const infoRef = dbMod.ref(db, ".info/connected");
+        const infoRef = dbMod.ref(db, '.info/connected');
 
         const off = dbMod.onValue(infoRef, (snap: any) => {
           if (!mounted) return;

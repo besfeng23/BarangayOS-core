@@ -3,5 +3,5 @@ export const systemFlags = {
   trialDaysRemaining: 5,
 
   // optional: wire later
-  supportText: "Contact support to activate.",
+  supportText: 'Contact support to activate.',
 };

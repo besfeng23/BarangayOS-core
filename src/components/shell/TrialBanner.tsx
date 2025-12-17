@@ -1,5 +1,5 @@
-import React from "react";
-import { systemFlags } from "@/lib/systemFlags";
+import React from 'react';
+import { systemFlags } from '@/lib/systemFlags';
 
 export function TrialBanner() {
   const { isTrialAccount, trialDaysRemaining, supportText } = systemFlags;

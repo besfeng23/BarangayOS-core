@@ -1,5 +1,5 @@
-import React from "react";
-import { useRouter } from "next/navigation";
+import React from 'react';
+import { useRouter } from 'next/navigation';
 
 export function SettingsDropdown({
   open,
@@ -24,7 +24,7 @@ export function SettingsDropdown({
           focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
         onClick={() => {
           onClose();
-          router.push("/settings");
+          router.push('/settings');
         }}
       >
         Settings
@@ -36,11 +36,11 @@ export function SettingsDropdown({
           <button
             onClick={() => setStaffMode(!staffMode)}
             className={`min-h-[40px] px-3 rounded-full border text-xs font-bold
-              ${staffMode ? "bg-slate-800 border-slate-600 text-slate-100" : "bg-slate-950 border-slate-700 text-slate-300"}
+              ${staffMode ? 'bg-slate-800 border-slate-600 text-slate-100' : 'bg-slate-950 border-slate-700 text-slate-300'}
               focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900`}
             aria-label="Toggle Staff Mode"
           >
-            {staffMode ? "ON" : "OFF"}
+            {staffMode ? 'ON' : 'OFF'}
           </button>
         </div>
         <div className="text-xs text-slate-400 mt-1">Role switching lives here to prevent accidental toggles.</div>
@@ -51,7 +51,7 @@ export function SettingsDropdown({
           focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
         onClick={() => {
           onClose();
-          alert("Logout (wire later)");
+          alert('Logout (wire later)');
         }}
       >
         Logout
