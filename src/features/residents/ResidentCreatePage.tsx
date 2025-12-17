@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
+import { TerminalShell } from "@/components/shell/TerminalShell";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ResidentCreatePage() {
@@ -58,16 +59,14 @@ export default function ResidentCreatePage() {
 
       const rec = await createResident({ ...form, status: "ACTIVE" });
       await clearDraft("resident:new");
-      // For Next.js, we can't pass state like this easily without a library.
-      // A simple approach is to use query params or rely on a global state/toast mechanism.
-      // For now, we'll just navigate. A global toast could be implemented for "queued for sync".
-      router.push(`/residents/${rec.id}`);
+      router.push(`/residents/${rec.id}?toast=${encodeURIComponent("Resident saved offline — queued for sync")}`);
     } finally {
       setSaving(false);
     }
   }
 
   return (
+    <TerminalShell>
       <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
         <div className="max-w-2xl mx-auto px-4 pt-6">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -119,8 +118,9 @@ export default function ResidentCreatePage() {
             </button>
           </div>
         </div>
+      </div>
 
-        <ToastComponent />
+      <ToastComponent />
 
       {/* Duplicate Modal */}
       {dup && (
@@ -149,7 +149,7 @@ export default function ResidentCreatePage() {
           </div>
         </div>
       )}
-    </div>
+    </TerminalShell>
   );
 }
 
