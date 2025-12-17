@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Shield } from 'lucide-react';
 import { app } from '@/lib/firebase/client';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -37,7 +38,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-900">
+    <div className="flex items-center justify-center min-h-screen bg-slate-900 relative">
       <Card className="w-full max-w-md mx-4 bg-slate-800/50 border-slate-700 text-white">
         <CardHeader className="text-center">
           <Shield className="mx-auto h-12 w-12 text-blue-400" />
@@ -90,6 +91,17 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
+
+      <footer className="fixed bottom-8 left-0 right-0 flex flex-col items-center justify-center">
+        <p className="text-[10px] text-slate-500 tracking-widest mb-2 uppercase">POWERED BY</p>
+        <Image 
+            src="/speedypldt.png" 
+            alt="PLDT Enterprise" 
+            width={200}
+            height={48}
+            className="h-12 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+        />
+      </footer>
     </div>
   );
 }
