@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import BlotterList from "./BlotterList";
 import BlotterDetail from "./BlotterDetail";
 import NewCaseModal from "./NewCaseModal";
-import { useBlotterData } from "../../useBlotterData";
+import { useBlotterData } from "../../hooks/useBlotterData";
 import { useIsDesktop } from "../../hooks";
 
 export default function BlotterWorkstation() {
