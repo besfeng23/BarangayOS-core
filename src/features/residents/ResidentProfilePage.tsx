@@ -5,7 +5,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb } from "@/lib/bosDb";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { SyncStatusBadge } from "@/features/residents/components/SyncStatusBadge";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/toast";
 import { norm } from "@/lib/uuid";
 
 export default function ResidentProfilePage() {

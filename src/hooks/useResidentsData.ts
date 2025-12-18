@@ -4,7 +4,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb, ActivityLogItem, DraftItem, ResidentRecord } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { logTransaction } from "@/lib/transactions";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/toast";
 
 export type ResidentFilterState = {
   q: string;

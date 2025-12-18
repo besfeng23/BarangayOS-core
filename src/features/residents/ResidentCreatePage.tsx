@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/toast";
 
 export default function ResidentCreatePage() {
   const router = useRouter();

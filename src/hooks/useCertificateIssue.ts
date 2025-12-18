@@ -4,7 +4,7 @@ import { bosDb, ResidentRecord } from "@/lib/bosDb";
 import { generateControlNumber } from "@/lib/certUtils";
 import { uuid } from "@/lib/uuid";
 import { logTransaction } from "@/lib/transactions";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/toast";
 
 export type CertType = "CERTIFICATE" | "CLEARANCE" | "INDIGENCY";
 

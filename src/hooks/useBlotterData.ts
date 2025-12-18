@@ -5,7 +5,7 @@ import { bosDb, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/l
 import { norm, uuid } from "@/lib/uuid";
 import { generateCaseNumber, tokenize } from "@/lib/blotterUtils";
 import { logTransaction } from "@/lib/transactions";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/toast";
 
 export type BlotterFilterState = {
   q: string;

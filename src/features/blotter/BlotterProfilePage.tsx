@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb } from "@/lib/bosDb";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { useBlotterData } from "@/hooks/useBlotterData";
 import { PrintFrame } from "@/components/print/PrintFrame";
 import { useBlotterDocs } from "@/hooks/useBlotterDocs";
@@ -14,7 +14,7 @@ const btnPrimary =
   "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950";
 const btnSecondary =
   "px-5 py-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 " +
-  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950";
+  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";
 
 export default function BlotterProfilePage() {
   const { id = "" } = useParams();
