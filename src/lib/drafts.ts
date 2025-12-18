@@ -22,8 +22,10 @@ let dbPromise: Promise<IDBPDatabase<DraftsDB>> | null = null;
 
 function getDB(): Promise<IDBPDatabase<DraftsDB>> {
   if (!dbPromise) {
-    dbPromise = openDB<DraftsDB>('barangayOS', 1, {
+    dbPromise = openDB<DraftsDB>('barangayOS', 4, {
       upgrade(db) {
+        // This upgrade logic is now managed in bosDb.ts, 
+        // but we ensure this file doesn't cause issues if it's the first to run.
         if (!db.objectStoreNames.contains('drafts')) {
           const store = db.createObjectStore('drafts', { keyPath: 'id' });
           store.createIndex('updatedAt', 'updatedAt');
