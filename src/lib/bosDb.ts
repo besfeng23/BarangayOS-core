@@ -1,3 +1,4 @@
+
 import Dexie, { Table } from "dexie";
 
 export type Sex = "Male" | "Female" | "Other";
@@ -24,6 +25,8 @@ export type ResidentRecord = {
   suffix?: string;
 
   fullNameNorm: string;      // "delacruz juan m"
+  lastNameNorm: string;
+  firstNameNorm: string;
   isoDate: string;           // birthdate yyyy-mm-dd
   searchTokens: string[];    // ["juan","delacruz","purok 1","...","abcd12"(id tail)]
 
@@ -190,7 +193,7 @@ class BOSDexie extends Dexie {
     // v4 FINAL for v1 DEMO
     this.version(4).stores({
       residents:
-        "id, createdAt, lastUpdated, status, purok, sex, birthdate, fullNameNorm, *searchTokens",
+        "id, createdAt, lastUpdated, status, purok, sex, birthdate, fullNameNorm, lastNameNorm, firstNameNorm, *searchTokens",
       blotters:
         "id, createdAt, updatedAt, lastUpdated, barangayId, caseNumber, caseNumberNorm, status, incidentDate, hearingDate, *tagsNorm, *searchTokens",
       printLogs:
