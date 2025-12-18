@@ -5,8 +5,9 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "../../firebase";
 import type { BlotterCase } from "../../types";
 import { useTerminalUI } from "../../contexts/TerminalUIContext";
+import dynamic from "next/dynamic";
 
-export default function BlotterList({ filterMode }: { filterMode: "ALL" | "REVIEW" }) {
+const PageComponent = () => {
   const navigate = useNavigate();
   const { id: selectedId } = useParams();
   const { globalSearch } = useTerminalUI();
@@ -24,8 +25,6 @@ export default function BlotterList({ filterMode }: { filterMode: "ALL" | "REVIE
     const s = globalSearch.trim().toLowerCase();
 
     return cases.filter((c) => {
-      if (filterMode === "REVIEW" && c.status === "SETTLED") return false;
-
       if (!s) return true;
 
       const a = (c.participantsDisplay?.complainant || "").toLowerCase();
@@ -35,7 +34,7 @@ export default function BlotterList({ filterMode }: { filterMode: "ALL" | "REVIE
 
       return a.includes(s) || b.includes(s) || n.includes(s) || id.includes(s);
     });
-  }, [cases, filterMode, globalSearch]);
+  }, [cases, globalSearch]);
 
   return (
     <div className="h-full flex flex-col bg-zinc-950">
@@ -81,4 +80,6 @@ export default function BlotterList({ filterMode }: { filterMode: "ALL" | "REVIE
       </div>
     </div>
   );
-}
+};
+
+export default dynamic(() => Promise.resolve(PageComponent), { ssr: false });

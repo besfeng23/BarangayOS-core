@@ -5,3 +5,5 @@ export * from "./useBlotterData";
 export * from "./useBOSSync";
 export * from "./useCertificateIssue";
 export * from "./useResidentsData";
+export * from "./useIsDesktop";
+export * from "./useViewportRecenterOnKeyboard";

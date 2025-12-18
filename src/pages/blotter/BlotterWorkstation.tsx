@@ -5,9 +5,10 @@ import BlotterList from "./BlotterList";
 import BlotterDetail from "./BlotterDetail";
 import NewCaseModal from "./NewCaseModal";
 import { useBlotterData } from "../../hooks/useBlotterData";
-import { useIsDesktop } from "../../hooks";
+import { useIsDesktop } from "../../hooks/useIsDesktop";
+import dynamic from "next/dynamic";
 
-export default function BlotterWorkstation() {
+const PageComponent = () => {
   const { id } = useParams();
   const isDesktop = useIsDesktop();
 
@@ -95,7 +96,7 @@ export default function BlotterWorkstation() {
       {/* Workspace */}
       <div className="flex-1 flex overflow-hidden">
         {showList && (
-          <div className={[isDesktop ? "w-[35%] border-r border-zinc-800" : "w-full", "h-full"].join(" ")}>
+          <div className={[isDesktop ? "w-[35%]" : "w-full", "h-full"].join(" ")}>
             <BlotterList filterMode={activeTab} />
           </div>
         )}
@@ -110,4 +111,6 @@ export default function BlotterWorkstation() {
       {isModalOpen && <NewCaseModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );
-}
+};
+
+export default dynamic(() => Promise.resolve(PageComponent), { ssr: false });

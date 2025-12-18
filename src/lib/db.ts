@@ -1,10 +1,6 @@
 import Dexie, { Table } from 'dexie';
-
 export class BOSDatabase extends Dexie {
-  residents!: Table<any>;
-  cases!: Table<any>;
-  audit_queue!: Table<any>;
-
+  residents!: Table<any>; cases!: Table<any>; audit_queue!: Table<any>;
   constructor() {
     super('BarangayOS_Local');
     this.version(1).stores({
@@ -14,5 +10,4 @@ export class BOSDatabase extends Dexie {
     });
   }
 }
-
 export const db = new BOSDatabase();

@@ -4,8 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 import type { BlotterCase } from "../../types";
+import dynamic from "next/dynamic";
 
-export default function BlotterDetail() {
+const PageComponent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = React.useState<BlotterCase | null>(null);
@@ -81,4 +82,6 @@ export default function BlotterDetail() {
       </div>
     </div>
   );
-}
+};
+
+export default dynamic(() => Promise.resolve(PageComponent), { ssr: false });
