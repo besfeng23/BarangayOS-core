@@ -71,6 +71,14 @@ export type PrintLogItem = {
   lastError?: string;
 };
 
+export type SyncQueueRow = {
+  id?: number;
+  jobType: string;
+  payload: any;
+  occurredAtISO: string;
+  synced: 0 | 1;
+};
+
 export type SyncQueueItem = {
   id: string;
   entityType: "resident" | "blotter" | "print_log" | "transaction" | "setting" | "auditLog" | "business" | "certificate";
@@ -108,6 +116,14 @@ export type ActivityLogItem = {
   entityType: "resident" | "blotter" | "print_log";
   entityId: string;
   meta?: any;
+};
+
+export type AuditRow = {
+  id?: number;
+  eventType: string;
+  details: any;
+  occurredAtISO: string;
+  synced: 0 | 1;
 };
 
 export type AuditLogRecord = {
@@ -184,8 +200,10 @@ class BOSDexie extends Dexie {
   printLogs!: Table<PrintLogItem, string>;
   settings!: Table<BOSSettings, string>;
   transactions!: Table<TransactionRecord, string>;
+  sync_queue!: Table<SyncQueueRow, number>;
   syncQueue!: Table<SyncQueueItem, string>;
   activityLog!: Table<ActivityLogItem, string>;
+  audit_queue!: Table<AuditRow, number>;
   drafts!: Table<DraftItem, string>;
   auditLogs!: Table<AuditLogRecord, string>;
   meta!: Table<MetaRecord, string>;
@@ -194,10 +212,10 @@ class BOSDexie extends Dexie {
 
 
   constructor() {
-    super("BarangayOS");
+    super("BarangayOS_Local");
 
-    this.version(7).stores({
-      residents: "++id, fullNameNorm, lastNameNorm, firstNameNorm, *searchTokens, status, purok, sex",
+    this.version(8).stores({
+      residents: "++id, fullNameUpper, householdNoUpper, *searchTokens, barangayId, updatedAt",
       blotters: "++id, caseNumberNorm, *tagsNorm, *searchTokens, status, incidentDate",
       businesses: '++id, businessNameUpper, ownerNameUpper, *searchTokens, status',
       certificates: '++id, residentId, certType, createdAtLocal',
@@ -209,8 +227,10 @@ class BOSDexie extends Dexie {
       transactions: "id, createdAt, status",
       activityLog: "++id, createdAt, type, [entityType+entityId]",
       drafts: "id, &[module+key]",
+      sync_queue: "++id, jobType, occurredAtISO, synced",
+      audit_queue: "++id, eventType, occurredAtISO, synced",
     });
   }
 }
 
-export const bosDb = new BOSDexie();
+export const db = new BOSDexie();

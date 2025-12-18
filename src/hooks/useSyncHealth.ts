@@ -1,18 +1,18 @@
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb } from "@/lib/bosDb";
+import { db } from "@/lib/bosDb";
 import { useOnlineStatus } from "./useOnlineStatus";
 
 export function useSyncHealth() {
   const online = useOnlineStatus();
 
   const pendingCount = useLiveQuery(
-    () => bosDb.syncQueue.where("status").anyOf(["pending", "syncing"]).count(),
+    () => db.syncQueue.where("status").anyOf(["pending", "syncing"]).count(),
     [],
     0
   );
   const errorCount = useLiveQuery(
-    () => bosDb.syncQueue.where("status").equals("failed").count(),
+    () => db.syncQueue.where("status").equals("failed").count(),
     [],
     0
   );
@@ -25,7 +25,7 @@ export function useSyncHealth() {
   })();
   
   const lastSync = useLiveQuery(async () => {
-      const last = await bosDb.meta.get('lastSyncAt');
+      const last = await db.meta.get('lastSyncAt');
       return last ? new Date(last.value as number) : null;
   }, [], null);
 
