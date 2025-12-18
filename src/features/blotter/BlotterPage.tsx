@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBlotterIndex } from "@/hooks/useBlotterIndex";
 import { BlotterStatus } from "@/lib/bosDb";
+import NewCaseModal from "@/components/blotter/NewCaseModal";
 
 const STATUS_CHIPS: BlotterStatus[] = ["ACTIVE", "SETTLED", "FILED_TO_COURT", "DISMISSED"];
 const TAG_CHIPS = ["Debt", "Noise", "Theft", "Physical Injury", "Trespassing", "Harassment"];
@@ -47,6 +48,7 @@ function statusPill(status: BlotterStatus) {
 export default function BlotterPage() {
   const router = useRouter();
   const { filters, setFilters, clearFilters, snapshot, blotters } = useBlotterIndex();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [statsOpen, setStatsOpen] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
@@ -87,7 +89,7 @@ export default function BlotterPage() {
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => router.push("/blotter/new")}
+                  onClick={() => setIsModalOpen(true)}
                   className="px-6 py-3 bg-zinc-100 text-zinc-950 font-bold rounded-2xl
                     focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
                   aria-label="Create new blotter case"
@@ -183,6 +185,7 @@ export default function BlotterPage() {
             )}
           </section>
         </div>
+        <NewCaseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} isOnline={true} />
       </div>
   );
 }
