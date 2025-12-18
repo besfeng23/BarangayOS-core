@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const StepIndicator = ({ current, total }: { current: number, total: number }) => (
     <div className="flex items-center gap-2">
@@ -32,7 +32,6 @@ type FormState = {
 
 type FormErrors = Partial<Record<keyof FormState, string>>;
 
-
 export default function ResidentCreatePage() {
   const router = useRouter();
   const { createResident, checkDuplicateLocal } = useResidentsData();
@@ -55,7 +54,6 @@ export default function ResidentCreatePage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [newResidentId, setNewResidentId] = useState<string | null>(null);
 
-
   const age = useMemo(() => (form.birthdate ? calcAge(form.birthdate) : null), [form.birthdate]);
 
   const validateStep = (currentStep: number): boolean => {
@@ -76,7 +74,6 @@ export default function ResidentCreatePage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
 
   const handleNext = () => {
     if (validateStep(step)) {
@@ -119,7 +116,7 @@ export default function ResidentCreatePage() {
         toast({
             variant: "destructive",
             title: "Save Failed",
-            description: "Could not save resident record. Your draft is safe.",
+            description: "Your draft was kept. Please try again.",
         });
     } finally {
       setSaving(false);
@@ -155,61 +152,60 @@ export default function ResidentCreatePage() {
   };
 
   return (
-      <div className="flex flex-col h-[calc(100vh-140px)]">
-          <header className="p-4 flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                  <ArrowLeft />
-              </Button>
-              <div>
-                  <h1 className="text-2xl font-bold">New Resident</h1>
-                  <p className="text-slate-400">Step {step} of 3</p>
-              </div>
-          </header>
-
-          <div className="p-4 flex-grow overflow-y-auto">
-            <div className="mb-4">
-              <StepIndicator current={step} total={3} />
+    <div className="flex flex-col h-[calc(100vh-140px)]">
+        <header className="p-4 flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <ArrowLeft />
+            </Button>
+            <div>
+                <h1 className="text-2xl font-bold">New Resident</h1>
+                <p className="text-slate-400">Step {step} of 3</p>
             </div>
-            {renderStepContent()}
-          </div>
+        </header>
 
-          <footer className="p-4 border-t border-slate-700 bg-slate-900 sticky bottom-0">
-              <div className="flex justify-between">
-                  <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={step === 1 || saving}>
-                      Back
-                  </Button>
-                  {step < 3 ? (
-                      <Button className="h-12 text-lg" onClick={handleNext}>Next</Button>
-                  ) : (
-                      <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={saving}>
-                          {saving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving...</> : 'Save Resident'}
-                      </Button>
-                  )}
-              </div>
-          </footer>
-          
-          <AlertDialog open={showSuccessModal} onOpenChange={(open) => !open && handleCloseSuccessModal(false)}>
-              <AlertDialogContent className="bg-slate-800 border-slate-700 text-white">
-                  <AlertDialogHeader>
-                      <AlertDialogTitle>✅ Resident Saved Locally</AlertDialogTitle>
-                      <AlertDialogDescription>
-                          The record has been saved to this device and will be synced to the cloud when online.
-                      </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                      <AlertDialogCancel asChild>
-                        <Button variant="outline" onClick={() => handleCloseSuccessModal(false)}>Add Another</Button>
-                      </AlertDialogCancel>
-                      <AlertDialogAction asChild>
-                        <Button onClick={() => handleCloseSuccessModal(true)}>View Profile</Button>
-                      </AlertDialogAction>
-                  </AlertDialogFooter>
-              </AlertDialogContent>
-          </AlertDialog>
-      </div>
+        <div className="p-4 flex-grow overflow-y-auto">
+          <div className="mb-4">
+            <StepIndicator current={step} total={3} />
+          </div>
+          {renderStepContent()}
+        </div>
+
+        <footer className="p-4 border-t border-slate-700 bg-slate-900 sticky bottom-0">
+            <div className="flex justify-between">
+                <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={step === 1 || saving}>
+                    Back
+                </Button>
+                {step < 3 ? (
+                    <Button className="h-12 text-lg" onClick={handleNext}>Next</Button>
+                ) : (
+                    <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={saving}>
+                        {saving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving...</> : 'Save Resident'}
+                    </Button>
+                )}
+            </div>
+        </footer>
+        
+        <AlertDialog open={showSuccessModal} onOpenChange={(open) => !open && handleCloseSuccessModal(false)}>
+            <AlertDialogContent className="bg-slate-800 border-slate-700 text-white">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>✅ Resident Saved</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Saved locally on this device. Queued for sync.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel asChild>
+                      <Button variant="outline" onClick={() => handleCloseSuccessModal(false)}>Add Another</Button>
+                    </AlertDialogCancel>
+                    <AlertDialogAction asChild>
+                      <Button onClick={() => handleCloseSuccessModal(true)}>View Profile</Button>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    </div>
   );
 }
-
 
 const Field = ({ label, children, error }: { label: string, children: React.ReactNode, error?: string }) => (
   <div className="space-y-2">
@@ -222,7 +218,7 @@ const Field = ({ label, children, error }: { label: string, children: React.Reac
 const Step1Name = ({ form, setForm, errors }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors }) => (
     <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
-            <CardTitle>Step 1: Basic Name</CardTitle>
+            <CardTitle>Step 1: Name</CardTitle>
             <CardDescription>Enter the resident's legal name.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -286,7 +282,6 @@ const Step2Personal = ({ form, setForm, errors, age }: { form: FormState, setFor
     </Card>
 );
 
-
 const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors }) => (
      <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
@@ -302,3 +297,5 @@ const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f:
         </CardContent>
     </Card>
 );
+
+    
