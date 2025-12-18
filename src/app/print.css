@@ -1,4 +1,5 @@
 
+
 /* Use a more professional, government-style serif font for printing */
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
 
@@ -29,7 +30,7 @@
   /* Remove default browser margins and padding for printing */
   @page {
     size: A4;
-    margin: 1in;
+    margin: 20mm;
   }
 
   /* Ensure no shadow or borders appear on the printed output */

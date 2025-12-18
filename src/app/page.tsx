@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -14,7 +15,7 @@ import {
   Building,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/use-toast';
 import { useQueueCount } from '@/hooks/useQueueCount';
 import DraftBanner from '@/components/app-hub/DraftBanner';
 import ModuleCard from '@/components/app-hub/ModuleCard';
@@ -24,9 +25,10 @@ import { TrialBanner } from "@/components/system/TrialBanner";
 export default function Home() {
   const [activeBlotterCount, setActiveBlotterCount] = useState(0);
   const [pendingPermitsCount, setPendingPermitsCount] = useState(0);
-  const { showToast, ToastComponent } = useToast();
+  const { toast } = useToast();
   const pendingBlotterWrites = useQueueCount('blotter_cases');
   const pendingPermitWrites = useQueueCount('business_permits');
+  const trialVisible = true; // Replace with real flag
 
   useEffect(() => {
     // Listener for active blotter cases
@@ -63,11 +65,10 @@ export default function Home() {
       unsubscribeBlotter();
       unsubscribePermits();
     };
-  }, [showToast]);
+  }, [toast]);
 
   const totalBlotterBadge = activeBlotterCount + pendingBlotterWrites;
   const totalPermitBadge = pendingPermitsCount + pendingPermitWrites;
-  const trialVisible = true; // Replace with real flag
 
   return (
     <div className="space-y-4 pb-24">
@@ -107,7 +108,7 @@ export default function Home() {
 
         <PartnerTileGuard
           label="Online Required"
-          onBlocked={() => showToast("This module requires internet connection")}
+          onBlocked={() => toast({title: "This module requires internet connection"})}
         >
           <ModuleCard
             title="Digital Payments"
@@ -119,7 +120,7 @@ export default function Home() {
         
         <PartnerTileGuard
           label="Online Required"
-          onBlocked={() => showToast("This module requires internet connection")}
+          onBlocked={() => toast({title: "This module requires internet connection"})}
         >
           <ModuleCard
             title="Health"
@@ -131,7 +132,6 @@ export default function Home() {
       </main>
 
       <TrialBanner visible={trialVisible} message="Activation required to unlock partner integrations" />
-      <ToastComponent />
     </div>
   );
 }

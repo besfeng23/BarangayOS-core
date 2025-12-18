@@ -72,7 +72,7 @@ export type PrintLogItem = {
 
 export type SyncQueueItem = {
   id: string;
-  entityType: "resident" | "blotter" | "print_log" | "transaction";
+  entityType: "resident" | "blotter" | "print_log" | "transaction" | "setting";
   entityId: string;
   op: "UPSERT";
   payload: any;
@@ -157,27 +157,6 @@ class BOSDexie extends Dexie {
 
   constructor() {
     super("BarangayOS");
-
-    this.version(1).stores({
-      residents: "id, createdAt, updatedAt, lastNameNorm, firstNameNorm, purok, status, sex, birthdate",
-      syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
-      activityLog: "id, createdAt, type, entityType, entityId",
-    });
-
-    this.version(2).stores({
-      residents: "id, createdAt, updatedAt, lastNameNorm, firstNameNorm, purok, status, sex, birthdate",
-      syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
-      activityLog: "id, createdAt, type, entityType, entityId",
-      drafts: "id, module, key, updatedAt, [module+key]",
-    });
-    
-    this.version(3).stores({
-      residents: "id, createdAt, updatedAt, lastNameNorm, firstNameNorm, purok, status, sex, birthdate",
-      blotters: "id, barangayId, createdAt, lastUpdated, caseNumberNorm, status, incidentDate, hearingDate, *tagsNorm",
-      syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
-      activityLog: "id, createdAt, type, entityType, entityId",
-      drafts: "id, module, key, updatedAt, [module+key]",
-    });
 
     this.version(4).stores({
       residents: "id, createdAt, lastUpdated, status, purok, sex, birthdate, fullNameNorm, lastNameNorm, firstNameNorm, *searchTokens",

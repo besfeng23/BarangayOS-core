@@ -1,5 +1,5 @@
 
 import React from "react";
-export function SystemRail() {
+export default function BottomNav() {
   return null;
 }

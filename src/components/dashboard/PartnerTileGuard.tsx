@@ -1,5 +1,6 @@
+
 import React from "react";
-import { useConnectivity } from "@/hooks/useConnectivity";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export function PartnerTileGuard({
   label = "Online Required",
@@ -10,8 +11,7 @@ export function PartnerTileGuard({
   children: React.ReactNode;
   onBlocked?: () => void;
 }) {
-  const { state } = useConnectivity();
-  const offline = state === "OFFLINE";
+  const offline = !useOnlineStatus();
 
   return (
     <div className={offline ? "opacity-60 grayscale" : ""}>

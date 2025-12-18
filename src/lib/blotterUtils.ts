@@ -1,3 +1,4 @@
+
 import { uuid, norm } from "@/lib/uuid";
 
 export function generateCaseNumber(): string {

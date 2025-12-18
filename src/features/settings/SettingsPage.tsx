@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import MainLayout from "@/components/shell/MainLayout";
 import { useSettings } from "@/hooks/useSettings";
@@ -27,7 +28,6 @@ export default function SettingsPage() {
   }, [settings]);
 
   return (
-    <MainLayout>
       <div className="max-w-2xl mx-auto px-4 pt-6">
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
           <h1 className="text-2xl font-bold text-zinc-100">Settings</h1>
@@ -85,7 +85,6 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
-    </MainLayout>
   );
 }
 

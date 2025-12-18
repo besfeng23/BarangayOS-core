@@ -1,3 +1,4 @@
+
 import React from "react";
 
 export function PrintFrame({ children }: { children: React.ReactNode }) {
