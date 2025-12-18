@@ -1,5 +1,5 @@
 
-import { bosDb, TransactionRecord } from "./bosDb";
+import { db, TransactionRecord } from "./bosDb";
 import { ulid } from "./ulid";
 import { uuid } from "./uuid";
 
@@ -16,7 +16,7 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
 
     // Fetch settings to get required IDs.
     // In a real app, this should be cached in context/memory.
-    const settings = await bosDb.settings.where("key").equals("barangay").first();
+    const settings = await db.settings.where("key").equals("barangay").first();
     const partnerId = settings?.value?.partnerId || "PLDT_ENT_001";
     const barangayId = settings?.value?.barangayName || "UNKNOWN_BRGY";
     const deviceId = settings?.value?.deviceId || "UNKNOWN_DEVICE";
@@ -41,9 +41,9 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
     };
 
     // Write to both transactions table and sync queue atomically
-    await bosDb.transaction("rw", bosDb.transactions, bosDb.syncQueue, async () => {
-      await bosDb.transactions.add(transaction);
-      await bosDb.syncQueue.add({
+    await db.transaction("rw", db.transactions, db.syncQueue, async () => {
+      await db.transactions.add(transaction);
+      await db.syncQueue.add({
         id: uuid(),
         entityType: "transaction",
         entityId: transaction.id,

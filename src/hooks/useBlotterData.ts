@@ -1,7 +1,7 @@
 
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
+import { db, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { generateCaseNumber, tokenize } from "@/lib/blotterUtils";
 import { logTransaction } from "@/lib/transactions";
@@ -14,7 +14,7 @@ export type BlotterFilterState = {
 };
 
 async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt">) {
-  await bosDb.activityLog.add({ id: uuid(), createdAt: Date.now(), ...item });
+  await db.activityLog.add({ id: uuid(), createdAt: Date.now(), ...item });
 }
 
 export function useBlotterData() {
@@ -22,16 +22,16 @@ export function useBlotterData() {
   const { toast } = useToast();
 
   const queueCount = useLiveQuery(
-    () => bosDb.syncQueue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
+    () => db.syncQueue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
     [],
     0
   );
 
   const snapshot = useLiveQuery(
     async () => {
-      const total = await bosDb.blotters.count();
-      const active = await bosDb.blotters.where("status").equals("ACTIVE" as any).count();
-      const settled = await bosDb.blotters.where("status").equals("SETTLED" as any).count();
+      const total = await db.blotters.count();
+      const active = await db.blotters.where("status").equals("ACTIVE" as any).count();
+      const settled = await db.blotters.where("status").equals("SETTLED" as any).count();
       return { total, active, settled };
     },
     [],
@@ -45,15 +45,15 @@ export function useBlotterData() {
     let base: BlotterRecord[];
 
     if (status) {
-      base = await bosDb.blotters.where("status").equals(status as any).toArray();
+      base = await db.blotters.where("status").equals(status as any).toArray();
     } else if (q) {
       const tokens = q.split(" ").filter(Boolean);
-      if (tokens.length === 0) base = await bosDb.blotters.toCollection().toArray();
+      if (tokens.length === 0) base = await db.blotters.toCollection().toArray();
       else {
-        base = await bosDb.blotters.where("searchTokens").anyOf(tokens).toArray();
+        base = await db.blotters.where("searchTokens").anyOf(tokens).toArray();
       }
     } else {
-      base = await bosDb.blotters.toCollection().toArray();
+      base = await db.blotters.toCollection().toArray();
     }
 
     const results = base
@@ -73,24 +73,24 @@ export function useBlotterData() {
   }, [filters], []);
 
   const blotterNewDraft = useLiveQuery<any | undefined>(
-    () => bosDb.drafts.where("[module+key]").equals(["blotter", "blotter:new"]).first(),
+    () => db.drafts.where("[module+key]").equals(["blotter", "blotter:new"]).first(),
     [],
     undefined
   );
 
   const upsertDraft = useCallback(async (key: string, payload: any) => {
     const now = Date.now();
-    const existing = await bosDb.drafts.where("[module+key]").equals(["blotter", key]).first();
+    const existing = await db.drafts.where("[module+key]").equals(["blotter", key]).first();
     if (existing) {
-      await bosDb.drafts.update(existing.id, { payload, updatedAt: now });
+      await db.drafts.update(existing.id, { payload, updatedAt: now });
       return;
     }
-    await bosDb.drafts.add({ id: uuid(), module: "blotter", key, payload, updatedAt: now } as any);
+    await db.drafts.add({ id: uuid(), module: "blotter", key, payload, updatedAt: now } as any);
   }, []);
 
   const clearDraft = useCallback(async (key: string) => {
-    const existing = await bosDb.drafts.where("[module+key]").equals(["blotter", key]).first();
-    if (existing) await bosDb.drafts.delete(existing.id);
+    const existing = await db.drafts.where("[module+key]").equals(["blotter", key]).first();
+    if (existing) await db.drafts.delete(existing.id);
   }, []);
 
   async function createBlotter(input: {
@@ -140,10 +140,10 @@ export function useBlotterData() {
       searchTokens,
     };
 
-    await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, bosDb.activityLog, bosDb.transactions, async () => {
-      await bosDb.blotters.add(record);
+    await db.transaction("rw", db.blotters, db.syncQueue, db.activityLog, db.transactions, async () => {
+      await db.blotters.add(record);
 
-      await bosDb.syncQueue.add({
+      await db.syncQueue.add({
         id: uuid(),
         entityType: "blotter" as any,
         entityId: id,
@@ -155,7 +155,7 @@ export function useBlotterData() {
         tryCount: 0,
       } as any);
 
-      await bosDb.activityLog.add({
+      await db.activityLog.add({
         id: uuid(),
         createdAt: now,
         type: "BLOTTER_CREATE" as any,
@@ -176,7 +176,7 @@ export function useBlotterData() {
   const updateBlotterStatus = useCallback(
     async (blotterId: string, nextStatus: BlotterStatus, settlementSummary?: string) => {
       const now = Date.now();
-      const existing = await bosDb.blotters.get(blotterId);
+      const existing = await db.blotters.get(blotterId);
       if (!existing) throw new Error("Blotter not found");
 
       const updated: BlotterRecord = {
@@ -188,10 +188,10 @@ export function useBlotterData() {
         syncState: "queued",
       };
 
-      await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, bosDb.activityLog, async () => {
-        await bosDb.blotters.put(updated);
+      await db.transaction("rw", db.blotters, db.syncQueue, db.activityLog, async () => {
+        await db.blotters.put(updated);
 
-        await bosDb.syncQueue.add({
+        await db.syncQueue.add({
           id: uuid(),
           entityType: "blotter",
           entityId: blotterId,
@@ -203,7 +203,7 @@ export function useBlotterData() {
           tryCount: 0,
         } as any);
 
-        await bosDb.activityLog.add({
+        await db.activityLog.add({
           id: uuid(),
           createdAt: now,
           type: "BLOTTER_STATUS_UPDATE",

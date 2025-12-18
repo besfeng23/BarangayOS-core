@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { bosDb, ResidentRecord } from "@/lib/bosDb";
+import { db, ResidentRecord } from "@/lib/bosDb";
 import { generateControlNumber } from "@/lib/certUtils";
 import { uuid } from "@/lib/uuid";
 import { logTransaction } from "@/lib/transactions";
@@ -31,9 +31,9 @@ export function useCertificateIssue() {
     const now = Date.now();
     const logId = uuid();
 
-    await bosDb.transaction("rw", bosDb.printLogs, bosDb.syncQueue, bosDb.transactions, async () => {
+    await db.transaction("rw", db.printLogs, db.syncQueue, db.transactions, async () => {
       // 1. Log the print event for auditing
-      await bosDb.printLogs.add({
+      await db.printLogs.add({
         id: logId,
         barangayId: resident.barangayId || "unknown",
         createdAt: now,
@@ -46,7 +46,7 @@ export function useCertificateIssue() {
       });
 
       // 2. Queue the print log for sync
-      await bosDb.syncQueue.add({
+      await db.syncQueue.add({
         id: uuid(),
         entityType: "print_log",
         entityId: logId,

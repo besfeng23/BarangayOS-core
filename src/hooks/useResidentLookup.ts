@@ -1,6 +1,7 @@
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb, ResidentRecord } from "@/lib/bosDb";
+import { db, ResidentRecord } from "@/lib/bosDb";
 import { norm } from "@/lib/uuid";
 
 export function useResidentLookup() {
@@ -11,7 +12,7 @@ export function useResidentLookup() {
     if (!query || query.length < 2) return [] as ResidentRecord[];
 
     // Fast path: multiEntry searchTokens
-    const byToken = await bosDb.residents.where("searchTokens").equals(query).toArray();
+    const byToken = await db.residents.where("searchTokens").equals(query).toArray();
     if (byToken.length) {
       return byToken
         .filter((r) => r.status === "ACTIVE")
@@ -20,7 +21,7 @@ export function useResidentLookup() {
     }
 
     // Fallback: startsWith name
-    const byName = await bosDb.residents.where("fullNameNorm").startsWithIgnoreCase(query).toArray();
+    const byName = await db.residents.where("fullNameNorm").startsWithIgnoreCase(query).toArray();
     return byName
       .filter((r) => r.status === "ACTIVE")
       .sort((a, b) => a.fullNameNorm.localeCompare(b.fullNameNorm))

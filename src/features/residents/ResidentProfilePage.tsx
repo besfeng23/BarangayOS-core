@@ -1,8 +1,9 @@
+
 "use client";
 import React, { useEffect, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb } from "@/lib/bosDb";
+import { db } from "@/lib/bosDb";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { SyncStatusBadge } from "@/features/residents/components/SyncStatusBadge";
 import { useToast } from "@/components/ui/toast";
@@ -18,7 +19,7 @@ export default function ResidentProfilePage() {
   const { toast } = useToast();
   const toastShownRef = useRef(false);
 
-  const resident = useLiveQuery(() => bosDb.residents.get(id), [id], undefined);
+  const resident = useLiveQuery(() => db.residents.get(id), [id], undefined);
 
   // Log View
   useEffect(() => {
@@ -95,19 +96,7 @@ export default function ResidentProfilePage() {
                       onClick={() => {
                         // Route to Blotter Create with a prefill (complainant = this resident).
                         // BlotterCreatePage will autosave it as a draft.
-                        router.push("/blotter/new", {
-                          state: {
-                            prefill: {
-                              complainants: [
-                                {
-                                  residentId: resident.id,
-                                  name: `${resident.lastName.toUpperCase()}, ${resident.firstName}`,
-                                  nameNorm: norm(`${resident.lastName} ${resident.firstName}`),
-                                },
-                              ],
-                            },
-                          },
-                        } as any);
+                        router.push("/blotter/new");
                       }}
                     >
                       Create Blotter Case

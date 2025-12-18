@@ -1,6 +1,7 @@
+
 import React, { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb } from "@/lib/bosDb";
+import { db } from "@/lib/bosDb";
 import { PrintFrame } from "@/components/print/PrintFrame";
 import { StandardGenericTemplate } from "@/components/print/templates/StandardGenericTemplate";
 import { useCertificateIssue } from "@/hooks/useCertificateIssue";
@@ -18,7 +19,7 @@ export default function CertificatesPage() {
   const residentId = params.residentId as string;
   const { issueCertificate, isPrinting, setIsPrinting } = useCertificateIssue();
 
-  const resident = useLiveQuery(() => bosDb.residents.get(residentId), [residentId], undefined);
+  const resident = useLiveQuery(() => db.residents.get(residentId), [residentId], undefined);
 
   const [printData, setPrintData] = useState<any>(null);
   const signer = useMemo(() => "HON. __________", []);

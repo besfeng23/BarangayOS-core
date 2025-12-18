@@ -1,7 +1,8 @@
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb } from "@/lib/bosDb";
+import { db } from "@/lib/bosDb";
 import { useToast } from "@/components/ui/toast";
 import { useBlotterData } from "@/hooks/useBlotterData";
 import { PrintFrame } from "@/components/print/PrintFrame";
@@ -20,13 +21,12 @@ export default function BlotterProfilePage() {
   const { id = "" } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const location = useLocation() as any;
 
   const { logActivity, updateBlotterStatus } = useBlotterData();
   const { toast } = useToast();
   const toastShownRef = useRef(false);
   const { printJob, issueAndPrint } = useBlotterDocs();
-  const blotter = useLiveQuery(() => bosDb.blotters.get(id as string), [id], undefined as any);
+  const blotter = useLiveQuery(() => db.blotters.get(id as string), [id], undefined as any);
 
   const [settleOpen, setSettleOpen] = useState(false);
   const [nextStatus, setNextStatus] = useState<"SETTLED" | "DISMISSED" | "FILED_TO_COURT">("SETTLED");
@@ -41,13 +41,13 @@ export default function BlotterProfilePage() {
   }, [id, logActivity]);
 
   useEffect(() => {
-    const msg = location?.state?.toast || searchParams.get('toast');
+    const msg = searchParams.get('toast');
     if (!toastShownRef.current && msg) {
       toastShownRef.current = true;
       toast({title: msg});
-      router.replace(`/blotter/${id}`, { state: {} } as any);
+      router.replace(`/blotter/${id}`);
     }
-  }, [location, searchParams, toast, router, id]);
+  }, [searchParams, toast, router, id]);
 
   if (!blotter) {
     return (

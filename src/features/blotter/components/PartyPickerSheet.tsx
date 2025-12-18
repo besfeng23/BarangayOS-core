@@ -1,6 +1,7 @@
+
 import React, { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb, ResidentRecord } from "@/lib/bosDb";
+import { db, ResidentRecord } from "@/lib/bosDb";
 import { norm } from "@/lib/uuid";
 
 export function PartyPickerSheet({
@@ -21,11 +22,11 @@ export function PartyPickerSheet({
     if (!query) return [];
 
     // Fast path: tokens + startsWith name norms
-    const byLast = await bosDb.residents
+    const byLast = await db.residents
       .where("lastNameNorm")
       .startsWithIgnoreCase(query)
       .toArray();
-    const byFirst = await bosDb.residents
+    const byFirst = await db.residents
       .where("firstNameNorm")
       .startsWithIgnoreCase(query)
       .toArray();
@@ -33,7 +34,7 @@ export function PartyPickerSheet({
     // If you have searchTokens in residents v3/v4, use it too:
     let byTokens: ResidentRecord[] = [];
     try {
-      byTokens = await bosDb.residents.where("searchTokens").equals(query).toArray();
+      byTokens = await db.residents.where("searchTokens").equals(query).toArray();
     } catch {
       // ignore if index not present
     }

@@ -1,5 +1,6 @@
+
 import { useCallback, useEffect, useState } from "react";
-import { bosDb, BlotterRecord } from "@/lib/bosDb";
+import { db, BlotterRecord } from "@/lib/bosDb";
 import { uuid } from "@/lib/uuid";
 import { generateControlNumber } from "@/lib/certUtils";
 
@@ -39,8 +40,8 @@ export function useBlotterDocs() {
     const signerTitle = "Punong Barangay";
 
     // 1) Audit to local printLogs + syncQueue (atomic)
-    await bosDb.transaction("rw", bosDb.printLogs, bosDb.syncQueue, async () => {
-      await bosDb.printLogs.add({
+    await db.transaction("rw", db.printLogs, db.syncQueue, async () => {
+      await db.printLogs.add({
         id: logId,
         barangayId: blotter.barangayId,
         createdAt: now,
@@ -52,7 +53,7 @@ export function useBlotterDocs() {
         meta: { signerName, signerTitle, caseNumber: blotter.caseNumber },
       });
 
-      await bosDb.syncQueue.add({
+      await db.syncQueue.add({
         id: uuid(),
         entityType: "print_log" as any,
         entityId: logId,

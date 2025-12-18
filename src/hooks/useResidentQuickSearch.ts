@@ -1,5 +1,6 @@
+
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb, ResidentRecord } from "@/lib/bosDb";
+import { db, ResidentRecord } from "@/lib/bosDb";
 import { norm } from "@/lib/uuid";
 
 export function useResidentQuickSearch(q: string, limit: number = 8) {
@@ -8,8 +9,8 @@ export function useResidentQuickSearch(q: string, limit: number = 8) {
     if (!nq) return [] as ResidentRecord[];
 
     // Fast path: startsWith on last and first name indexes
-    const byLast = await bosDb.residents.where("lastNameNorm").startsWithIgnoreCase(nq).limit(limit).toArray();
-    const byFirst = await bosDb.residents.where("firstNameNorm").startsWithIgnoreCase(nq).limit(limit).toArray();
+    const byLast = await db.residents.where("lastNameNorm").startsWithIgnoreCase(nq).limit(limit).toArray();
+    const byFirst = await db.residents.where("firstNameNorm").startsWithIgnoreCase(nq).limit(limit).toArray();
 
     const map = new Map<string, ResidentRecord>();
     byLast.forEach(r => map.set(r.id, r));

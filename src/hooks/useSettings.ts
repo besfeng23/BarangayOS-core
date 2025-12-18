@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb } from "@/lib/bosDb";
+import { db } from "@/lib/bosDb";
 import { uuid } from "@/lib/uuid";
 
 export type BOSSettings = {
@@ -22,18 +22,18 @@ export type BOSSettings = {
 
 export function useSettings() {
   const settings = useLiveQuery(async () => {
-    const s = await (bosDb as any).settings?.where("key").equals("barangay").first();
+    const s = await (db as any).settings?.where("key").equals("barangay").first();
     return s as BOSSettings | undefined;
   }, [], undefined);
 
   const upsert = useCallback(async (value: BOSSettings["value"]) => {
     const now = Date.now();
-    const existing = await (bosDb as any).settings.where("key").equals("barangay").first();
+    const existing = await (db as any).settings.where("key").equals("barangay").first();
     if (existing) {
-      await (bosDb as any).settings.update(existing.id, { value, updatedAt: now });
+      await (db as any).settings.update(existing.id, { value, updatedAt: now });
       return;
     }
-    await (bosDb as any).settings.add({
+    await (db as any).settings.add({
       id: uuid(),
       key: "barangay",
       value,

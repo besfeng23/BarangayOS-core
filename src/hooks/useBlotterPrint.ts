@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { bosDb } from "@/lib/bosDb";
+import { db } from "@/lib/bosDb";
 import { uuid } from "@/lib/uuid";
 
 export type BlotterDocType = "BLOTTER_SUMMONS" | "BLOTTER_SETTLEMENT";
@@ -18,9 +19,9 @@ export function useBlotterPrint() {
     const now = Date.now();
     const logId = uuid();
 
-    await bosDb.transaction("rw", (bosDb as any).printLogs, bosDb.syncQueue, async () => {
+    await db.transaction("rw", (db as any).printLogs, db.syncQueue, async () => {
       // printLogs table must already exist from Certificate Engine integration
-      await (bosDb as any).printLogs.add({
+      await (db as any).printLogs.add({
         id: logId,
         createdAt: now,
         docType: payload.docType,
@@ -32,7 +33,7 @@ export function useBlotterPrint() {
         meta: payload.meta || {},
       });
 
-      await bosDb.syncQueue.add({
+      await db.syncQueue.add({
         id: uuid(),
         entityType: "print_log" as any,
         entityId: logId,

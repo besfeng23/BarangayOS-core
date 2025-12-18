@@ -1,7 +1,7 @@
 
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { bosDb, ActivityLogItem, DraftItem, ResidentRecord } from "@/lib/bosDb";
+import { db, ActivityLogItem, DraftItem, ResidentRecord } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { logTransaction } from "@/lib/transactions";
 import { useToast } from "@/components/ui/toast";
@@ -24,7 +24,7 @@ export function calcAge(birthdateISO: string): number {
 }
 
 async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt">) {
-  await bosDb.activityLog.add({
+  await db.activityLog.add({
     id: uuid(),
     createdAt: Date.now(),
     ...item,
@@ -36,16 +36,16 @@ export function useResidentsData() {
   const { toast } = useToast();
 
   const queueCount = useLiveQuery(
-    () => bosDb.syncQueue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
+    () => db.syncQueue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
     [],
     0
   );
 
   const snapshot = useLiveQuery(
     async () => {
-      const total = await bosDb.residents.count();
-      const active = await bosDb.residents.where("status").equals("ACTIVE").count();
-      const inactive = await bosDb.residents.where("status").equals("INACTIVE").count();
+      const total = await db.residents.count();
+      const active = await db.residents.where("status").equals("ACTIVE").count();
+      const inactive = await db.residents.where("status").equals("INACTIVE").count();
       return { total, active, inactive };
     },
     [],
@@ -59,20 +59,20 @@ export function useResidentsData() {
     let base: ResidentRecord[];
 
     if (purok) {
-      base = await bosDb.residents.where("purok").equals(purok).toArray();
+      base = await db.residents.where("purok").equals(purok).toArray();
     } else if (status) {
-      base = await bosDb.residents.where("status").equals(status).toArray();
+      base = await db.residents.where("status").equals(status).toArray();
     } else if (sex) {
-      base = await bosDb.residents.where("sex").equals(sex as any).toArray();
+      base = await db.residents.where("sex").equals(sex as any).toArray();
     } else if (q) {
-      const byLast = await bosDb.residents.where("lastNameNorm").startsWithIgnoreCase(q).toArray();
-      const byFirst = await bosDb.residents.where("firstNameNorm").startsWithIgnoreCase(q).toArray();
+      const byLast = await db.residents.where("lastNameNorm").startsWithIgnoreCase(q).toArray();
+      const byFirst = await db.residents.where("firstNameNorm").startsWithIgnoreCase(q).toArray();
       const map = new Map<string, ResidentRecord>();
       byLast.forEach((r) => map.set(r.id, r));
       byFirst.forEach((r) => map.set(r.id, r));
       base = Array.from(map.values());
     } else {
-      base = await bosDb.residents.toCollection().toArray();
+      base = await db.residents.toCollection().toArray();
     }
 
     const results = base
@@ -94,30 +94,30 @@ export function useResidentsData() {
   }, [filters], []);
 
   const residentNewDraft = useLiveQuery<DraftItem | undefined>(
-    () => bosDb.drafts.where("[module+key]").equals(["residents", "resident:new"]).first(),
+    () => db.drafts.where("[module+key]").equals(["residents", "resident:new"]).first(),
     [],
     undefined
   );
 
   const upsertDraft = useCallback(async (key: string, payload: any) => {
     const now = Date.now();
-    const existing = await bosDb.drafts.where("[module+key]").equals(["residents", key]).first();
+    const existing = await db.drafts.where("[module+key]").equals(["residents", key]).first();
     if (existing) {
-      await bosDb.drafts.update(existing.id, { payload, updatedAt: now });
+      await db.drafts.update(existing.id, { payload, updatedAt: now });
       return;
     }
-    await bosDb.drafts.add({ id: uuid(), module: "residents", key, payload, updatedAt: now });
+    await db.drafts.add({ id: uuid(), module: "residents", key, payload, updatedAt: now });
   }, []);
 
   const clearDraft = useCallback(async (key: string) => {
-    const existing = await bosDb.drafts.where("[module+key]").equals(["residents", key]).first();
-    if (existing) await bosDb.drafts.delete(existing.id);
+    const existing = await db.drafts.where("[module+key]").equals(["residents", key]).first();
+    if (existing) await db.drafts.delete(existing.id);
   }, []);
 
   async function checkDuplicateLocal(lastName: string, firstName: string, birthdate: string) {
     const ln = norm(lastName);
     const fn = norm(firstName);
-    const candidates = await bosDb.residents.where("lastNameNorm").equals(ln).toArray();
+    const candidates = await db.residents.where("lastNameNorm").equals(ln).toArray();
     return candidates.find((r) => r.firstNameNorm === fn && r.birthdate === birthdate) || null;
   }
 
@@ -136,9 +136,9 @@ export function useResidentsData() {
       syncState: "queued",
     };
 
-    await bosDb.transaction("rw", bosDb.residents, bosDb.syncQueue, bosDb.activityLog, bosDb.transactions, async () => {
-      await bosDb.residents.add(record);
-      await bosDb.syncQueue.add({
+    await db.transaction("rw", db.residents, db.syncQueue, db.activityLog, db.transactions, async () => {
+      await db.residents.add(record);
+      await db.syncQueue.add({
         id: uuid(),
         entityType: "resident",
         entityId: id,
@@ -149,7 +149,7 @@ export function useResidentsData() {
         status: "pending",
         tryCount: 0,
       });
-      await bosDb.activityLog.add({
+      await db.activityLog.add({
         id: uuid(),
         createdAt: now,
         type: "RESIDENT_CREATE",
@@ -167,7 +167,7 @@ export function useResidentsData() {
   }
 
   const isResidentQueued = useCallback(async (residentId: string) => {
-    const count = await bosDb.syncQueue
+    const count = await db.syncQueue
       .where("[entityType+entityId]")
       .equals(["resident", residentId])
       .filter((x) => x.status === "pending" || x.status === "syncing" || x.status === "failed")
