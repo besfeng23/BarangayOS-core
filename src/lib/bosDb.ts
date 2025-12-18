@@ -194,28 +194,65 @@ export type CertificateRecord = {
 }
 
 export type BlotterLocal = {
-  id: string;                 // uuid
+  id: string;
   createdAtISO: string;
   updatedAtISO: string;
   status: "Pending" | "Resolved";
-  incidentDateISO: string;    // date of incident
-  incidentTimeText?: string;  // optional human time
+  incidentDateISO: string;
+  incidentTimeText?: string;
   locationText: string;
 
   complainantName: string;
-  respondentName: string;
-
-  // optional, hidden behind "More details"
   complainantContact?: string;
+  respondentName: string;
   respondentContact?: string;
+
+  narrative: string;
   actionsTaken?: string;
   settlement?: string;
   notes?: string;
-  
-  narrative: string;
 
   tags?: string[];
-  searchTokens: string[];     // uppercased tokens for local search
+  searchTokens: string[];
+};
+
+export type BusinessLocal = {
+  id: string; // uuid
+  createdAtISO: string;
+  updatedAtISO: string;
+
+  businessName: string;
+  ownerName: string;
+  addressText: string;
+
+  category?: string; // retail, food, services
+  contact?: string;
+
+  // renewal tracking
+  permitNo?: string;
+  latestYear: number;
+  status: "Active" | "Expired" | "Suspended";
+
+  // optional details
+  notes?: string;
+
+  searchTokens: string[];
+};
+
+export type PermitIssuanceLocal = {
+  id: string; // uuid
+  businessId: string;
+  issuedAtISO: string;
+  year: number;
+
+  feeAmount: number;
+  orNo?: string; // official receipt no
+  remarks?: string;
+
+  issuedByName?: string; // secretary/captain name
+  controlNo: string;
+
+  searchTokens: string[];
 };
 
 
@@ -232,17 +269,19 @@ class BOSDexie extends Dexie {
   drafts!: Table<DraftItem, string>;
   auditLogs!: Table<AuditLogRecord, string>;
   meta!: Table<MetaRecord, string>;
-  businesses!: Table<BusinessRecord, string>;
+  businesses!: Table<BusinessLocal, string>;
+  permit_issuances!: Table<PermitIssuanceLocal, string>;
   certificates!: Table<CertificateRecord, string>;
 
 
   constructor() {
     super("BarangayOS_Local");
 
-    this.version(8).stores({
+    this.version(9).stores({
       residents: "++id, fullNameUpper, householdNoUpper, *searchTokens, barangayId, updatedAt",
       blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
-      businesses: '++id, businessNameUpper, ownerNameUpper, *searchTokens, status',
+      businesses: 'id, status, latestYear, *searchTokens, updatedAtISO',
+      permit_issuances: "id, businessId, year, issuedAtISO, *searchTokens",
       certificates: '++id, residentId, certType, createdAtLocal',
       syncQueue: '++id, [entityType+entityId], status',
       auditLogs: '++id, eventType, entityId, occurredAtLocal, synced',
