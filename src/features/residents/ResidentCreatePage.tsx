@@ -35,7 +35,7 @@ type FormErrors = Partial<Record<keyof FormState, string>>;
 
 export default function ResidentCreatePage() {
   const router = useRouter();
-  const { createResident, checkDuplicateLocal, residentNewDraft, upsertDraft, clearDraft } = useResidentsData();
+  const { createResident, checkDuplicateLocal } = useResidentsData();
   const { toast } = useToast();
 
   const [step, setStep] = useState(1);
@@ -197,8 +197,12 @@ export default function ResidentCreatePage() {
                       </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                      <Button variant="outline" onClick={() => handleCloseSuccessModal(false)}>Add Another</Button>
-                      <Button onClick={() => handleCloseSuccessModal(true)}>View Profile</Button>
+                      <AlertDialogCancel asChild>
+                        <Button variant="outline" onClick={() => handleCloseSuccessModal(false)}>Add Another</Button>
+                      </AlertDialogCancel>
+                      <AlertDialogAction asChild>
+                        <Button onClick={() => handleCloseSuccessModal(true)}>View Profile</Button>
+                      </AlertDialogAction>
                   </AlertDialogFooter>
               </AlertDialogContent>
           </AlertDialog>
