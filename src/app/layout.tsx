@@ -1,8 +1,9 @@
+
 'use client';
 
 import './globals.css';
 import './print.css';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/components/ui/Toast';
 import { AuthProvider } from '@/firebase/auth-provider';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { usePathname } from 'next/navigation';
