@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { db } from "@/lib/bos/dexie/db";
+import { db } from "@/lib/bosDb";
 import { clearDraft } from "@/lib/bos/localDraft";
 
 export type CertificateDraft = {
