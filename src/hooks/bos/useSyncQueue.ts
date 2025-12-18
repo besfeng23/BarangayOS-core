@@ -1,16 +1,12 @@
 import { useCallback } from "react";
 import { db } from "@/lib/bosDb";
 
-// Required minimal queue API:
-// enqueue({ type, payload }) stores a job locally, marked unsynced.
-
 export function useSyncQueue() {
   const enqueue = useCallback(async (job: { type: string; payload: any }) => {
-    const now = new Date().toISOString();
-    await (db as any).sync_queue.add({
+    await db.sync_queue.add({
       jobType: job.type,
       payload: job.payload,
-      occurredAtISO: now,
+      occurredAtISO: new Date().toISOString(),
       synced: 0,
     });
   }, []);

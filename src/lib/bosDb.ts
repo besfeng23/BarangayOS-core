@@ -203,14 +203,16 @@ export type BlotterLocal = {
   locationText: string;
 
   complainantName: string;
-  complainantContact?: string;
   respondentName: string;
-  respondentContact?: string;
 
-  narrative: string;
-  actionsTaken?: string;      // mediation steps
-  settlement?: string;        // agreement
+  // optional, hidden behind "More details"
+  complainantContact?: string;
+  respondentContact?: string;
+  actionsTaken?: string;
+  settlement?: string;
   notes?: string;
+  
+  narrative: string;
 
   tags?: string[];
   searchTokens: string[];     // uppercased tokens for local search
@@ -239,7 +241,7 @@ class BOSDexie extends Dexie {
 
     this.version(8).stores({
       residents: "++id, fullNameUpper, householdNoUpper, *searchTokens, barangayId, updatedAt",
-      blotters: "id, status, createdAtISO, updatedAtISO, incidentDateISO, *searchTokens",
+      blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
       businesses: '++id, businessNameUpper, ownerNameUpper, *searchTokens, status',
       certificates: '++id, residentId, certType, createdAtLocal',
       syncQueue: '++id, [entityType+entityId], status',
