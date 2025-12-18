@@ -1,4 +1,3 @@
-
 import Dexie, { Table } from "dexie";
 
 export type Sex = "Male" | "Female" | "Other";
@@ -33,7 +32,7 @@ export type ResidentRecord = {
   syncState?: "queued" | "synced" | "failed";
 };
 
-export type BlotterStatus = "ACTIVE" | "SETTLED" | "FILED_TO_COURT" | "DISMISSED";
+export type BlotterStatus = "Pending" | "Resolved" | "ACTIVE" | "SETTLED" | "FILED_TO_COURT" | "DISMISSED";
 
 export type BlotterRecord = {
   id: string;
@@ -194,9 +193,33 @@ export type CertificateRecord = {
     createdAtLocal: string;
 }
 
+export type BlotterLocal = {
+  id: string;                 // uuid
+  createdAtISO: string;
+  updatedAtISO: string;
+  status: "Pending" | "Resolved";
+  incidentDateISO: string;    // date of incident
+  incidentTimeText?: string;  // optional human time
+  locationText: string;
+
+  complainantName: string;
+  complainantContact?: string;
+  respondentName: string;
+  respondentContact?: string;
+
+  narrative: string;
+  actionsTaken?: string;      // mediation steps
+  settlement?: string;        // agreement
+  notes?: string;
+
+  tags?: string[];
+  searchTokens: string[];     // uppercased tokens for local search
+};
+
+
 class BOSDexie extends Dexie {
   residents!: Table<ResidentRecord, string>;
-  blotters!: Table<BlotterRecord, string>;
+  blotters!: Table<BlotterLocal, string>;
   printLogs!: Table<PrintLogItem, string>;
   settings!: Table<BOSSettings, string>;
   transactions!: Table<TransactionRecord, string>;
@@ -216,7 +239,7 @@ class BOSDexie extends Dexie {
 
     this.version(8).stores({
       residents: "++id, fullNameUpper, householdNoUpper, *searchTokens, barangayId, updatedAt",
-      blotters: "++id, caseNumberNorm, *tagsNorm, *searchTokens, status, incidentDate",
+      blotters: "id, status, createdAtISO, updatedAtISO, incidentDateISO, *searchTokens",
       businesses: '++id, businessNameUpper, ownerNameUpper, *searchTokens, status',
       certificates: '++id, residentId, certType, createdAtLocal',
       syncQueue: '++id, [entityType+entityId], status',

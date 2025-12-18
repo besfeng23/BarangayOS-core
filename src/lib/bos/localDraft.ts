@@ -7,19 +7,9 @@ export function loadDraft<T>(key: string): T | null {
     return null;
   }
 }
-
 export function saveDraft<T>(key: string, value: T) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // ignore quota errors; UI will still function
-  }
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
 }
-
 export function clearDraft(key: string) {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    // ignore
-  }
+  try { localStorage.removeItem(key); } catch {}
 }
