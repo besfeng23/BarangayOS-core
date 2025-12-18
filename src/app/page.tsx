@@ -107,8 +107,8 @@ export default function Home() {
         />
 
         <PartnerTileGuard
-          label="Online Required"
-          onBlocked={() => toast({title: "This module requires internet connection"})}
+          label="Request Activation"
+          onBlocked={() => toast({title: "This module requires activation."})}
         >
           <ModuleCard
             title="Digital Payments"
@@ -119,8 +119,8 @@ export default function Home() {
         </PartnerTileGuard>
         
         <PartnerTileGuard
-          label="Online Required"
-          onBlocked={() => toast({title: "This module requires internet connection"})}
+          label="Request Activation"
+          onBlocked={() => toast({title: "This module requires activation."})}
         >
           <ModuleCard
             title="Health"
