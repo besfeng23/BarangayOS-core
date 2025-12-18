@@ -1,30 +1,35 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useToast } from "@/components/ui/toast";
+import { addDoc, collection, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
+import { blotterCaseConverter, type BlotterCase, type Resident } from '@/lib/firebase/schema';
+import WorkflowShell from '../system/WorkflowShell';
+import StickyActionBar from '../system/StickyActionBar';
+import { Save } from 'lucide-react';
 import Step1People from './BlotterLogModule/Step1_People';
 import Step2Incident from './BlotterLogModule/Step2_Incident';
 import Step3Narrative from './BlotterLogModule/Step3_Narrative';
-import { Save } from 'lucide-react';
-import { useToast } from "@/components/ui/toast";
-import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase/client';
-import { blotterCaseConverter, type BlotterCase, type Resident } from '@/lib/firebase/schema';
+import ActionResultModal from '../system/ActionResultModal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 interface NewCaseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  isOnline: boolean;
 }
 
 const steps = ['The People', 'The Incident', 'The Narrative'];
 
-const NewCaseModal = ({ isOpen, onClose, isOnline }: NewCaseModalProps) => {
+const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<BlotterCase & { complainant?: Resident | { fullName: string }, respondent?: Resident | { fullName: string } }>>({});
-  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [saveResult, setSaveResult] = useState<{ ok: boolean; message: string; statusLine: string } | null>(null);
+  const isOnline = useOnlineStatus();
+  const { toast } = useToast();
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -40,31 +45,20 @@ const NewCaseModal = ({ isOpen, onClose, isOnline }: NewCaseModalProps) => {
 
   const getFullName = (person: Resident | { fullName: string } | undefined): string => {
     if (!person) return 'Unknown';
-    // Case 1: It's a full Resident object from the picker
     if ('displayName' in person && person.displayName) return person.displayName;
-    // Case 2: It's a manual entry object
     if ('fullName' in person && person.fullName) return person.fullName;
     return 'Unknown';
   }
 
   const handleSave = async () => {
     setIsSaving(true);
-    toast({
-        title: "Filing Case...",
-        description: "Saving the blotter case to the database.",
-    });
+    toast({ title: "Filing Case...", description: "Saving the blotter case locally." });
 
     try {
         const { date, time, ...restOfData } = formData as any;
 
         if (!date || date.trim() === '') {
-            toast({
-                variant: "destructive",
-                title: "Missing Incident Date",
-                description: "Please go back and select a date for the incident.",
-            });
-            setIsSaving(false);
-            return;
+            throw new Error("Missing Incident Date. Please go back and select a date.");
         }
         
         const incidentDateTime = new Date(`${date}T${time || '00:00'}`);
@@ -82,49 +76,30 @@ const NewCaseModal = ({ isOpen, onClose, isOnline }: NewCaseModalProps) => {
             barangayId: "TEST-BARANGAY-1",
             createdBy: "SECRETARY-DEVICE-1",
         };
-
+        
+        // This simulates saving locally first.
+        // In a real Dexie implementation, this would be an offline-first DB write.
         const blotterRef = collection(db, 'blotter_cases').withConverter(blotterCaseConverter);
         await addDoc(blotterRef, newCase);
-
-        toast({
-            title: "Case Filed Successfully!",
-            description: `Case #${newCase.caseId} has been saved.`,
+        
+        setSaveResult({ 
+            ok: true, 
+            message: `Case #${newCase.caseId} has been saved locally.`,
+            statusLine: isOnline ? "Synced with server." : "Queued for sync."
         });
 
-        setFormData({});
-        setCurrentStep(1);
-        onClose();
-
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error adding blotter case: ", error);
-        toast({
-            variant: "destructive",
-            title: "Uh oh! Something went wrong.",
-            description: "Could not save the case. Please try again.",
+        setSaveResult({ 
+            ok: false, 
+            message: "Could not save the case.",
+            statusLine: error.message || "An unexpected error occurred."
         });
     } finally {
         setIsSaving(false);
+        setShowResultModal(true);
     }
   };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return <Step1People formData={formData} setFormData={setFormData} />;
-      case 2:
-        return <Step2Incident formData={formData} setFormData={setFormData} />;
-      case 3:
-        return <Step3Narrative formData={formData} setFormData={setFormData} isOnline={isOnline} />;
-      default:
-        return null;
-    }
-  };
-  
-  const resetAndClose = () => {
-    setFormData({});
-    setCurrentStep(1);
-    onClose();
-  }
 
   const isNextDisabled = () => {
     if (currentStep === 1) {
@@ -136,41 +111,68 @@ const NewCaseModal = ({ isOpen, onClose, isOnline }: NewCaseModalProps) => {
     return false;
   }
 
+  const resetAndClose = () => {
+    setFormData({});
+    setCurrentStep(1);
+    onClose();
+    setShowResultModal(false);
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl w-full flex flex-col h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">New Blotter Entry - Step {currentStep}: {steps[currentStep - 1]}</DialogTitle>
-        </DialogHeader>
-        
-        <div className="py-6 flex-grow overflow-y-auto">
-          {renderStepContent()}
-        </div>
-
-        <DialogFooter className="justify-between mt-4 flex-shrink-0">
-          <div>
-            {currentStep > 1 && (
-              <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={isSaving}>
+    <>
+      <Dialog open={isOpen} onOpenChange={resetAndClose}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-4xl w-full flex flex-col h-[90vh] p-0">
+          <WorkflowShell
+            title="New Blotter Entry"
+            steps={steps}
+            currentStep={currentStep}
+          >
+            <div className="py-6 px-6 flex-grow overflow-y-auto">
+              <p className="text-xs text-zinc-500">UX-V2-ACTIVE</p>
+              {
+                {
+                  1: <Step1People formData={formData} setFormData={setFormData} />,
+                  2: <Step2Incident formData={formData} setFormData={setFormData} />,
+                  3: <Step3Narrative formData={formData} setFormData={setFormData} isOnline={isOnline} />
+                }[currentStep]
+              }
+            </div>
+          </WorkflowShell>
+          
+          <StickyActionBar>
+            <button
+                onClick={handleBack}
+                disabled={isSaving || currentStep === 1}
+                className="px-5 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold disabled:opacity-50"
+            >
                 Back
-              </Button>
-            )}
-          </div>
-          <div>
+            </button>
             {currentStep < steps.length ? (
-              <Button className="h-12 text-lg" onClick={handleNext} disabled={isNextDisabled()}>
+              <button onClick={handleNext} disabled={isNextDisabled()} className="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold disabled:opacity-50">
                 Next
-              </Button>
+              </button>
             ) : (
-              <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={isSaving}>
-                <Save className="mr-2 h-5 w-5" />
+              <button className="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold disabled:opacity-50" onClick={handleSave} disabled={isSaving}>
+                <Save className="mr-2 h-5 w-5 inline-block" />
                 {isSaving ? "Saving..." : "Save Record"}
-              </Button>
+              </button>
             )}
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </StickyActionBar>
+        </DialogContent>
+      </Dialog>
+      
+      {saveResult && (
+          <ActionResultModal
+              isOpen={showResultModal}
+              onClose={resetAndClose}
+              result={saveResult}
+              onRetry={handleSave}
+              retryText="Retry Save"
+              primaryActionText="Log Another Case"
+              onPrimaryAction={resetAndClose}
+          />
+      )}
+    </>
   );
 };
 

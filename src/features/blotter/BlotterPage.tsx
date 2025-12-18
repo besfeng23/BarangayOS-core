@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useBlotterIndex } from "@/hooks/useBlotterIndex";
 import { BlotterStatus } from "@/lib/bosDb";
 import NewCaseModal from "@/components/blotter/NewCaseModal";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Plus } from "lucide-react";
 
 const STATUS_CHIPS: BlotterStatus[] = ["ACTIVE", "SETTLED", "FILED_TO_COURT", "DISMISSED"];
 const TAG_CHIPS = ["Debt", "Noise", "Theft", "Physical Injury", "Trespassing", "Harassment"];
@@ -29,7 +31,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-2 rounded-full border text-sm whitespace-nowrap
+      className={`px-3 py-2 rounded-full border text-sm whitespace-nowrap min-h-[44px]
         ${active ? "bg-zinc-800 border-zinc-700 text-zinc-100" : "bg-zinc-950 border-zinc-800 text-zinc-300"}
         focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950`}
       aria-label={`Filter ${label}`}
@@ -61,13 +63,13 @@ export default function BlotterPage() {
   );
 
   return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
-        <div className="max-w-6xl mx-auto px-4 pt-4 space-y-4">
+      <div className="min-h-screen pb-24">
+        <div className="space-y-4">
           {/* Snapshot */}
           <section aria-label="Blotter Snapshot">
             <button
               onClick={() => setStatsOpen((s) => !s)}
-              className="w-full flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3
+              className="w-full flex items-center justify-between bg-zinc-900/40 border border-zinc-800 rounded-2xl px-4 py-3
                 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
               aria-label="Toggle blotter snapshot"
             >
@@ -86,15 +88,15 @@ export default function BlotterPage() {
 
           {/* Actions & Controls */}
           <section className="sticky top-[72px] z-20 bg-zinc-950 pb-2 pt-1">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-3 space-y-3">
+            <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-3 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="px-6 py-3 bg-zinc-100 text-zinc-950 font-bold rounded-2xl
-                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+                  className="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl min-h-[48px] flex items-center justify-center
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
                   aria-label="Create new blotter case"
                 >
-                  New Case
+                  <Plus className="mr-2 h-5 w-5"/> New Case
                 </button>
 
                 <input
@@ -110,7 +112,7 @@ export default function BlotterPage() {
                 {hasFilters && (
                   <button
                     onClick={clearFilters}
-                    className="px-4 py-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-300
+                    className="px-4 py-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-300 min-h-[48px]
                       focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
                     aria-label="Clear filters"
                   >
@@ -132,37 +134,28 @@ export default function BlotterPage() {
                   />
                 ))}
               </div>
-
-              {/* Tag chips */}
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {TAG_CHIPS.map((t) => (
-                  <Chip
-                    key={t}
-                    label={t}
-                    active={filters.tag === t}
-                    onClick={() =>
-                      setFilters((f) => ({ ...f, tag: f.tag === t ? undefined : t }))
-                    }
-                  />
-                ))}
-              </div>
             </div>
           </section>
 
           {/* List */}
           <section className="space-y-2">
             {blotters.length === 0 ? (
-              <div className="p-8 text-center border border-dashed border-zinc-800 rounded-2xl text-zinc-500">
-                No cases found. <br /> Tap <span className="text-zinc-300 font-semibold">New Case</span>{" "}
-                to start a record.
-              </div>
+                <div className="pt-8">
+                    <EmptyState 
+                        type={hasFilters ? 'no-results' : 'no-data'}
+                        title={hasFilters ? 'No Matches Found' : 'No Cases Yet'}
+                        body={hasFilters ? 'Try a different search term or clear the filters.' : 'Create the first blotter case record for your barangay.'}
+                        actionText={hasFilters ? 'Clear Filters' : 'Create New Case'}
+                        onAction={hasFilters ? clearFilters : () => setIsModalOpen(true)}
+                    />
+                </div>
             ) : (
               blotters.map((b) => (
                 <button
                   key={b.id}
                   onClick={() => router.push(`/blotter/${b.id}`)}
-                  className="w-full text-left flex items-center p-4 bg-zinc-900 border border-zinc-800 rounded-2xl min-h-[48px]
-                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
+                  className="w-full text-left flex items-center p-4 bg-zinc-900/40 border border-zinc-800 rounded-2xl min-h-[48px]
+                    focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950 transition-colors hover:bg-zinc-800/60"
                   aria-label={`Open case ${b.caseNumber}`}
                 >
                   <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs mr-4 px-2 text-center">
@@ -176,7 +169,6 @@ export default function BlotterPage() {
                     <p className="text-zinc-400 text-sm truncate">
                       {new Date(b.incidentDate).toLocaleDateString()} • {b.tags?.slice(0, 3).join(", ") || "No tags"}
                     </p>
-                    <p className="text-zinc-400 text-sm truncate">{b.narrative}</p>
                   </div>
 
                   <div className={statusPill(b.status)}>{b.status}</div>
@@ -185,7 +177,7 @@ export default function BlotterPage() {
             )}
           </section>
         </div>
-        <NewCaseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} isOnline={true} />
+        <NewCaseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       </div>
   );
 }

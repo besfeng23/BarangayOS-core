@@ -54,6 +54,7 @@ export type BlotterRecord = {
   settlementSummary?: string;
   settlementSummaryNorm?: string;
   syncState?: "queued" | "synced" | "failed";
+  searchTokens: string[];
 };
 
 export type PrintLogItem = {
@@ -195,19 +196,19 @@ class BOSDexie extends Dexie {
   constructor() {
     super("BarangayOS");
 
-    this.version(6).stores({
-      residents: "id, fullNameUpper, householdNoUpper, *searchTokens, lastNameNorm, firstNameNorm, status, purok, sex, birthdate",
-      blotters: "id, residentId, status, createdAtLocal, caseNumberNorm, *tagsNorm, *searchTokens, incidentDate",
-      businesses: 'id, businessNameUpper, ownerNameUpper, *searchTokens, status',
-      certificates: 'id, residentId, certType, createdAtLocal',
-      syncQueue: '++id, entityType, entityId, op, occurredAtLocal, synced, syncError, [entityType+entityId], status',
-      auditLogs: '++id, eventType, entityId, entityLabel, actorRole, actorEmail, occurredAtLocal, synced, syncError',
-      meta: '&key, value',
-      printLogs: "id, createdAt, barangayId, docType, controlNo, residentId, blotterId, status",
-      settings: "id, key, updatedAt",
-      transactions: "id, createdAt, status, barangayId, partnerId, type",
-      activityLog: "id, createdAt, type, entityType, entityId",
-      drafts: "id, module, key, updatedAt, [module+key]",
+    this.version(7).stores({
+      residents: "++id, fullNameNorm, lastNameNorm, firstNameNorm, *searchTokens, status, purok, sex",
+      blotters: "++id, caseNumberNorm, *tagsNorm, *searchTokens, status, incidentDate",
+      businesses: '++id, businessNameUpper, ownerNameUpper, *searchTokens, status',
+      certificates: '++id, residentId, certType, createdAtLocal',
+      syncQueue: '++id, [entityType+entityId], status',
+      auditLogs: '++id, eventType, entityId, occurredAtLocal, synced',
+      meta: '&key',
+      printLogs: "id, createdAt, controlNo, status",
+      settings: "id, &key",
+      transactions: "id, createdAt, status",
+      activityLog: "++id, createdAt, type, [entityType+entityId]",
+      drafts: "id, &[module+key]",
     });
   }
 }

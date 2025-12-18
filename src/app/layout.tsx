@@ -1,8 +1,6 @@
-
 'use client';
 
 import './globals.css';
-import './print.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/firebase/auth-provider';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -11,7 +9,6 @@ import { SettingsProvider } from '@/context/SettingsContext';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
 import { SyncProvider } from '@/context/SyncContext';
 import TerminalShell from '@/components/shell/TerminalShell';
-import "@/styles/print.css";
 
 export default function RootLayout({
   children,
@@ -22,7 +19,7 @@ export default function RootLayout({
   const isLoginPage = pathname === '/login';
 
   return (
-    <html lang="en" className="dark bg-slate-950">
+    <html lang="en" className="dark bg-zinc-950">
       <head>
         <title>BarangayOS Digital Terminal</title>
         <meta
@@ -40,7 +37,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased bg-background">
+      <body>
         <AuthProvider>
           <SettingsProvider>
             {isLoginPage ? (

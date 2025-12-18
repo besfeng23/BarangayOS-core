@@ -3,7 +3,7 @@ import * as React from "react";
 import { useParams } from "react-router-dom";
 import BlotterList from "./BlotterList";
 import BlotterDetail from "./BlotterDetail";
-import NewCaseModal from "./components/NewCaseModal";
+import NewCaseModal from "@/components/blotter/NewCaseModal";
 import { useBlotterData } from "../../hooks/useBlotterData";
 import { useIsDesktop } from "../../hooks/useIsDesktop";
 import dynamic from "next/dynamic";
