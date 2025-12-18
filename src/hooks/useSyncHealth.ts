@@ -1,35 +1,33 @@
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb } from "@/lib/bosDb";
+import { useOnlineStatus } from "./useOnlineStatus";
 
 export function useSyncHealth() {
-  // Check both generic syncQueue and specific transactions table
-  const pendingSync = useLiveQuery(
+  const online = useOnlineStatus();
+
+  const pendingCount = useLiveQuery(
     () => bosDb.syncQueue.where("status").anyOf(["pending", "syncing"]).count(),
     [],
     0
   );
-  const failedSync = useLiveQuery(
+  const errorCount = useLiveQuery(
     () => bosDb.syncQueue.where("status").equals("failed").count(),
     [],
     0
   );
-  const pendingTx = useLiveQuery(
-    () => bosDb.transactions.where("status").equals("pending").count(),
-    [],
-    0
-  );
-  const failedTx = useLiveQuery(
-    () => bosDb.transactions.where("status").equals("failed").count(),
-    [],
-    0
-  );
 
-  const pending = (pendingSync || 0) + (pendingTx || 0);
-  const failed = (failedSync || 0) + (failedTx || 0);
+  const state: "synced" | "syncing" | "failed" | "offline" = (() => {
+    if (!online) return "offline";
+    if (errorCount && errorCount > 0) return "failed";
+    if (pendingCount && pendingCount > 0) return "syncing";
+    return "synced";
+  })();
+  
+  const lastSync = useLiveQuery(async () => {
+      const last = await bosDb.meta.get('lastSyncAt');
+      return last ? new Date(last.value as number) : null;
+  }, [], null);
 
-  const state: "synced" | "syncing" | "failed" =
-    failed > 0 ? "failed" : pending > 0 ? "syncing" : "synced";
-
-  return { state, pending, failed };
+  return { state, pendingCount: pendingCount || 0, errorCount: errorCount || 0, lastSync };
 }

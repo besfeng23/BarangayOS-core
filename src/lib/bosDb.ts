@@ -72,9 +72,9 @@ export type PrintLogItem = {
 
 export type SyncQueueItem = {
   id: string;
-  entityType: "resident" | "blotter" | "print_log" | "transaction" | "setting";
+  entityType: "resident" | "blotter" | "print_log" | "transaction" | "setting" | "auditLog" | "business" | "certificate";
   entityId: string;
-  op: "UPSERT";
+  op: "UPSERT" | "DELETE";
   payload: any;
   createdAt: number;
   updatedAt: number;
@@ -108,6 +108,23 @@ export type ActivityLogItem = {
   entityId: string;
   meta?: any;
 };
+
+export type AuditLogRecord = {
+  id: string;
+  eventType: 'CERT_PRINTED' | 'PERMIT_PRINTED' | 'BLOTTER_PRINTED' | 'CERT_ISSUED' | 'PERMIT_ISSUED' | 'CASE_CREATED';
+  entityId: string;
+  entityLabel: string;
+  actorRole?: string;
+  actorEmail?: string;
+  occurredAtLocal: string;
+  synced: boolean;
+  syncError?: string;
+}
+
+export type MetaRecord = {
+    key: 'lastSyncAt' | 'lastSyncError' | 'syncErrorCount' | 'demoModeEnabled';
+    value: string | number | boolean;
+}
 
 export type BOSSettings = {
   id: string;
@@ -145,6 +162,21 @@ export type TransactionRecord = {
   lastError?: string;
 }
 
+export type BusinessRecord = {
+    id: string;
+    businessNameUpper: string;
+    ownerNameUpper: string;
+    searchTokens: string[];
+    status: string;
+}
+
+export type CertificateRecord = {
+    id: string;
+    residentId: string;
+    certType: string;
+    createdAtLocal: string;
+}
+
 class BOSDexie extends Dexie {
   residents!: Table<ResidentRecord, string>;
   blotters!: Table<BlotterRecord, string>;
@@ -154,17 +186,26 @@ class BOSDexie extends Dexie {
   syncQueue!: Table<SyncQueueItem, string>;
   activityLog!: Table<ActivityLogItem, string>;
   drafts!: Table<DraftItem, string>;
+  auditLogs!: Table<AuditLogRecord, string>;
+  meta!: Table<MetaRecord, string>;
+  businesses!: Table<BusinessRecord, string>;
+  certificates!: Table<CertificateRecord, string>;
+
 
   constructor() {
     super("BarangayOS");
 
-    this.version(4).stores({
-      residents: "id, createdAt, lastUpdated, status, purok, sex, birthdate, fullNameNorm, lastNameNorm, firstNameNorm, *searchTokens",
-      blotters: "id, createdAt, updatedAt, lastUpdated, barangayId, caseNumber, caseNumberNorm, status, incidentDate, hearingDate, *tagsNorm, *searchTokens",
+    this.version(6).stores({
+      residents: "id, fullNameUpper, householdNoUpper, *searchTokens, lastNameNorm, firstNameNorm, status, purok, sex, birthdate",
+      blotters: "id, residentId, status, createdAtLocal, caseNumberNorm, *tagsNorm, *searchTokens, incidentDate",
+      businesses: 'id, businessNameUpper, ownerNameUpper, *searchTokens, status',
+      certificates: 'id, residentId, certType, createdAtLocal',
+      syncQueue: '++id, entityType, entityId, op, occurredAtLocal, synced, syncError, [entityType+entityId], status',
+      auditLogs: '++id, eventType, entityId, entityLabel, actorRole, actorEmail, occurredAtLocal, synced, syncError',
+      meta: '&key, value',
       printLogs: "id, createdAt, barangayId, docType, controlNo, residentId, blotterId, status",
       settings: "id, key, updatedAt",
       transactions: "id, createdAt, status, barangayId, partnerId, type",
-      syncQueue: "id, createdAt, status, entityType, entityId, [entityType+entityId]",
       activityLog: "id, createdAt, type, entityType, entityId",
       drafts: "id, module, key, updatedAt, [module+key]",
     });

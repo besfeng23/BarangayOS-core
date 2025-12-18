@@ -161,94 +161,94 @@ const CertificatesPage = () => {
 
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Issue Certificate</h1>
-          <p className="text-slate-400">Select a resident and fill out the form to generate a document.</p>
-        </div>
-         <Link href="/" passHref>
-          <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Hub
-          </Button>
-        </Link>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="bg-slate-800/50 border-slate-700">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><User /> Step 1: Select a Resident</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingResident ? (
-                <p>Loading resident...</p>
-            ) : (
-                <ResidentPicker
-                  onSelectResident={(res) => setSelectedResident(res as Resident | null)}
-                  selectedResident={selectedResident}
-                />
-            )}
-             {selectedResident && (
-                <div className="mt-4 p-4 bg-slate-900 rounded-lg">
-                    <p className="font-bold text-lg">{selectedResident.displayName}</p>
-                    <p className="text-sm text-slate-400">RBI ID: {selectedResident.rbiId}</p>
-                    <p className="text-sm text-slate-400">Address: {selectedResident.addressSnapshot.addressLine}</p>
-                </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className={`bg-slate-800/50 border-slate-700 transition-opacity ${!selectedResident ? 'opacity-50 pointer-events-none' : ''}`}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileText /> Step 2: Certificate Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label htmlFor="cert-type" className="text-lg">Certificate Type</Label>
-              <Select onValueChange={(value: CertificateType) => setCertificateType(value)} value={certificateType}>
-                <SelectTrigger id="cert-type" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1">
-                  <SelectValue placeholder="Select document type..." />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 text-white border-slate-700">
-                  <SelectItem value="Barangay Clearance">Barangay Clearance</SelectItem>
-                  <SelectItem value="Certificate of Indigency">Certificate of Indigency</SelectItem>
-                  <SelectItem value="Certificate of Residency">Certificate of Residency</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-             <div>
-              <Label htmlFor="purpose" className="text-lg">Purpose</Label>
-              <Input id="purpose" placeholder="e.g., For Local Employment, Hospital Admission" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={purpose} onChange={(e) => setPurpose(e.target.value)} />
-            </div>
-             <div>
-              <Label htmlFor="fees" className="text-lg">Fees Collected (₱)</Label>
-              <Input id="fees" type="number" placeholder="0.00" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={fees} onChange={(e) => setFees(e.target.value)} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-       <div className="flex justify-end">
-            <Button 
-                className="bg-blue-600 hover:bg-blue-700 h-14 text-xl px-8" 
-                onClick={handleSaveAndPreview}
-                disabled={isSaveDisabled}
-            >
-                <Save className="mr-2 h-6 w-6" />
-                {isSaving ? "Saving..." : "Save & Preview"}
+      <div className="p-4 sm:p-6 lg:p-8 space-y-8">
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Issue Certificate</h1>
+            <p className="text-slate-400">Select a resident and fill out the form to generate a document.</p>
+          </div>
+          <Link href="/" passHref>
+            <Button variant="outline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Hub
             </Button>
-       </div>
-       
-       {isPrintModalOpen && newTransaction && selectedResident && (
-         <PrintCertificateModal
-            isOpen={isPrintModalOpen}
-            onClose={handleClosePrintModal}
-            transaction={newTransaction}
-            resident={selectedResident}
-         />
-       )}
-    </div>
+          </Link>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><User /> Step 1: Select a Resident</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoadingResident ? (
+                  <p>Loading resident...</p>
+              ) : (
+                  <ResidentPicker
+                    onSelectResident={(res) => setSelectedResident(res as Resident | null)}
+                    selectedResident={selectedResident}
+                  />
+              )}
+              {selectedResident && (
+                  <div className="mt-4 p-4 bg-slate-900 rounded-lg">
+                      <p className="font-bold text-lg">{selectedResident.displayName}</p>
+                      <p className="text-sm text-slate-400">RBI ID: {selectedResident.rbiId}</p>
+                      <p className="text-sm text-slate-400">Address: {selectedResident.addressSnapshot.addressLine}</p>
+                  </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={`bg-slate-800/50 border-slate-700 transition-opacity ${!selectedResident ? 'opacity-50 pointer-events-none' : ''}`}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><FileText /> Step 2: Certificate Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label htmlFor="cert-type" className="text-lg">Certificate Type</Label>
+                <Select onValueChange={(value: CertificateType) => setCertificateType(value)} value={certificateType}>
+                  <SelectTrigger id="cert-type" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1">
+                    <SelectValue placeholder="Select document type..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 text-white border-slate-700">
+                    <SelectItem value="Barangay Clearance">Barangay Clearance</SelectItem>
+                    <SelectItem value="Certificate of Indigency">Certificate of Indigency</SelectItem>
+                    <SelectItem value="Certificate of Residency">Certificate of Residency</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="purpose" className="text-lg">Purpose</Label>
+                <Input id="purpose" placeholder="e.g., For Local Employment, Hospital Admission" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={purpose} onChange={(e) => setPurpose(e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="fees" className="text-lg">Fees Collected (₱)</Label>
+                <Input id="fees" type="number" placeholder="0.00" className="h-12 text-lg bg-slate-900 border-slate-600 mt-1" value={fees} onChange={(e) => setFees(e.target.value)} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex justify-end">
+              <Button 
+                  className="bg-blue-600 hover:bg-blue-700 h-14 text-xl px-8" 
+                  onClick={handleSaveAndPreview}
+                  disabled={isSaveDisabled}
+              >
+                  <Save className="mr-2 h-6 w-6" />
+                  {isSaving ? "Saving..." : "Save & Preview"}
+              </Button>
+        </div>
+        
+        {isPrintModalOpen && newTransaction && selectedResident && (
+          <PrintCertificateModal
+              isOpen={isPrintModalOpen}
+              onClose={handleClosePrintModal}
+              transaction={newTransaction}
+              resident={selectedResident}
+          />
+        )}
+      </div>
   );
 };
 

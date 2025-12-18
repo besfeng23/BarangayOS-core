@@ -41,58 +41,55 @@ export default function ReportsPage() {
     };
 
     return (
-        <div className="space-y-8">
-            <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                    <CardTitle>Generate Report</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row gap-4 items-end">
-                    <div className="w-full sm:w-1/2">
-                        <label className="text-lg font-medium mb-2 block">Report Type</label>
-                         <Select defaultValue="activity-summary">
-                            <SelectTrigger className="h-12 text-lg bg-slate-900 border-slate-600">
-                                <SelectValue placeholder="Select a report..." />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-800 text-white border-slate-700">
-                                <SelectItem value="activity-summary">Barangay Activity Summary</SelectItem>
-                                <SelectItem value="financial-summary" disabled>Financial Summary (Soon)</SelectItem>
-                                <SelectItem value="demographics" disabled>Demographics (Soon)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="w-full sm:w-1/4">
-                        <label className="text-lg font-medium mb-2 block">Time Period</label>
-                         <Select defaultValue="weekly">
-                            <SelectTrigger className="h-12 text-lg bg-slate-900 border-slate-600">
-                                <SelectValue placeholder="Select a period..." />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-800 text-white border-slate-700">
-                                <SelectItem value="weekly">Last 7 Days</SelectItem>
-                                <SelectItem value="monthly" disabled>Last 30 Days (Soon)</SelectItem>
-                                <SelectItem value="quarterly" disabled>Last Quarter (Soon)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <Button 
-                        className="bg-blue-600 hover:bg-blue-700 h-12 text-lg w-full sm:w-auto"
-                        onClick={handleGenerate}
-                    >
-                        <Printer className="mr-2 h-5 w-5" />
-                        Generate & Print
-                    </Button>
-                </CardContent>
-            </Card>
-            
-            {/* The live view of the selected report would be displayed here */}
-            {/* For v1, we go straight to the print preview. */}
-
-            {selectedReport && (
-                <PrintPreviewModal 
-                    isOpen={isPrintModalOpen}
-                    onClose={() => setIsPrintModalOpen(false)}
-                    reportData={selectedReport}
-                />
-            )}
-        </div>
+          <div className="space-y-8 p-4 md:p-8">
+              <Card className="bg-zinc-900/40 border border-zinc-800 rounded-2xl">
+                  <CardHeader>
+                      <CardTitle>Generate Report</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col sm:flex-row gap-4 items-end">
+                      <div className="w-full sm:w-1/2">
+                          <label className="text-lg font-medium mb-2 block">Report Type</label>
+                          <Select defaultValue="activity-summary">
+                              <SelectTrigger className="h-12 text-lg bg-zinc-950 border-zinc-700">
+                                  <SelectValue placeholder="Select a report..." />
+                              </SelectTrigger>
+                              <SelectContent className="bg-zinc-800 text-white border-zinc-700">
+                                  <SelectItem value="activity-summary">Barangay Activity Summary</SelectItem>
+                                  <SelectItem value="financial-summary" disabled>Financial Summary (Soon)</SelectItem>
+                                  <SelectItem value="demographics" disabled>Demographics (Soon)</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <div className="w-full sm:w-1/4">
+                          <label className="text-lg font-medium mb-2 block">Time Period</label>
+                          <Select defaultValue="weekly">
+                              <SelectTrigger className="h-12 text-lg bg-zinc-950 border-zinc-700">
+                                  <SelectValue placeholder="Select a period..." />
+                              </SelectTrigger>
+                              <SelectContent className="bg-zinc-800 text-white border-zinc-700">
+                                  <SelectItem value="weekly">Last 7 Days</SelectItem>
+                                  <SelectItem value="monthly" disabled>Last 30 Days (Soon)</SelectItem>
+                                  <SelectItem value="quarterly" disabled>Last Quarter (Soon)</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <Button 
+                          className="bg-blue-600 hover:bg-blue-700 h-12 text-lg w-full sm:w-auto"
+                          onClick={handleGenerate}
+                      >
+                          <Printer className="mr-2 h-5 w-5" />
+                          Generate & Print
+                      </Button>
+                  </CardContent>
+              </Card>
+              
+              {selectedReport && (
+                  <PrintPreviewModal 
+                      isOpen={isPrintModalOpen}
+                      onClose={() => setIsPrintModalOpen(false)}
+                      reportData={selectedReport}
+                  />
+              )}
+          </div>
     );
 }

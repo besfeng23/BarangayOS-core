@@ -8,6 +8,7 @@ import { Printer } from 'lucide-react';
 import type { Transaction } from '@/types/transactions';
 import type { Resident } from '@/lib/firebase/schema';
 import PrintCertificate from './PrintCertificate';
+import { logActivity } from '@/lib/activityLog';
 
 interface PrintCertificateModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ const PrintCertificateModal = ({ isOpen, onClose, transaction, resident }: Print
 
   const handlePrint = () => {
     window.print();
+    logActivity(`Printed ${transaction.type} for ${resident.displayName}`);
+    onClose();
   };
 
   return (
@@ -36,11 +39,11 @@ const PrintCertificateModal = ({ isOpen, onClose, transaction, resident }: Print
 
         <DialogFooter className="mt-4">
           <Button variant="outline" className="h-12 text-lg" onClick={onClose}>
-            Close
+            Cancel
           </Button>
           <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handlePrint}>
             <Printer className="mr-2 h-5 w-5" />
-            Print Now
+            Print Now & Log
           </Button>
         </DialogFooter>
       </DialogContent>

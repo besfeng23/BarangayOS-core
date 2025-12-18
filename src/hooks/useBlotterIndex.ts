@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb, BlotterRecord, BlotterStatus } from "@/lib/bosDb";
@@ -19,7 +20,6 @@ function normTokens(s: string): string[] {
 export function useBlotterIndex() {
   const [filters, setFilters] = useState<BlotterFilterState>({ q: "" });
 
-  // O(1) snapshot counts
   const snapshot = useLiveQuery(
     async () => {
       const total = await bosDb.blotters.count();
@@ -31,7 +31,6 @@ export function useBlotterIndex() {
     { total: 0, active: 0, settled: 0 }
   );
 
-  // Index-first narrowing (NO DOM filtering as primary)
   const blotters = useLiveQuery(async () => {
     const q = norm(filters.q);
     const qTokens = normTokens(q);
@@ -39,22 +38,17 @@ export function useBlotterIndex() {
 
     let base: BlotterRecord[];
 
-    // 1) Most specific: tag index (multiEntry)
     if (tag) {
       base = await bosDb.blotters.where("tagsNorm").equals(norm(tag)).toArray();
     } else if (status) {
       base = await bosDb.blotters.where("status").equals(status).toArray();
     } else if (q) {
-      // fast-ish lookup:
-      // - caseNumberNorm includes caseNumber and can be searched by startsWithIgnoreCase for quick case # retrieval
-      // - fallback to local scan for narrative/name tokens (still on Dexie array)
       const byCase = await bosDb.blotters.where("caseNumberNorm").startsWithIgnoreCase(q).toArray();
       base = byCase.length ? byCase : await bosDb.blotters.toCollection().toArray();
     } else {
-      base = await bosDb.blotters.toCollection().toArray();
+      base = await bosDb.blotters.orderBy('incidentDate').reverse().toArray();
     }
 
-    // 2) Final refine (token match)
     const results = base
       .filter((b) => {
         if (status && b.status !== status) return false;
@@ -65,12 +59,10 @@ export function useBlotterIndex() {
             b.caseNumberNorm,
             b.narrativeNorm,
             ...(b.tagsNorm || []),
-            // party names are “raw”, so normalize here for search
             ...((b.complainants || []).map((p) => norm(p.name))),
             ...((b.respondents || []).map((p) => norm(p.name))),
           ].join(" ");
 
-          // multi-token AND match
           return qTokens.every((t) => hay.includes(t));
         }
         return true;
