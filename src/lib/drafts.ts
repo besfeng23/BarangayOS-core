@@ -1,3 +1,4 @@
+
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 export interface Draft {
@@ -24,7 +25,7 @@ function getDB(): Promise<IDBPDatabase<DraftsDB>> {
   if (!dbPromise) {
     dbPromise = openDB<DraftsDB>('barangayOS', 4, {
       upgrade(db) {
-        // This upgrade logic is now managed in bosDb.ts, 
+        // This upgrade logic is now managed in bosDb.ts,
         // but we ensure this file doesn't cause issues if it's the first to run.
         if (!db.objectStoreNames.contains('drafts')) {
           const store = db.createObjectStore('drafts', { keyPath: 'id' });
@@ -53,7 +54,18 @@ export async function getDraft(id: string): Promise<Draft | undefined> {
 
 export async function getAllDrafts(): Promise<Draft[]> {
   const db = await getDB();
-  return db.getAllFromIndex('drafts', 'updatedAt', undefined, undefined, 'prev');
+  // The 'prev' direction is not a valid argument for getAllFromIndex.
+  // To get items in reverse order, we must use a cursor.
+  const tx = db.transaction('drafts', 'readonly');
+  const index = tx.store.index('updatedAt');
+  const drafts: Draft[] = [];
+  let cursor = await index.openCursor(null, 'prev');
+  while (cursor) {
+    drafts.push(cursor.value);
+    cursor = await cursor.continue();
+  }
+  await tx.done;
+  return drafts;
 }
 
 export async function deleteDraft(id: string): Promise<void> {
