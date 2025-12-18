@@ -22,7 +22,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from "@/lib/utils";
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/Toast';
 import {
   AlertDialog,
   AlertDialogAction,

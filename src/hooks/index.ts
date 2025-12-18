@@ -7,3 +7,4 @@ export * from "./useCertificateIssue";
 export * from "./useResidentsData";
 export * from "./useIsDesktop";
 export * from "./useViewportRecenterOnKeyboard";
+export * from "./useDebouncedValue";

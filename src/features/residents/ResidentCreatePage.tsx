@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/Toast";
 export default function ResidentCreatePage() {
   const router = useRouter();
   const { createResident, checkDuplicateLocal, residentNewDraft, upsertDraft, clearDraft } = useResidentsData();
-  const { showToast, ToastComponent } = useToast();
+  const { toast } = useToast();
 
   const [form, setForm] = useState({
     lastName: "",
@@ -30,9 +30,9 @@ export default function ResidentCreatePage() {
   useEffect(() => {
     if (residentNewDraft?.payload) {
       setForm((p) => ({ ...p, ...residentNewDraft.payload }));
-      showToast("Draft restored");
+      toast({title: "Draft restored"});
     }
-  }, [residentNewDraft, showToast]);
+  }, [residentNewDraft, toast]);
 
   // Debounced autosave
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function ResidentCreatePage() {
         </div>
       </div>
 
-      <ToastComponent />
+      
 
       {/* Duplicate Modal */}
       {dup && (

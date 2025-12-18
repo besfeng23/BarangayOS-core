@@ -8,7 +8,7 @@ import Step1People from './Step1_People';
 import Step2Incident from './Step2_Incident';
 import Step3Narrative from './Step3_Narrative';
 import { Save } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/Toast";
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { blotterCaseConverter, type BlotterCase, type Resident } from '@/lib/firebase/schema';

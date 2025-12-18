@@ -4,6 +4,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb, ActivityLogItem, DraftItem, ResidentRecord } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { logTransaction } from "@/lib/transactions";
+import { useToast } from "@/components/ui/Toast";
 
 export type ResidentFilterState = {
   q: string;
@@ -27,11 +28,12 @@ async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt">) {
     id: uuid(),
     createdAt: Date.now(),
     ...item,
-  });
+  } as ActivityLogItem);
 }
 
 export function useResidentsData() {
   const [filters, setFilters] = useState<ResidentFilterState>({ q: "" });
+  const { toast } = useToast();
 
   const queueCount = useLiveQuery(
     () => bosDb.syncQueue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
@@ -153,7 +155,7 @@ export function useResidentsData() {
         type: "RESIDENT_CREATE",
         entityType: "resident",
         entityId: id,
-      });
+      } as ActivityLogItem);
       await logTransaction({
         type: 'resident_created',
         module: 'residents',
@@ -186,5 +188,6 @@ export function useResidentsData() {
     checkDuplicateLocal,
     isResidentQueued,
     logActivity,
+    toast,
   };
 }

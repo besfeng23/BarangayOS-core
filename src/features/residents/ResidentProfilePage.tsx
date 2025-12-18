@@ -15,7 +15,7 @@ export default function ResidentProfilePage() {
   const searchParams = useSearchParams();
   
   const { logActivity } = useResidentsData();
-  const { showToast, ToastComponent } = useToast();
+  const { toast } = useToast();
   const toastShownRef = useRef(false);
 
   const resident = useLiveQuery(() => bosDb.residents.get(id), [id], undefined);
@@ -31,11 +31,11 @@ export default function ResidentProfilePage() {
     const toastMessage = searchParams.get('toast');
     if (!toastShownRef.current && toastMessage) {
       toastShownRef.current = true;
-      showToast(decodeURIComponent(toastMessage));
+      toast({title: decodeURIComponent(toastMessage)});
       // Clear the toast message from the URL without reloading
       router.replace(`/residents/${id}`, { scroll: false });
     }
-  }, [searchParams, showToast, router, id]);
+  }, [searchParams, toast, router, id]);
 
   if (!resident) {
     return (
@@ -120,14 +120,14 @@ export default function ResidentProfilePage() {
             </div>
           </div>
         </div>
-        <ToastComponent />
+        
       </>
   );
 }
 
 const btnPrimary =
   "px-5 py-4 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold " +
-  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";
+  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950";
 const btnSecondary =
   "px-5 py-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 " +
   "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";

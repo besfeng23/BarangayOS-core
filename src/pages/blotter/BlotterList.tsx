@@ -15,7 +15,7 @@ const PageComponent = () => {
   const [cases, setCases] = React.useState<BlotterCase[]>([]);
 
   React.useEffect(() => {
-    const q = query(collection(db, "blotters"), orderBy("lastUpdated", "desc"));
+    const q = query(collection(db, "blotter_cases"), orderBy("createdAt", "desc"));
     return onSnapshot(q, (snap) => {
       setCases(snap.docs.map((d) => ({ id: d.id, ...d.data() } as BlotterCase)));
     });
@@ -27,8 +27,8 @@ const PageComponent = () => {
     return cases.filter((c) => {
       if (!s) return true;
 
-      const a = (c.participantsDisplay?.complainant || "").toLowerCase();
-      const b = (c.participantsDisplay?.respondent || "").toLowerCase();
+      const a = (c.complainant || "").toLowerCase();
+      const b = (c.respondent || "").toLowerCase();
       const n = (c.narrative || "").toLowerCase();
       const id = (c.id || "").toLowerCase();
 
@@ -57,8 +57,6 @@ const PageComponent = () => {
                     "text-[10px] font-black px-2 py-1 rounded-full",
                     c.status === "SETTLED"
                       ? "text-emerald-300 bg-emerald-400/10 border border-emerald-400/20"
-                      : c.status === "HEARING_DONE"
-                      ? "text-blue-300 bg-blue-400/10 border border-blue-400/20"
                       : "text-amber-300 bg-amber-400/10 border border-amber-400/20",
                   ].join(" ")}
                 >
@@ -68,9 +66,9 @@ const PageComponent = () => {
               </div>
 
               <div className="font-black text-zinc-100 truncate">
-                {(c.participantsDisplay?.complainant || "—")}{" "}
+                {(c.complainant || "—")}{" "}
                 <span className="text-zinc-600 text-xs">vs</span>{" "}
-                {(c.participantsDisplay?.respondent || "—")}
+                {(c.respondent || "—")}
               </div>
 
               <div className="text-sm text-zinc-500 line-clamp-1 mt-1">{c.narrative || "—"}</div>

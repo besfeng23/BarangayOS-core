@@ -47,7 +47,7 @@ import { residentConverter, type Resident as ResidentSchema, blotterCaseConverte
 import { Skeleton } from '@/components/ui/skeleton';
 import NewResidentModal from './NewResidentModal';
 import { EmptyState } from '../ui/EmptyState';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/Toast';
 
 const PAGE_SIZE = 50;
 

@@ -4,6 +4,7 @@ import { bosDb, ResidentRecord } from "@/lib/bosDb";
 import { generateControlNumber } from "@/lib/certUtils";
 import { uuid } from "@/lib/uuid";
 import { logTransaction } from "@/lib/transactions";
+import { useToast } from "@/components/ui/Toast";
 
 export type CertType = "CERTIFICATE" | "CLEARANCE" | "INDIGENCY";
 
@@ -17,6 +18,7 @@ function formatLongDate(timestamp: number): string {
 
 export function useCertificateIssue() {
   const [isPrinting, setIsPrinting] = useState(false);
+  const { toast } = useToast();
 
   const issueCertificate = async (
     resident: ResidentRecord,
@@ -54,7 +56,7 @@ export function useCertificateIssue() {
         updatedAt: now,
         status: "pending",
         tryCount: 0,
-      });
+      } as any);
       
       // 3. Log the transaction for revenue attribution
       await logTransaction({
@@ -64,6 +66,8 @@ export function useCertificateIssue() {
         amount: 50.00 // Example amount
       });
     });
+
+    toast({title: "Certificate Issued", description: `Control #: ${controlNo}`})
 
     return {
       controlNo,

@@ -1,10 +1,10 @@
 import * as React from "react";
 import { addDoc, collection, getDocs, limit, query, serverTimestamp, where } from "firebase/firestore";
-import { db } from "../../firebase";
-import type { Participant, ParticipantType } from "../../types";
-import { useBlotterData } from "../../hooks/useBlotterData";
-import { useDebouncedValue, useViewportRecenterOnKeyboard } from "../../hooks";
-import { useTerminalUI } from "../../contexts/TerminalUIContext";
+import { db } from "../../../firebase";
+import type { Participant, ParticipantType } from "../../../types";
+import { useBlotterData } from "../../../hooks/useBlotterData";
+import { useDebouncedValue, useViewportRecenterOnKeyboard } from "../../../hooks";
+import { useTerminalUI } from "../../../contexts/TerminalUIContext";
 
 interface ResidentOption {
   id: string;
