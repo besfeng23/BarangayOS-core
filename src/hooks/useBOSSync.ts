@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
 import { db } from '../lib/db';
-import { collection, onSnapshot, query, where, getFirestore } from 'firebase/firestore';
-import { app } from '@/lib/firebase/client';
-
-const firestore = getFirestore(app);
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { db as firestore } from '@/lib/firebase/client';
 
 export function useBOSSync(barangayId: string) {
   useEffect(() => {

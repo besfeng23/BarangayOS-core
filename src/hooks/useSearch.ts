@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase/client';
+import { db as localDb } from '@/lib/db';
 import { useDebounce } from './useDebounce';
-import { Resident, BlotterCase, BusinessPermit } from '@/lib/firebase/schema';
 
 export interface SearchResult {
   id: string;
@@ -31,61 +29,34 @@ export function useSearch(term: string) {
 
     setLoading(true);
 
-    const lowerDebouncedTerm = debouncedTerm.toLowerCase();
-    
-    // Residents Search
-    const residentsQuery = query(
-      collection(db, 'residents'),
-      where('displayNameLower', '>=', lowerDebouncedTerm),
-      where('displayNameLower', '<=', lowerDebouncedTerm + '\uf8ff'),
-      limit(5)
-    );
+    const performSearch = async () => {
+      const upperTerm = debouncedTerm.toUpperCase();
+      try {
+        const residentResults = await localDb.residents
+          .where('fullNameUpper')
+          .startsWith(upperTerm)
+          .limit(10)
+          .toArray();
 
-    const unsubResidents = onSnapshot(residentsQuery, (snapshot) => {
-      const residentResults = snapshot.docs.map(doc => {
-        const data = doc.data() as Resident;
-        return {
-          id: data.id,
-          title: data.displayName,
-          subtitle: `RBI ID: ${data.rbiId}`,
-          href: `/residents?id=${data.id}`,
-        };
-      });
-      setResults(prev => ({...prev, residents: residentResults }));
-    });
-    
-    // For now, blotter and permits are placeholders.
-    // A real implementation would require a more complex search strategy
-    // or denormalized search fields in Firestore.
-    // For the demo, we simulate finding something if the term is 'test'.
-    if (lowerDebouncedTerm.includes('test')) {
-         setResults(prev => ({
-             ...prev, 
-             blotter: [{
-                id: 'test-blotter-1',
-                title: 'Noise Complaint',
-                subtitle: 'Case #BC-12345',
-                href: '/blotter'
-            }],
-            permits: [{
-                id: 'test-permit-1',
-                title: "Aling Nena's Store",
-                subtitle: 'Permit #BP-67890',
-                href: '/permits'
-            }]
+        setResults(prev => ({
+          ...prev,
+          residents: residentResults.map(r => ({
+            id: r.id,
+            title: r.displayName,
+            subtitle: `RBI ID: ${r.rbiId}`,
+            href: `/residents/${r.id}`,
+          })),
         }));
-    } else {
-         setResults(prev => ({...prev, blotter: [], permits: [] }));
-    }
-
-
-    // Combine loading states
-    const timer = setTimeout(() => setLoading(false), 500); // Simulate loading
-
-    return () => {
-      unsubResidents();
-      clearTimeout(timer);
+      } catch (error) {
+        console.error("Error searching local DB:", error);
+        setResults(prev => ({...prev, residents: [] }));
+      } finally {
+        setLoading(false);
+      }
     };
+    
+    performSearch();
+
   }, [debouncedTerm]);
 
   return { results, loading };

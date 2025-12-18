@@ -3,6 +3,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAgNyILqGlsW1YV8OF63ubJljSZoEByMcA",
@@ -11,11 +12,23 @@ const firebaseConfig = {
   storageBucket: "studio-603796794-a3dad.appspot.com",
   messagingSenderId: "1057904202072",
   appId: "1:1057904202072:web:0156b6def50c6badb0952d",
-  databaseURL: "https://studio-603796794-a3dad-default-rtdb.firebaseio.com"
+  databaseURL: "https://studio-603796794-a3dad-default-rtdb.firebaseio.com",
+  measurementId: "G-5HPJBLXZPM"
 };
 
 // Initialize Firebase (Singleton Pattern)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// Initialize Analytics
+isSupported().then((supported) => {
+  if (supported) {
+    getAnalytics(app);
+    console.log("✅ Firebase Analytics Enabled");
+  } else {
+    console.log("Firebase Analytics is not supported in this environment.");
+  }
+});
+
 
 // Initialize Firestore with Offline Persistence
 // This enables multi-tab offline support, which is critical for the kiosk architecture.
