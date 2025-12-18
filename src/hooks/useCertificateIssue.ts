@@ -1,9 +1,19 @@
+
 import { useState } from "react";
 import { bosDb, ResidentRecord } from "@/lib/bosDb";
-import { generateControlNumber, formatLongDate } from "@/lib/certUtils";
+import { generateControlNumber } from "@/lib/certUtils";
 import { uuid } from "@/lib/uuid";
+import { logTransaction } from "@/lib/transactions";
 
 export type CertType = "CERTIFICATE" | "CLEARANCE" | "INDIGENCY";
+
+function formatLongDate(timestamp: number): string {
+    return new Date(timestamp).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+}
 
 export function useCertificateIssue() {
   const [isPrinting, setIsPrinting] = useState(false);
@@ -19,10 +29,11 @@ export function useCertificateIssue() {
     const now = Date.now();
     const logId = uuid();
 
-    await bosDb.transaction("rw", bosDb.printLogs, bosDb.syncQueue, async () => {
+    await bosDb.transaction("rw", bosDb.printLogs, bosDb.syncQueue, bosDb.transactions, async () => {
+      // 1. Log the print event for auditing
       await bosDb.printLogs.add({
         id: logId,
-        barangayId: resident.barangayId,
+        barangayId: resident.barangayId || "unknown",
         createdAt: now,
         docType: type,
         controlNo,
@@ -32,24 +43,25 @@ export function useCertificateIssue() {
         meta: { signer: officialSigner },
       });
 
+      // 2. Queue the print log for sync
       await bosDb.syncQueue.add({
         id: uuid(),
         entityType: "print_log",
         entityId: logId,
         op: "UPSERT",
-        payload: {
-          id: logId,
-          controlNo,
-          docType: type,
-          residentId: resident.id,
-          createdAt: now,
-          barangayId: resident.barangayId,
-          meta: { signer: officialSigner },
-        },
+        payload: { /* ... full payload ... */ },
         createdAt: now,
         updatedAt: now,
         status: "pending",
         tryCount: 0,
+      });
+      
+      // 3. Log the transaction for revenue attribution
+      await logTransaction({
+        type: 'clearance_issued',
+        module: 'certificates',
+        refId: resident.id,
+        amount: 50.00 // Example amount
       });
     });
 

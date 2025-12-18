@@ -1,8 +1,10 @@
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { generateCaseNumber, tokenize } from "@/lib/blotterUtils";
+import { logTransaction } from "@/lib/transactions";
 
 export type BlotterFilterState = {
   q: string;
@@ -43,11 +45,9 @@ export function useBlotterData() {
     if (status) {
       base = await bosDb.blotters.where("status").equals(status as any).toArray();
     } else if (q) {
-      // token search: any token match
       const tokens = q.split(" ").filter(Boolean);
       if (tokens.length === 0) base = await bosDb.blotters.toCollection().toArray();
       else {
-        // Dexie multiEntry index supports anyOf for tokens
         base = await bosDb.blotters.where("searchTokens").anyOf(tokens).toArray();
       }
     } else {
@@ -61,7 +61,6 @@ export function useBlotterData() {
 
         if (q) {
           const hay = norm([b.caseNumber, b.narrative, (b.tags || []).join(" ")].join(" "));
-          // token index already narrowed; keep a soft contains filter
           return hay.includes(q) || (b.searchTokens || []).some((t) => t.includes(q));
         }
         return true;
@@ -71,7 +70,6 @@ export function useBlotterData() {
     return results;
   }, [filters], []);
 
-  // Drafts
   const blotterNewDraft = useLiveQuery<any | undefined>(
     () => bosDb.drafts.where("[module+key]").equals(["blotter", "blotter:new"]).first(),
     [],
@@ -126,18 +124,21 @@ export function useBlotterData() {
       createdAt: now,
       updatedAt: now,
       caseNumber,
+      caseNumberNorm: norm(caseNumber),
       incidentDate: input.incidentDate,
       hearingDate: input.hearingDate,
       complainants: input.complainants || [],
       respondents: input.respondents || [],
       narrative: input.narrative,
-      tags: input.tags || [],
+      narrativeNorm: norm(input.narrative),
       status: input.status as any,
-      searchTokens,
+      tags: input.tags || [],
+      tagsNorm: (input.tags || []).map(norm),
       syncState: "queued",
+      searchTokens,
     };
 
-    await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, bosDb.activityLog, async () => {
+    await bosDb.transaction("rw", bosDb.blotters, bosDb.syncQueue, bosDb.activityLog, bosDb.transactions, async () => {
       await bosDb.blotters.add(record);
 
       await bosDb.syncQueue.add({
@@ -159,6 +160,12 @@ export function useBlotterData() {
         entityType: "blotter",
         entityId: id,
       } as any);
+
+      await logTransaction({
+        type: 'blotter_created',
+        module: 'blotter',
+        refId: id,
+      });
     });
 
     return record;
@@ -215,11 +222,9 @@ export function useBlotterData() {
     blotters: blotters || [],
     snapshot,
     queueCount: queueCount || 0,
-
     blotterNewDraft,
     upsertDraft,
     clearDraft,
-
     createBlotter,
     updateBlotterStatus,
     logActivity,

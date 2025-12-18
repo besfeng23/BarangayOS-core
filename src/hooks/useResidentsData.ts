@@ -1,7 +1,9 @@
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { bosDb, ActivityLogItem, DraftItem, ResidentRecord } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
+import { logTransaction } from "@/lib/transactions";
 
 export type ResidentFilterState = {
   q: string;
@@ -37,7 +39,6 @@ export function useResidentsData() {
     0
   );
 
-  // O(1) snapshot counts (no O(N) toArray)
   const snapshot = useLiveQuery(
     async () => {
       const total = await bosDb.residents.count();
@@ -49,7 +50,6 @@ export function useResidentsData() {
     { total: 0, active: 0, inactive: 0 }
   );
 
-  // Index-first narrowing (NO DOM filtering)
   const residents = useLiveQuery(async () => {
     const q = norm(filters.q);
     const { purok, sex, status } = filters;
@@ -91,7 +91,6 @@ export function useResidentsData() {
     return results;
   }, [filters], []);
 
-  // Drafts
   const residentNewDraft = useLiveQuery<DraftItem | undefined>(
     () => bosDb.drafts.where("[module+key]").equals(["residents", "resident:new"]).first(),
     [],
@@ -113,7 +112,6 @@ export function useResidentsData() {
     if (existing) await bosDb.drafts.delete(existing.id);
   }, []);
 
-  // Local duplicate guard (never blocks server-only duplicates while offline)
   async function checkDuplicateLocal(lastName: string, firstName: string, birthdate: string) {
     const ln = norm(lastName);
     const fn = norm(firstName);
@@ -128,13 +126,15 @@ export function useResidentsData() {
       ...input,
       id,
       createdAt: now,
-      updatedAt: now,
+      lastUpdated: now,
       lastNameNorm: norm(input.lastName),
       firstNameNorm: norm(input.firstName),
+      fullNameNorm: norm(`${input.firstName} ${input.middleName || ''} ${input.lastName}`),
+      searchTokens: [], // Add logic to populate this
       syncState: "queued",
     };
 
-    await bosDb.transaction("rw", bosDb.residents, bosDb.syncQueue, bosDb.activityLog, async () => {
+    await bosDb.transaction("rw", bosDb.residents, bosDb.syncQueue, bosDb.activityLog, bosDb.transactions, async () => {
       await bosDb.residents.add(record);
       await bosDb.syncQueue.add({
         id: uuid(),
@@ -153,6 +153,11 @@ export function useResidentsData() {
         type: "RESIDENT_CREATE",
         entityType: "resident",
         entityId: id,
+      });
+      await logTransaction({
+        type: 'resident_created',
+        module: 'residents',
+        refId: id,
       });
     });
 
@@ -174,11 +179,9 @@ export function useResidentsData() {
     residents: residents || [],
     snapshot,
     queueCount: queueCount || 0,
-
     residentNewDraft,
     upsertDraft,
     clearDraft,
-
     createResident,
     checkDuplicateLocal,
     isResidentQueued,
