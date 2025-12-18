@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -129,7 +128,7 @@ const NewResidentModal = ({ isOpen, onClose, residentToEdit }: NewResidentModalP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-slate-800 border-slate-700 text-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{isEditing ? 'Edit Resident Record' : 'New Resident Record'}</DialogTitle>
+          <DialogTitle className="text-2xl">{isEditing ? 'Edit Resident Record' : 'Quick Add Resident'}</DialogTitle>
           <DialogDescription>
             {isEditing ? 'Update the details for this resident.' : 'Enter the basic details for the new resident. More information can be added later.'}
           </DialogDescription>
@@ -155,13 +154,6 @@ const NewResidentModal = ({ isOpen, onClose, residentToEdit }: NewResidentModalP
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                 />
-            </div>
-             <div className="col-span-1 md:col-span-2">
-                <Label className="text-lg">Photo</Label>
-                <Button variant="outline" className="w-full h-24 mt-1 border-dashed flex-col">
-                    <Camera className="h-8 w-8 text-slate-400 mb-1" />
-                    <span>Take Photo</span>
-                </Button>
             </div>
         </div>
 

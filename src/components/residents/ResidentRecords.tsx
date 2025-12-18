@@ -152,9 +152,9 @@ function ResidentRecordsContent() {
 
   useEffect(() => {
     if (searchParams.get('action') === 'new') {
-      setIsNewResidentModalOpen(true);
+      router.push('/residents/new');
       // Optional: remove the query param from URL
-      router.replace('/residents', undefined);
+      // router.replace('/residents', undefined);
     }
   }, [searchParams, router]);
 
@@ -490,7 +490,8 @@ function ResidentRecordsContent() {
                 <EmptyState 
                     type={searchTerm ? 'no-results' : 'no-data'} 
                     query={searchTerm}
-                    onAction={searchTerm ? clearSearch : () => setIsNewResidentModalOpen(true)}
+                    onAction={searchTerm ? clearSearch : () => router.push('/residents/new')}
+                    actionText={searchTerm ? 'Clear Search' : '+ Add New Resident'}
                 />
             </td>
         </tr>
@@ -555,7 +556,8 @@ function ResidentRecordsContent() {
                 <EmptyState 
                     type={searchTerm ? 'no-results' : 'no-data'} 
                     query={searchTerm}
-                    onAction={searchTerm ? clearSearch : () => setIsNewResidentModalOpen(true)}
+                    onAction={searchTerm ? clearSearch : () => router.push('/residents/new')}
+                    actionText={searchTerm ? 'Clear Search' : '+ Add New Resident'}
                 />
             </div>
            )}
@@ -678,7 +680,7 @@ function ResidentRecordsContent() {
                 {isSeeding ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : <Plus className="mr-2 h-6 w-6" />}
                 {isSeeding ? 'Seeding...' : 'Seed Data'}
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6" onClick={() => setIsNewResidentModalOpen(true)}>
+            <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg px-6" onClick={() => router.push('/residents/new')}>
               <Plus className="mr-2 h-6 w-6" /> New Resident
             </Button>
           </div>
@@ -724,7 +726,7 @@ function ResidentRecordsContent() {
                 <span className="text-xs">Scan QR</span>
             </Button>
             
-            <Button className="bg-blue-600 hover:bg-blue-700 rounded-full h-16 w-16 text-lg absolute -top-8 shadow-lg border-4 border-slate-900" onClick={() => setIsNewResidentModalOpen(true)}>
+            <Button className="bg-blue-600 hover:bg-blue-700 rounded-full h-16 w-16 text-lg absolute -top-8 shadow-lg border-4 border-slate-900" onClick={() => router.push('/residents/new')}>
                 <Plus className="h-8 w-8" />
             </Button>
             
