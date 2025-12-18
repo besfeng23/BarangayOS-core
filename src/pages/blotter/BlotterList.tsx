@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";

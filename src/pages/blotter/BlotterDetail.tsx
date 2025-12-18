@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore";
