@@ -60,7 +60,7 @@ export default function LandingPage() {
                     <div className="ml-10 flex items-baseline space-x-8">
                         <a href="#features" className="hover:text-[#10b981] transition-colors text-sm font-medium">Core Modules</a>
                         <a href="#specs" className="hover:text-[#10b981] transition-colors text-sm font-medium">Specs</a>
-                        <a href="#compliance" className="hover:text-[#10b981] transition-colors text-sm font-medium">Compliance</a>
+                        <Link href="/compliance" className="hover:text-[#10b981] transition-colors text-sm font-medium">Compliance</Link>
                     </div>
                 </div>
 

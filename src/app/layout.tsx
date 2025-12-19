@@ -1,36 +1,32 @@
-'use client';
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/firebase/auth-provider';
-import { usePathname } from 'next/navigation';
 import { SettingsProvider } from '@/context/SettingsContext';
-import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
 import { SyncProvider } from '@/context/SyncContext';
-import TerminalShell from '@/components/shell/TerminalShell';
-import { useEffect } from 'react';
-import { ensureDbOpen } from '@/lib/bos/dexie/openDb';
+import AppClientLayout from './AppClientLayout';
+
+export const metadata = {
+  title: "BarangayOS",
+  icons: {
+    icon: [
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" }
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png"
+  },
+  description: "Your central hub for all barangay services and tools."
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
-
-  useEffect(() => {
-    ensureDbOpen();
-  }, []);
-
   return (
     <html lang="en" className="dark bg-zinc-950">
       <head>
-        <title>BarangayOS Digital Terminal</title>
-        <meta
-          name="description"
-          content="Your central hub for all barangay services and tools."
-        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -45,17 +41,10 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <SettingsProvider>
-            {isLoginPage ? (
-              children
-            ) : (
-                <SyncProvider>
-                  <IdleScreensaver />
-                   <TerminalShell>
-                      {children}
-                   </TerminalShell>
-                </SyncProvider>
-            )}
-            <Toaster />
+            <SyncProvider>
+              <AppClientLayout>{children}</AppClientLayout>
+              <Toaster />
+            </SyncProvider>
           </SettingsProvider>
         </AuthProvider>
       </body>
