@@ -175,7 +175,7 @@ class BOSDexie extends Dexie {
   businesses!: Table<BusinessLocal, string>;
   permit_issuances!: Table<PermitIssuanceLocal, string>;
   certificate_issuances!: Table<CertificateIssuanceLocal, string>;
-  print_logs!: Table<PrintLogLocal, string>;
+  print_logs!: Table<PrintLogLocal, number>;
 
   sync_queue!: Table<SyncQueueRow, number>;
   audit_queue!: Table<AuditRow, number>;
@@ -190,8 +190,8 @@ class BOSDexie extends Dexie {
       businesses: "id, status, latestYear, updatedAtISO, *searchTokens",
       permit_issuances: "id, businessId, year, issuedAtISO, *searchTokens",
       certificate_issuances: "id, residentId, certType, issuedAtISO, controlNo, status, *searchTokens",
-      print_logs: "id, issuanceId, issuedAtISO, certType, residentId, synced",
-      sync_queue: "++id, jobType, occurredAtISO, synced",
+      print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
+      sync_queue: "++id, jobType, occurredAtISO, synced, status",
       audit_queue: "++id, eventType, occurredAtISO, synced",
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
     });
