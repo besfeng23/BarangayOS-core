@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, ActivityLogLocal as ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
+import { db, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { generateCaseNumber, tokenize } from "@/lib/blotterUtils";
 import { logTransaction } from "@/lib/transactions";
@@ -12,9 +12,9 @@ export type BlotterFilterState = {
   tag?: string;
 };
 
-async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt">) {
-  // This function seems to be intended to be imported from another module now.
-  // Assuming it's available or should be implemented elsewhere.
+async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt" | "occurredAtISO" | "searchTokens" | "synced">) {
+    // This function seems to be intended to be imported from another module now.
+    // Assuming it's available or should be implemented elsewhere.
 }
 
 export function useBlotterData() {
@@ -145,7 +145,7 @@ export function useBlotterData() {
 
       await db.syncQueue.add({
         id: uuid() as any,
-        entityType: "blotter" as any,
+        entityType: "blotter",
         entityId: id,
         op: "UPSERT",
         payload: record,

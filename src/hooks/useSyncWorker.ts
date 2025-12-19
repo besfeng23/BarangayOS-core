@@ -4,7 +4,7 @@ import { useNetworkStatus } from './useNetworkStatus';
 import { getOldestPendingItem, updateQueueItem, SyncQueueItem } from '@/lib/syncQueue';
 import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 import { db as firestoreDb } from '@/lib/firebase/client';
-import { db } from '@/lib/bosDb'; // Correct import for Dexie
+import { db } from '@/lib/bosDb';
 import { useToast } from './use-toast';
 import { writeActivity } from '@/lib/bos/activity/writeActivity';
 
@@ -14,56 +14,43 @@ const processQueueItem = async (item: SyncQueueItem): Promise<void> => {
   await updateQueueItem(item.id, { status: 'syncing' });
 
   try {
-    let collectionName = item.entityType; // e.g. "residents"
-    const opType = item.opType; 
-    const entityType = item.entityType;
-    const entityId = item.entityId;
-    const payload = item.payload;
+    let collectionName;
+    const { jobType, payload, entityType, entityId } = item;
 
-    if (!entityType || !entityId) {
-      throw new Error(`Sync item ${item.id} is missing entityType or entityId.`);
-    }
-
-    // Handle specific job types
-    switch (item.jobType) {
-      case 'BLOTTER_UPSERT':
-        collectionName = 'blotters';
-        break;
-      case 'BUSINESS_UPSERT':
-        collectionName = 'businesses';
-        break;
-      case 'PERMIT_ISSUANCE_UPSERT':
-        collectionName = 'permit_issuances';
-        break;
-      case 'CERT_ISSUANCE_UPSERT':
-        collectionName = 'certificate_issuances';
+    switch (jobType) {
+      case 'SETTINGS_UPSERT':
+        await setDoc(doc(firestoreDb, "settings", "barangaySettings"), payload, { merge: true });
         break;
       case 'ACTIVITY_UPSERT':
-        collectionName = 'activity_log';
+        await setDoc(doc(firestoreDb, "activity_log", entityId), payload, { merge: true });
         break;
-       case 'PRINTJOB_UPSERT':
-        collectionName = 'printJobs';
-        // Exclude full HTML from Firestore payload for efficiency
+      case 'BLOTTER_UPSERT':
+        await setDoc(doc(firestoreDb, "blotters", entityId), payload, { merge: true });
+        break;
+      case 'BUSINESS_UPSERT':
+        await setDoc(doc(firestoreDb, "businesses", entityId), payload, { merge: true });
+        break;
+      case 'PERMIT_ISSUANCE_UPSERT':
+        await setDoc(doc(firestoreDb, "permit_issuances", entityId), payload, { merge: true });
+        break;
+      case 'CERT_ISSUANCE_UPSERT':
+        await setDoc(doc(firestoreDb, "certificate_issuances", entityId), payload, { merge: true });
+        break;
+      case 'PRINTJOB_UPSERT':
         const { html, ...printJobPayload } = payload;
-        await setDoc(doc(firestoreDb, collectionName, entityId), printJobPayload, { merge: true });
-        await updateQueueItem(item.id, { status: 'synced', synced: 1 });
-        return; // Early return for this specific case
-      case 'PRINTLOG_ADD':
-        collectionName = 'printLogs';
-        await addDoc(collection(firestoreDb, collectionName), payload);
-        await updateQueueItem(item.id, { status: 'synced', synced: 1 });
-        return; // Early return for this specific case
-      default:
-        // Default behavior for generic create/update
-        if (!opType) {
-            throw new Error(`Unsupported jobType: ${item.jobType}`);
-        }
+        await setDoc(doc(firestoreDb, "printJobs", entityId), printJobPayload, { merge: true });
         break;
+      case 'PRINTLOG_ADD':
+        await addDoc(collection(firestoreDb, "printLogs"), payload);
+        break;
+       case 'RESIDENT_CREATE':
+       case 'RESIDENT_UPDATE':
+        await setDoc(doc(firestoreDb, "residents", entityId), payload, { merge: true });
+        break;
+      default:
+        console.warn(`Unsupported jobType: ${jobType}`);
+        throw new Error(`Unsupported jobType: ${jobType}`);
     }
-    
-    // Default upsert logic for most entities
-    const docRef = doc(firestoreDb, collectionName, entityId);
-    await setDoc(docRef, payload, { merge: true });
 
     await updateQueueItem(item.id, { status: 'synced', synced: 1 });
     

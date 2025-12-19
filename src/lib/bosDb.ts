@@ -1,10 +1,11 @@
 import Dexie, { Table } from "dexie";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-// The error indicated an existing version of 4, so we are setting it to 5.
 export const DB_VERSION = 6;
 
 export type MetaRow = { key: string; value: any };
+export type SettingsRow = { key: string; value: any };
+
 
 // Shared rows
 export type SyncQueueRow = {
@@ -157,7 +158,8 @@ export type ActivityLogLocal = {
     | "SYNC_STARTED"
     | "SYNC_COMPLETE"
     | "SYNC_PAUSED"
-    | "ERROR";
+    | "ERROR"
+    | "SETTINGS_UPDATED";
 
   entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system";
   entityId: string; // id of record or "sync"
@@ -203,11 +205,13 @@ class BOSDexie extends Dexie {
   certificate_issuances!: Table<CertificateIssuanceLocal, string>;
   print_logs!: Table<PrintLogLocal, number>;
   print_jobs!: Table<PrintJobLocal, string>;
+  activity_log!: Table<ActivityLogLocal, string>;
+
+  settings!: Table<SettingsRow, string>;
+  meta!: Table<MetaRow, string>;
 
   syncQueue!: Table<SyncQueueRow, number>;
   auditQueue!: Table<AuditRow, number>;
-  activity_log!: Table<ActivityLogLocal, string>;
-  meta!: Table<MetaRow, string>;
 
   // Backward compatible aliases
   sync_queue!: Table<SyncQueueRow, number>;
@@ -218,6 +222,7 @@ class BOSDexie extends Dexie {
     super("BarangayOS_Local");
     this.version(DB_VERSION).stores({
       meta: "key",
+      settings: "key",
       residents: "id, fullNameUpper, householdNoUpper, updatedAtISO, *searchTokens",
       cases: "id, residentId, status, updatedAtISO",
       blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
@@ -226,19 +231,18 @@ class BOSDexie extends Dexie {
       certificate_issuances: "id, residentId, certType, issuedAtISO, controlNo, status, *searchTokens",
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
       print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
+      activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
       
       // Sync and Audit Tables with compatibility
       syncQueue: "++id, jobType, occurredAtISO, synced, status",
       sync_queue: "++id, jobType, occurredAtISO, synced, status", // legacy name
       auditQueue: "++id, eventType, occurredAtISO, synced",
       audit_queue: "++id, eventType, occurredAtISO, synced", // legacy name
-      
-      activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
     });
 
     // Map legacy snake_case properties to the canonical camelCase tables
-    this.sync_queue = this.table("sync_queue");
-    this.audit_queue = this.table("audit_queue");
+    this.sync_queue = this.table("syncQueue");
+    this.audit_queue = this.table("auditQueue");
   }
 }
 

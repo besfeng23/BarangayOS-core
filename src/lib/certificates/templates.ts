@@ -1,13 +1,15 @@
 import { CertificateIssuanceLocal } from "@/lib/bosDb";
+import { getSettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
 
 function esc(s: string) {
   return (s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-export function buildCertificateHTML(data: CertificateIssuanceLocal) {
-  const title = data.certType;
-  const purposeLine = data.purpose?.trim() ? `<div style="margin-top:12px;"><b>Purpose:</b> ${esc(data.purpose)}</div>` : "";
-  const issuedAt = new Date(data.issuedAtISO).toLocaleString();
+export async function buildCertificateHTML(issuance: CertificateIssuanceLocal) {
+  const settings = await getSettingsSnapshot();
+  const title = issuance.certType;
+  const purposeLine = issuance.purpose?.trim() ? `<div style="margin-top:12px;"><b>Purpose:</b> ${esc(issuance.purpose)}</div>` : "";
+  const issuedAt = new Date(issuance.issuedAtISO).toLocaleString();
 
   // Print CSS (A4/Letter safe; keep simple)
   return `
@@ -30,12 +32,12 @@ export function buildCertificateHTML(data: CertificateIssuanceLocal) {
 </head>
 <body>
   <div class="header">
-    <div class="h1">${esc(data.barangayName)}, ${esc(data.municipalityCity)}, ${esc(data.province)}</div>
+    <div class="h1">${esc(settings.barangayName)}, ${esc(settings.barangayAddress)}</div>
     <div class="sub">${esc(title)}</div>
   </div>
 
   <div class="box">
-    This is to certify that <b>${esc(data.residentName)}</b> is a resident of this barangay.
+    This is to certify that <b>${esc(issuance.residentName)}</b> is a resident of this barangay.
     ${purposeLine}
     <div style="margin-top:14px;">
       Issued this <b>${esc(issuedAt)}</b>.
@@ -44,11 +46,11 @@ export function buildCertificateHTML(data: CertificateIssuanceLocal) {
 
   <div class="sig">
     <div class="line">Applicant Signature</div>
-    <div class="line">${esc(data.issuedByName)}<br/>Issuing Officer</div>
+    <div class="line">${esc(settings.punongBarangay)}<br/>Punong Barangay</div>
   </div>
 
   <div class="meta">
-    Control No: <b>${esc(data.controlNo)}</b> • Resident ID: ${esc(data.residentId)}
+    Control No: <b>${esc(issuance.controlNo)}</b> • Resident ID: ${esc(issuance.residentId)}
   </div>
 </body>
 </html>`;

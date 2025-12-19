@@ -1,10 +1,13 @@
 import { PermitIssuanceLocal } from "@/lib/bosDb";
+import { getSettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
+
 
 function esc(s: string) {
   return (s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-export function buildBusinessPermitHTML(p: PermitIssuanceLocal) {
+export async function buildBusinessPermitHTML(p: PermitIssuanceLocal) {
+  const settings = await getSettingsSnapshot();
   const issuedAt = new Date(p.issuedAtISO).toLocaleString();
   const fee = isFinite(p.feeAmount) ? p.feeAmount.toFixed(2) : "0.00";
 
@@ -30,7 +33,7 @@ export function buildBusinessPermitHTML(p: PermitIssuanceLocal) {
 </head>
 <body>
   <div class="header">
-    <div class="h1">${esc(p.barangayName)}, ${esc(p.municipalityCity)}, ${esc(p.province)}</div>
+    <div class="h1">${esc(settings.barangayName)}, ${esc(settings.barangayAddress)}</div>
     <div class="sub">Business Permit / Renewal</div>
   </div>
 
@@ -48,7 +51,7 @@ export function buildBusinessPermitHTML(p: PermitIssuanceLocal) {
 
   <div class="sig">
     <div class="line">Owner/Applicant</div>
-    <div class="line">${esc(p.issuedByName)}<br/>Issuing Officer</div>
+    <div class="line">${esc(settings.punongBarangay)}<br/>Punong Barangay</div>
   </div>
 
   <div class="meta">Business ID: ${esc(p.businessId)} • System: BarangayOS</div>

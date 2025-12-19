@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { db, BlotterLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
 import { loadDraft, saveDraft, clearDraft } from "@/lib/bos/localDraft";
-import { useSettings } from "@/hooks/useSettings";
 import { buildBlotterPrintHTML } from "@/lib/blotter/templates";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
@@ -47,8 +46,6 @@ function upper(s: string) {
 }
 
 export function useBlotterWorkstation() {
-  const settings = useSettings();
-
   const [mode, setMode] = useState<Mode>("list");
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<BlotterLocal[]>([]);
@@ -265,11 +262,24 @@ export function useBlotterWorkstation() {
     }
   }, [draft.id]);
 
-  const buildPrintHTML = useCallback(async () => {
+  const buildAndPrint = useCallback(async () => {
     if (!draft.id) throw new Error("Save the record first before printing.");
     const b = await db.blotters.get(draft.id);
     if (!b) throw new Error("Record not found.");
     
+    const html = await buildBlotterPrintHTML(b);
+
+    const printJobId = await enqueuePrintJob({
+        entityType: "blotter",
+        entityId: b.id,
+        docType: "blotter_report",
+        title: "Blotter Report",
+        subtitle: `${b.complainantName} vs ${b.respondentName}`,
+        html
+    });
+
+    await performPrintJob(printJobId);
+
     await writeActivity({
         type: "BLOTTER_PRINTED",
         entityType: "blotter",
@@ -279,14 +289,7 @@ export function useBlotterWorkstation() {
         subtitle: `${b.complainantName} vs ${b.respondentName} • ${b.locationText}`,
     });
 
-    return buildBlotterPrintHTML({
-      b,
-      barangayName: settings.barangayName,
-      municipalityCity: settings.municipalityCity,
-      province: settings.province,
-      issuedByName: settings.issuedByName,
-    });
-  }, [draft.id, settings]);
+  }, [draft.id]);
 
   return {
     mode, setMode,
@@ -303,6 +306,6 @@ export function useBlotterWorkstation() {
     backToList,
     save,
     resolve,
-    buildPrintHTML,
+    buildAndPrint,
   };
 }

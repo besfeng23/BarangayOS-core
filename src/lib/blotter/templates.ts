@@ -1,17 +1,13 @@
 import { BlotterLocal } from "@/lib/bosDb";
+import { getSettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
+
 
 function esc(s: string) {
   return (s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-export function buildBlotterPrintHTML(args: {
-  b: BlotterLocal;
-  barangayName: string;
-  municipalityCity: string;
-  province: string;
-  issuedByName: string;
-}) {
-  const { b, barangayName, municipalityCity, province, issuedByName } = args;
+export async function buildBlotterPrintHTML(b: BlotterLocal) {
+  const settings = await getSettingsSnapshot();
   const incidentDate = new Date(b.incidentDateISO).toLocaleDateString();
   const printedAt = new Date().toLocaleString();
 
@@ -37,7 +33,7 @@ export function buildBlotterPrintHTML(args: {
 </head>
 <body>
   <div class="header">
-    <div class="h1">${esc(barangayName)}, ${esc(municipalityCity)}, ${esc(province)}</div>
+    <div class="h1">${esc(settings.barangayName)}, ${esc(settings.barangayAddress)}</div>
     <div class="sub">Blotter Record (Incident Log)</div>
   </div>
 
@@ -60,7 +56,7 @@ export function buildBlotterPrintHTML(args: {
 
   <div class="sig">
     <div class="line">Complainant Signature</div>
-    <div class="line">${esc(issuedByName)}<br/>Receiving Officer</div>
+    <div class="line">${esc(settings.punongBarangay)}<br/>Punong Barangay</div>
   </div>
 
   <div class="meta">Printed: ${esc(printedAt)} • System: BarangayOS</div>

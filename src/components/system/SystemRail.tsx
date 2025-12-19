@@ -3,6 +3,8 @@ import React from "react";
 import { useAuth } from "@/hooks/use-auth";
 import GlobalSearch from "../app-hub/search/GlobalSearch";
 import { StatusIndicator } from "../shell/StatusIndicator";
+import { useSettings } from "@/lib/bos/settings/useSettings";
+
 
 function getRolePill(role: string | null | undefined): string {
   if (!role) return "Staff Mode";
@@ -20,6 +22,7 @@ function getRolePill(role: string | null | undefined): string {
 
 export default function SystemRail() {
   const { user } = useAuth();
+  const { settings } = useSettings();
   const userRole = getRolePill(user?.email); // Placeholder until roles are in claims
 
   return (
@@ -67,7 +70,7 @@ export default function SystemRail() {
           <div className="hidden sm:block leading-none min-w-0">
             <div className="text-zinc-100 font-semibold truncate">BarangayOS</div>
             <div className="text-[10px] tracking-widest uppercase text-zinc-400 truncate">
-              GovTech Terminal
+              {settings.barangayName || "GovTech Terminal"}
             </div>
           </div>
         </div>
@@ -76,7 +79,15 @@ export default function SystemRail() {
           <GlobalSearch />
         </div>
 
-        <StatusIndicator />
+        <div className="flex items-center gap-2">
+            {settings.trialEnabled && (
+                <div className="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full px-2 py-1">
+                    Trial • {settings.trialDaysRemaining} days
+                </div>
+            )}
+            <StatusIndicator />
+        </div>
+
       </div>
     </header>
   );
