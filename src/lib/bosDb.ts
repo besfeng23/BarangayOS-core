@@ -2,7 +2,7 @@ import Dexie, { Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 8;
+export const DB_VERSION = 9;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -214,7 +214,7 @@ class BOSDexie extends Dexie {
 
   constructor() {
     super(DB_NAME);
-    this.version(DB_VERSION).stores({
+    this.version(8).stores({
       meta: "key",
       settings: "key",
       residents: "id, fullNameUpper, householdNoUpper, updatedAtISO, *searchTokens",
@@ -226,8 +226,20 @@ class BOSDexie extends Dexie {
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
       print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
-      sync_queue: "++id, occurredAtISO, synced, status, jobType",
+      sync_queue: "++id, occurredAtISO, synced, jobType", // STATUS INDEX MISSING IN v8
       audit_queue: "++id, eventType, occurredAtISO, synced",
+    });
+
+    // HOTFIX VERSION 9: Add `status` index to `sync_queue` to fix runtime SchemaError
+    this.version(9).stores({
+        sync_queue: "++id, occurredAtISO, synced, status, jobType" // Add status to index
+    }).upgrade(async (tx) => {
+        // Backfill missing status field on old records to prevent them from being orphaned
+        await tx.table("sync_queue").toCollection().modify(item => {
+            if (!item.status) {
+                item.status = "pending";
+            }
+        });
     });
   }
 }
