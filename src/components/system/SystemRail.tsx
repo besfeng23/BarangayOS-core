@@ -1,5 +1,6 @@
 
 import React from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import GlobalSearch from "../app-hub/search/GlobalSearch";
 import { StatusIndicator } from "../shell/StatusIndicator";
@@ -33,7 +34,7 @@ export default function SystemRail() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+        <Link href="/" className="flex items-center gap-3 min-w-0" aria-label="Go to Home Dashboard">
           <div className="h-10 w-10 rounded-xl border border-zinc-800 bg-zinc-900/40 flex items-center justify-center">
             <svg
               width="22"
@@ -78,7 +79,7 @@ export default function SystemRail() {
               {subtitle}
             </div>
           </div>
-        </div>
+        </Link>
 
         <div className="flex-1 flex justify-center px-4">
           <GlobalSearch />
