@@ -70,7 +70,7 @@ export default function SystemRail() {
           <div className="hidden sm:block leading-none min-w-0">
             <div className="text-zinc-100 font-semibold truncate">BarangayOS</div>
             <div className="text-[10px] tracking-widest uppercase text-zinc-400 truncate">
-              {settings.barangayName || "GovTech Terminal"}
+              BARANGAY • TERMINAL
             </div>
           </div>
         </div>
