@@ -1,5 +1,5 @@
 import { PermitIssuanceLocal } from "@/lib/bosDb";
-import { getSettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
+import { getSettingsSnapshot, BarangaySettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
 
 
 function esc(s: string) {

@@ -11,7 +11,11 @@ const DEFAULTS: BarangaySettings = {
   trialEnabled: true,
   trialDaysRemaining: 0,
   updatedAtISO: new Date().toISOString(),
+  controlPrefix: "BRGY",
+  readOnlyMode: false,
 };
+
+export type BarangaySettingsSnapshot = BarangaySettings;
 
 export async function getSettingsSnapshot(): Promise<BarangaySettings> {
   try {
