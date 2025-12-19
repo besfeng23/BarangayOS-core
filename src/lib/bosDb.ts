@@ -1,4 +1,5 @@
 import Dexie, { Table } from "dexie";
+import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
 export const DB_VERSION = 7;
@@ -9,7 +10,7 @@ export type SettingsRow = { key: string; value: any };
 
 
 // Shared rows
-export type SyncQueueRow = {
+export type SyncQueueItem = {
   id?: number;
   jobType: string;
   payload: any;
@@ -58,6 +59,9 @@ export type BlotterLocal = {
   complainantName: string;
   respondentName: string;
   narrative: string;
+  
+  complainant?: ResidentPickerValue;
+  respondent?: ResidentPickerValue;
 
   // optional
   complainantContact?: string;
@@ -77,6 +81,7 @@ export type BusinessLocal = {
   businessName: string;
   ownerName: string;
   addressText: string;
+  owner?: ResidentPickerValue;
   category?: string;
   contact?: string;
   notes?: string;
@@ -204,7 +209,7 @@ class BOSDexie extends Dexie {
   activity_log!: Table<ActivityLogLocal, string>;
   settings!: Table<SettingsRow, string>;
   meta!: Table<MetaRow, string>;
-  sync_queue!: Table<SyncQueueRow, number>;
+  sync_queue!: Table<SyncQueueItem, number>;
   audit_queue!: Table<AuditRow, number>;
 
   constructor() {

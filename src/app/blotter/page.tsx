@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import TerminalShell from "@/components/shell/TerminalShell";
-import PrintFrame from "@/components/print/PrintFrame";
+import React from "react";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBlotterWorkstation } from "@/hooks/blotter/useBlotterWorkstation";
+import { ResidentPicker } from "@/components/shared/ResidentPicker";
 
 export default function BlotterPage() {
   const { enqueue } = useSyncQueue();
@@ -19,7 +18,6 @@ export default function BlotterPage() {
   };
 
   return (
-    <TerminalShell>
       <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
         {ws.mode === "list" && (
           <>
@@ -115,24 +113,18 @@ export default function BlotterPage() {
                     onChange={(e) => ws.setDraft((d) => ({ ...d, locationText: e.target.value }))}
                   />
                 </div>
-
-                <div>
-                  <label className="block text-zinc-400 text-xs mb-1">Complainant Name *</label>
-                  <input
-                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                    value={ws.draft.complainantName}
-                    onChange={(e) => ws.setDraft((d) => ({ ...d, complainantName: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-400 text-xs mb-1">Respondent Name *</label>
-                  <input
-                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                    value={ws.draft.respondentName}
-                    onChange={(e) => ws.setDraft((d) => ({ ...d, respondentName: e.target.value }))}
-                  />
-                </div>
+                
+                <ResidentPicker 
+                  label="Complainant"
+                  value={ws.draft.complainant}
+                  onChange={(val) => ws.setDraft(d => ({ ...d, complainant: val }))}
+                />
+                
+                <ResidentPicker 
+                  label="Respondent"
+                  value={ws.draft.respondent}
+                  onChange={(val) => ws.setDraft(d => ({ ...d, respondent: val }))}
+                />
 
                 <div>
                   <label className="block text-zinc-400 text-xs mb-1">Narrative *</label>
@@ -248,6 +240,5 @@ export default function BlotterPage() {
         )}
 
       </div>
-    </TerminalShell>
   );
 }
