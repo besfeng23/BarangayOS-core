@@ -1,9 +1,10 @@
 
+
 import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 10;
+export const DB_VERSION = 11;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -87,7 +88,7 @@ export type BusinessLocal = {
   updatedAtISO: string;
   businessName: string;
   ownerName: string;
-  owner?: ResidentPickerValue;
+  owner?: ResidentPickerValue; // <-- ADDED FOR STRUCTURED LINK
   addressText: string;
   category?: string;
   contact?: string;
@@ -262,6 +263,12 @@ class BOSDexie extends Dexie {
         }
       });
     });
+    
+    this.version(11).stores({
+        // No schema changes needed for adding an optional 'owner' field to businesses
+        // Dexie allows adding optional properties without a schema bump, but we increment
+        // for clarity and to ensure the app logic aligns with the new data shape.
+    });
   }
 }
 
@@ -273,3 +280,5 @@ export async function resetLocalDatabase() {
   // Reload the page to re-initialize the database and app state
   window.location.reload();
 }
+
+    
