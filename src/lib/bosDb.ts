@@ -2,7 +2,7 @@ import Dexie, { Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 7;
+export const DB_VERSION = 8;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };

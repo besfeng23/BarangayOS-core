@@ -16,7 +16,7 @@ export type ResidentPickerValue = {
 
 interface ResidentPickerProps {
   label: string;
-  value: ResidentPickerValue;
+  value?: ResidentPickerValue;
   onChange: (next: ResidentPickerValue) => void;
   placeholder?: string;
   allowManual?: boolean;
@@ -29,7 +29,9 @@ export function ResidentPicker({
   placeholder = "Search resident name, household no...",
   allowManual = true,
 }: ResidentPickerProps) {
-  const [isEditing, setIsEditing] = useState(!value?.residentId && !value?.manualName);
+  const safeValue = value ?? { mode: "resident", residentId: null, residentNameSnapshot: "", manualName: "" };
+  
+  const [isEditing, setIsEditing] = useState(!safeValue?.residentId && !safeValue?.manualName);
   const [searchQuery, setSearchQuery] = useState("");
   const { results, loading } = useResidentSearch(searchQuery);
 
@@ -65,7 +67,7 @@ export function ResidentPicker({
   };
 
   if (!isEditing) {
-    const displayName = value.mode === 'resident' ? value.residentNameSnapshot : value.manualName;
+    const displayName = safeValue.mode === 'resident' ? safeValue.residentNameSnapshot : safeValue.manualName;
     return (
       <div className="space-y-1">
         <label className="text-xs text-zinc-500 uppercase font-medium ml-1">{label}</label>
@@ -83,15 +85,15 @@ export function ResidentPicker({
   return (
     <div className="space-y-1">
       <label className="text-xs text-zinc-500 uppercase font-medium ml-1">{label}</label>
-      {value.mode === "manual" ? (
+      {safeValue.mode === "manual" ? (
         <div className="flex items-center gap-2">
           <Input
             placeholder="Enter full name for non-resident"
-            value={value.manualName || ""}
-            onChange={(e) => onChange({ ...value, manualName: e.target.value })}
+            value={safeValue.manualName || ""}
+            onChange={(e) => onChange({ ...safeValue, manualName: e.target.value })}
             className="h-14 text-lg bg-zinc-950 border-zinc-700"
           />
-          <Button variant="ghost" onClick={() => onChange({ ...value, mode: "resident", manualName: "" })}>
+          <Button variant="ghost" onClick={() => onChange({ ...safeValue, mode: "resident", manualName: "" })}>
             Cancel
           </Button>
         </div>
