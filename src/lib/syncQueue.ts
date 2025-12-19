@@ -1,5 +1,6 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { logActivity } from './activityLog';
+import { db } from './bosDb';
 
 export type SyncOpType = 'create' | 'update' | 'delete';
 export type SyncStatus = 'pending' | 'syncing' | 'failed' | 'synced';
@@ -18,33 +19,7 @@ export interface SyncQueueItem {
   lastError?: string;
 }
 
-interface BarangayOSDB extends DBSchema {
-  syncQueue: {
-    key: string;
-    value: SyncQueueItem;
-    indexes: { status: SyncStatus; createdAt: number };
-  };
-}
-
-let dbPromise: Promise<IDBPDatabase<BarangayOSDB>> | null = null;
-
-function getDB(): Promise<IDBPDatabase<BarangayOSDB>> {
-  if (!dbPromise) {
-    dbPromise = openDB<BarangayOSDB>('barangayOS', 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('syncQueue')) {
-          const store = db.createObjectStore('syncQueue', { keyPath: 'id' });
-          store.createIndex('status', 'status');
-          store.createIndex('createdAt', 'createdAt');
-        }
-      },
-    });
-  }
-  return dbPromise;
-}
-
 export async function addToQueue(item: Omit<SyncQueueItem, 'id' | 'status' | 'createdAt'>): Promise<string> {
-  const db = await getDB();
   const id = `${item.entityType}-${item.entityId}-${Date.now()}`;
   const newItem: SyncQueueItem = {
     ...item,
@@ -52,19 +27,17 @@ export async function addToQueue(item: Omit<SyncQueueItem, 'id' | 'status' | 'cr
     status: 'pending',
     createdAt: Date.now(),
   };
-  await db.add('syncQueue', newItem);
+  await db.sync_queue.add(newItem as any);
   await logActivity(`Queued ${item.opType} for ${item.entityType}`);
   window.dispatchEvent(new CustomEvent('queue-changed'));
   return id;
 }
 
-export async function getOldestPendingItem(): Promise<SyncQueueItem | undefined> {
-  const db = await getDB();
-  const tx = db.transaction('syncQueue', 'readonly');
+export async function getOldestPendingItem(): Promise<any | undefined> {
+  const tx = db.transaction('sync_queue', 'readonly');
   const index = tx.store.index('createdAt');
   const cursor = await index.openCursor();
   
-  // Find the first item that is 'pending' or 'failed'
   let oldestItem: SyncQueueItem | undefined;
   let currentCursor = cursor;
   while (currentCursor) {
@@ -79,11 +52,10 @@ export async function getOldestPendingItem(): Promise<SyncQueueItem | undefined>
 }
 
 export async function updateQueueItem(id: string, updates: Partial<Omit<SyncQueueItem, 'id'>>): Promise<void> {
-  const db = await getDB();
-  const item = await db.get('syncQueue', id);
+  const item = await db.sync_queue.get(id as any);
   if (item) {
     const updatedItem = { ...item, ...updates, lastAttempt: Date.now() };
-    await db.put('syncQueue', updatedItem);
+    await db.sync_queue.put(updatedItem as any);
     if(updates.status) {
        await logActivity(`Sync item ${id} status changed to ${updates.status}`);
     }
@@ -92,10 +64,9 @@ export async function updateQueueItem(id: string, updates: Partial<Omit<SyncQueu
 }
 
 export async function getPendingCount(entityType?: string): Promise<number> {
-    const db = await getDB();
-    const items = await db.getAllFromIndex('syncQueue', 'status', 'pending');
-    const failedItems = await db.getAllFromIndex('syncQueue', 'status', 'failed');
-    const syncingItems = await db.getAllFromIndex('syncQueue', 'status', 'syncing');
+    const items = await db.sync_queue.where('status').equals('pending').toArray();
+    const failedItems = await db.sync_queue.where('status').equals('failed').toArray();
+    const syncingItems = await db.sync_queue.where('status').equals('syncing').toArray();
 
     let allPending = [...items, ...failedItems, ...syncingItems];
 

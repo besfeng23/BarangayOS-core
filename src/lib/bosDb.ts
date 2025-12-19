@@ -2,6 +2,7 @@ import Dexie, { Table } from "dexie";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
 export const DB_VERSION = 6;
+export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
 export type SettingsRow = { key: string; value: any };
@@ -18,13 +19,8 @@ export type SyncQueueRow = {
   error?: string;
 };
 
-export type AuditRow = {
-  id?: number;
-  eventType: string;
-  details: any;
-  occurredAtISO: string;
-  synced: 0 | 1;
-};
+export type AuditRow = { id?: number; eventType: string; details: any; occurredAtISO: string; synced: 0 | 1 };
+
 
 // Residents
 export type ResidentLocal = {
@@ -206,20 +202,13 @@ class BOSDexie extends Dexie {
   print_logs!: Table<PrintLogLocal, number>;
   print_jobs!: Table<PrintJobLocal, string>;
   activity_log!: Table<ActivityLogLocal, string>;
-
   settings!: Table<SettingsRow, string>;
   meta!: Table<MetaRow, string>;
-
-  syncQueue!: Table<SyncQueueRow, number>;
-  auditQueue!: Table<AuditRow, number>;
-
-  // Backward compatible aliases
   sync_queue!: Table<SyncQueueRow, number>;
   audit_queue!: Table<AuditRow, number>;
 
-
   constructor() {
-    super("BarangayOS_Local");
+    super(DB_NAME);
     this.version(DB_VERSION).stores({
       meta: "key",
       settings: "key",
@@ -232,17 +221,9 @@ class BOSDexie extends Dexie {
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
       print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
-      
-      // Sync and Audit Tables with compatibility
-      syncQueue: "++id, jobType, occurredAtISO, synced, status",
-      sync_queue: "++id, jobType, occurredAtISO, synced, status", // legacy name
-      auditQueue: "++id, eventType, occurredAtISO, synced",
-      audit_queue: "++id, eventType, occurredAtISO, synced", // legacy name
+      sync_queue: "++id, jobType, occurredAtISO, synced, status",
+      audit_queue: "++id, eventType, occurredAtISO, synced",
     });
-
-    // Map legacy snake_case properties to the canonical camelCase tables
-    this.sync_queue = this.table("syncQueue");
-    this.audit_queue = this.table("auditQueue");
   }
 }
 
@@ -250,5 +231,5 @@ export const db = new BOSDexie();
 
 export async function resetLocalDatabase() {
   await db.close();
-  await Dexie.delete("BarangayOS_Local");
+  await Dexie.delete(DB_NAME);
 }

@@ -15,7 +15,7 @@ const processQueueItem = async (item: SyncQueueItem): Promise<void> => {
 
   try {
     let collectionName;
-    const { jobType, payload, entityType, entityId } = item;
+    const { jobType, payload, entityId } = item;
 
     switch (jobType) {
       case 'SETTINGS_UPSERT':

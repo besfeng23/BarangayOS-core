@@ -8,6 +8,8 @@ import { SettingsProvider } from '@/context/SettingsContext';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
 import { SyncProvider } from '@/context/SyncContext';
 import TerminalShell from '@/components/shell/TerminalShell';
+import { useEffect } from 'react';
+import { ensureDbOpen } from '@/lib/bos/dexie/openDb';
 
 export default function RootLayout({
   children,
@@ -16,6 +18,10 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
+
+  useEffect(() => {
+    ensureDbOpen();
+  }, []);
 
   return (
     <html lang="en" className="dark bg-zinc-950">

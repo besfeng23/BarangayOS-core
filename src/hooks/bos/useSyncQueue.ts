@@ -8,7 +8,8 @@ export function useSyncQueue() {
       payload: job.payload,
       occurredAtISO: new Date().toISOString(),
       synced: 0,
-    });
+      status: 'pending',
+    } as any);
   }, []);
 
   return { enqueue };

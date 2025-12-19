@@ -1,5 +1,6 @@
 import { db, ActivityLogLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
+import { ensureDbOpen } from "../dexie/openDb";
 
 function uuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -12,6 +13,7 @@ function uuid() {
 export async function writeActivity(args: Omit<ActivityLogLocal, "id" | "occurredAtISO" | "searchTokens" | "synced"> & {
   occurredAtISO?: string;
 }) {
+  await ensureDbOpen();
   const occurredAtISO = args.occurredAtISO ?? new Date().toISOString();
   const row: ActivityLogLocal = {
     id: uuid(),
@@ -29,13 +31,20 @@ export async function writeActivity(args: Omit<ActivityLogLocal, "id" | "occurre
 
   await db.activity_log.put(row);
 
-  // enqueue for cloud sync (do not block)
-  await db.sync_queue.add({
-    jobType: "ACTIVITY_UPSERT",
-    payload: row,
-    occurredAtISO,
-    synced: 0,
-  });
+  try {
+    // enqueue for cloud sync (do not block)
+    await db.sync_queue.add({
+      jobType: "ACTIVITY_UPSERT",
+      payload: row,
+      occurredAtISO,
+      synced: 0,
+      status: 'pending',
+    } as any);
+  } catch (e) {
+    console.warn("Failed to enqueue activity sync job", e);
+    // Swallow error to keep the app usable
+  }
+
 
   return row.id;
 }
