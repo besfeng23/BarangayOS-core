@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import TerminalShell from "@/components/shell/TerminalShell";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBlotterLite } from "@/hooks/blotter/useBlotterLite";
 
@@ -10,7 +9,6 @@ export default function BlotterPage() {
   const ws = useBlotterLite();
 
   return (
-    <TerminalShell>
       <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
         {/* LIST VIEW */}
         {ws.view === "list" && (
@@ -54,7 +52,7 @@ export default function BlotterPage() {
 
             <div className="mt-4 space-y-2">
               {ws.items.length === 0 ? (
-                <div className="text-zinc-400 text-sm">No records yet.</div>
+                <div className="text-zinc-400 text-sm text-center py-8">No records yet.</div>
               ) : (
                 ws.items.map((b) => (
                   <button
@@ -234,6 +232,5 @@ export default function BlotterPage() {
           </>
         )}
       </div>
-    </TerminalShell>
   );
 }

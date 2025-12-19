@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import TerminalShell from "@/components/shell/TerminalShell";
 import { PrintFrame } from "@/components/print/PrintFrame";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { loadDraft, saveDraft } from "@/lib/bos/localDraft";
@@ -85,8 +84,7 @@ export default function CertificatesPage() {
   };
 
   return (
-    <TerminalShell>
-      <div className="mx-auto w-full max-w-5xl p-4 md:p-6">
+      <div className="mx-auto w-full max-w-4xl p-4 md:p-6">
         <div className="mb-4">
           <h1 className="text-zinc-100 text-xl font-semibold">Certificates</h1>
           <p className="text-zinc-400 text-sm mt-1">
@@ -108,87 +106,81 @@ export default function CertificatesPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
-            <div className="text-zinc-100 text-sm font-semibold mb-3">Certificate Details</div>
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-3">
+                <div className="text-zinc-100 text-sm font-semibold mb-3">Certificate Details</div>
 
-            <label className="block text-zinc-400 text-xs mb-1">Certificate Type</label>
-            <select
-              className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-              value={draft.certificateType}
-              onChange={(e) =>
-                setDraft((d) => ({ ...d, certificateType: e.target.value as CertificateDraft["certificateType"] }))
-              }
-            >
-              <option>Barangay Clearance</option>
-              <option>Certificate of Indigency</option>
-              <option>Barangay Residency</option>
-              <option>Generic</option>
-            </select>
+                <div>
+                  <label className="block text-zinc-400 text-xs mb-1">Certificate Type</label>
+                  <select
+                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+                    value={draft.certificateType}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, certificateType: e.target.value as CertificateDraft["certificateType"] }))
+                    }
+                  >
+                    <option>Barangay Clearance</option>
+                    <option>Certificate of Indigency</option>
+                    <option>Barangay Residency</option>
+                    <option>Generic</option>
+                  </select>
+                </div>
 
-            <div className="mt-3">
-              <label className="block text-zinc-400 text-xs mb-1">Issued To (Name)</label>
-              <input
-                className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                value={draft.issuedToName}
-                onChange={(e) => setDraft((d) => ({ ...d, issuedToName: e.target.value }))}
-                placeholder="Juan Dela Cruz"
-              />
-            </div>
+                <div>
+                  <label className="block text-zinc-400 text-xs mb-1">Issued To (Name)</label>
+                  <input
+                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+                    value={draft.issuedToName}
+                    onChange={(e) => setDraft((d) => ({ ...d, issuedToName: e.target.value }))}
+                    placeholder="Juan Dela Cruz"
+                  />
+                </div>
 
-            <div className="mt-3">
-              <label className="block text-zinc-400 text-xs mb-1">Purpose</label>
-              <input
-                className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                value={draft.purpose}
-                onChange={(e) => setDraft((d) => ({ ...d, purpose: e.target.value }))}
-                placeholder="Employment / Scholarship / etc."
-              />
-            </div>
-
-            {draft.certificateType === "Generic" && (
-              <div className="mt-3">
-                <label className="block text-zinc-400 text-xs mb-1">Custom Body</label>
-                <textarea
-                  className="min-h-[120px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 p-3"
-                  value={draft.customBody ?? ""}
-                  onChange={(e) => setDraft((d) => ({ ...d, customBody: e.target.value }))}
-                  placeholder="Write the certificate text..."
-                />
+                <div>
+                  <label className="block text-zinc-400 text-xs mb-1">Purpose</label>
+                  <input
+                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+                    value={draft.purpose}
+                    onChange={(e) => setDraft((d) => ({ ...d, purpose: e.target.value }))}
+                    placeholder="Employment / Scholarship / etc."
+                  />
+                </div>
               </div>
-            )}
-          </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
-            <div className="text-zinc-100 text-sm font-semibold mb-3">Actions</div>
-
-            <button
-              className={[
-                "h-12 w-full rounded-xl font-semibold",
-                canPrint && !loading
-                  ? "bg-zinc-100 text-zinc-950"
-                  : "bg-zinc-800 text-zinc-400 cursor-not-allowed",
-              ].join(" ")}
-              disabled={!canPrint || loading}
-              onClick={handleIssueAndPrint}
-            >
-              {loading ? "Queuing…" : "Issue & Print"}
-            </button>
-
-            <div className="mt-3 text-xs text-zinc-400">
-              Works offline: issuance is queued locally first, then printed immediately.
+              {draft.certificateType === "Generic" ? (
+                <div className="space-y-3">
+                    <div className="text-zinc-100 text-sm font-semibold mb-3 opacity-0">.</div>
+                    <div>
+                        <label className="block text-zinc-400 text-xs mb-1">Custom Body</label>
+                        <textarea
+                        className="h-full min-h-[188px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 p-3"
+                        value={draft.customBody ?? ""}
+                        onChange={(e) => setDraft((d) => ({ ...d, customBody: e.target.value }))}
+                        placeholder="Write the certificate text..."
+                        />
+                    </div>
+                </div>
+              ) : <div />}
             </div>
 
-            <div className="mt-6 text-zinc-100 text-sm font-semibold">QA Guardrails</div>
-            <ul className="mt-2 text-zinc-400 text-xs list-disc pl-5 space-y-1">
-              <li>No blank prints (offscreen iframe prints after load)</li>
-              <li>No silent failures (banner shows error)</li>
-              <li>Draft autosaves per keystroke</li>
-              <li>Queue-first invariant for offline</li>
-            </ul>
-          </div>
+            <div className="mt-4 border-t border-zinc-800 pt-4">
+                 <button
+                  className={[
+                    "h-12 w-full rounded-xl font-semibold",
+                    canPrint && !loading
+                      ? "bg-zinc-100 text-zinc-950"
+                      : "bg-zinc-800 text-zinc-400 cursor-not-allowed",
+                  ].join(" ")}
+                  disabled={!canPrint || loading}
+                  onClick={handleIssueAndPrint}
+                >
+                  {loading ? "Queuing…" : "Issue & Print"}
+                </button>
+            </div>
+            
         </div>
-
+        
         {printHTML && (
           <PrintFrame
             html={printHTML}
@@ -201,6 +193,5 @@ export default function CertificatesPage() {
           />
         )}
       </div>
-    </TerminalShell>
   );
 }

@@ -3,7 +3,6 @@
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/firebase/auth-provider';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { usePathname } from 'next/navigation';
 import { SettingsProvider } from '@/context/SettingsContext';
 import IdleScreensaver from '@/components/screensaver/IdleScreensaver';
@@ -43,14 +42,12 @@ export default function RootLayout({
             {isLoginPage ? (
               children
             ) : (
-              // <AuthGuard> // AuthGuard disabled for now
                 <SyncProvider>
                   <IdleScreensaver />
                    <TerminalShell>
                       {children}
                    </TerminalShell>
                 </SyncProvider>
-              // </AuthGuard>
             )}
             <Toaster />
           </SettingsProvider>
