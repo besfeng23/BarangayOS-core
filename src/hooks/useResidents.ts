@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db, ResidentLocal, resetLocalDatabase, DB_VERSION } from "@/lib/bosDb";
 
