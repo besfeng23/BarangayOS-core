@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -87,7 +88,11 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
   };
 
   const handleBack = () => {
-    setStep(prev => prev - 1);
+    if (mode === 'create') {
+        router.back();
+    } else {
+        setStep(prev => prev - 1);
+    }
   };
 
   async function handleSave() {
@@ -168,7 +173,7 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
 
   return (
     <>
-        <div className="flex flex-col h-[calc(100vh-140px)]">
+        <div className="flex flex-col h-full">
             <WorkflowShell title={mode === 'create' ? "New Resident Record" : "Edit Resident Record"} steps={steps} currentStep={step}>
                 <div className="py-6">
                     {renderStepContent()}
@@ -176,8 +181,8 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
             </WorkflowShell>
 
             <StickyActionBar>
-                <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={step === 1 || saving}>
-                    Back
+                <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={step === 1 && mode !== 'create' || saving}>
+                    {mode === 'create' && step === 1 ? 'Cancel' : 'Back'}
                 </Button>
                 {step < 3 ? (
                     <Button className="h-12 text-lg" onClick={handleNext}>Next</Button>
@@ -196,7 +201,7 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
                 result={saveResult}
                 onRetry={handleSave}
                 primaryActionText={mode === 'create' ? "Add Another" : "Close"}
-                onPrimaryAction={mode === 'create' ? handleAddAnother : handleModalClose}
+                onPrimaryAction={mode === 'create' ? handleAddAnother : handleViewProfile}
                 secondaryActionText="View Profile"
                 onSecondaryAction={handleViewProfile}
             />
@@ -285,3 +290,5 @@ const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f:
         </CardContent>
     </Card>
 );
+
+    

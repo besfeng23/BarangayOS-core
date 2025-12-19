@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -40,6 +41,14 @@ export default function ActionResultModal({
     }
   }
 
+  const handleSecondary = () => {
+      if(onSecondaryAction){
+          onSecondaryAction();
+      } else {
+          onClose();
+      }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-zinc-900 border-zinc-700 text-white sm:max-w-md">
@@ -56,15 +65,20 @@ export default function ActionResultModal({
             <p className="text-sm text-zinc-300">{result.statusLine}</p>
         </div>
         <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-          {!result.ok && onRetry && (
-            <Button onClick={onRetry} className="h-12 text-lg">{retryText}</Button>
-          )}
+          
           {secondaryActionText && (
-             <Button variant="outline" onClick={onSecondaryAction} className="h-12 text-lg">{secondaryActionText}</Button>
+             <Button variant="outline" onClick={handleSecondary} className="h-12 text-lg">{secondaryActionText}</Button>
           )}
-          <Button onClick={handlePrimary} variant={result.ok ? 'default' : 'outline'} className="h-12 text-lg col-span-full sm:col-span-1">{primaryActionText}</Button>
+
+          {!result.ok && onRetry ? (
+            <Button onClick={onRetry} className="h-12 text-lg">{retryText}</Button>
+          ) : (
+            <Button onClick={handlePrimary} variant={result.ok ? 'default' : 'outline'} className={`h-12 text-lg ${!secondaryActionText ? 'col-span-full' : ''}`}>{primaryActionText}</Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+    

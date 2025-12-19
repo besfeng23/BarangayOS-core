@@ -1,3 +1,4 @@
+
 "use client";
 import ResidentWizard from "@/features/residents/ResidentWizard";
 import TerminalShell from "@/components/shell/TerminalShell";
@@ -5,8 +6,11 @@ import TerminalShell from "@/components/shell/TerminalShell";
 export default function Page() {
     return (
         <TerminalShell>
-            <p className="text-xs text-zinc-500">UX-V2-ACTIVE</p>
-            <ResidentWizard mode="create" />
+            <div className="max-w-2xl mx-auto px-4">
+                 <ResidentWizard mode="create" />
+            </div>
         </TerminalShell>
     );
 }
+
+    
