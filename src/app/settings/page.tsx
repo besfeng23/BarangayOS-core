@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { isReadOnly, useSettings } from "@/lib/bos/settings/useSettings";
 import { useToast } from "@/components/ui/toast";
-import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import Link from 'next/link';
 
 

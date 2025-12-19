@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCallback, useState } from "react";
@@ -46,11 +47,11 @@ export function useSettings() {
   const [saving, setSaving] = useState(false);
 
   const settingsData = useLiveQuery(
-    () => (db as any).settings?.get(KEY),
+    () => db.settings.get(KEY),
     [],
     null
   );
-
+  
   const settings = settingsData?.value as BarangaySettings ?? DEFAULTS;
   const loading = settingsData === null;
 
@@ -62,16 +63,16 @@ export function useSettings() {
         updatedAtISO: new Date().toISOString()
       };
       
-      await (db as any).settings.put({ key: KEY, value: payload });
+      await db.settings.put({ key: KEY, value: payload });
 
-      await (db as any).sync_queue.add({
-        id: uuid(),
+      await db.sync_queue.add({
+        id: uuid() as any,
         jobType: "SETTINGS_UPSERT",
         payload,
         occurredAtISO: payload.updatedAtISO,
         synced: 0,
         status: "pending",
-      });
+      } as any);
 
       await writeActivity({
         type: "SETTINGS_UPDATED",
