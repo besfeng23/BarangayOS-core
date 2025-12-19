@@ -1,6 +1,5 @@
 
 import React from "react";
-import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import GlobalSearch from "../app-hub/search/GlobalSearch";
 import { StatusIndicator } from "../shell/StatusIndicator";
@@ -25,14 +24,27 @@ export default function SystemRail() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
-      <div className="h-full max-w-7xl mx-auto px-4 flex items-center gap-3">
-        <Image src="/bos.png" alt="BarangayOS logo" width={100} height={24} className="h-6 w-auto" />
-        <span className="text-xs bg-zinc-800 text-zinc-200 px-2 py-1 rounded-full border border-zinc-700">
-          {userRole}
-        </span>
-        
+      <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-auto rounded-xl border border-zinc-800 bg-zinc-900/40 px-2 flex items-center">
+            <img
+              src="/boss.png"
+              alt="BarangayOS"
+              className="h-6 md:h-7 w-auto object-contain select-none"
+              draggable={false}
+            />
+          </div>
+
+          <div className="hidden sm:block leading-none min-w-0">
+            <div className="text-zinc-100 font-semibold truncate">BarangayOS</div>
+            <div className="text-[10px] tracking-widest uppercase text-zinc-400 truncate">
+              GovTech Terminal
+            </div>
+          </div>
+        </div>
+
         <div className="flex-1 flex justify-center px-4">
-            <GlobalSearch />
+          <GlobalSearch />
         </div>
 
         <StatusIndicator />
