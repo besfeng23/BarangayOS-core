@@ -33,17 +33,6 @@ const FeatureIcon = ({ iconName }: { iconName: string }) => {
 export default function LandingPage() {
   return (
     <div className="bg-[#050505] text-white antialiased selection:bg-[#10b981] selection:text-white">
-
-      <style jsx global>{`
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .hero-glow {
-            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, rgba(0,0,0,0) 70%);
-        }
-      `}</style>
       
       <nav className="fixed w-full z-50 top-0 border-b border-white/10 bg-black/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,7 +64,7 @@ export default function LandingPage() {
 
       <main>
         <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full hero-glow z-0 pointer-events-none"></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full [background:radial-gradient(circle_at_center,rgba(16,185,129,0.15)_0%,rgba(0,0,0,0)_70%)] z-0 pointer-events-none"></div>
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                 
@@ -114,7 +103,7 @@ export default function LandingPage() {
         <section id="specs" className="py-20 bg-black border-t border-white/5">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="glass-panel p-8 rounded-2xl hover:border-emerald-500/50 transition-colors">
+                    <div className="bg-slate-800/25 backdrop-blur-lg border border-white/10 p-8 rounded-2xl hover:border-emerald-500/50 transition-colors">
                         <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-6">
                             <FeatureIcon iconName="wifi-slash" />
                         </div>
@@ -123,7 +112,7 @@ export default function LandingPage() {
                             Internet down? No problem. Encode residents, issue permits, and log blotters offline. Syncs automatically when signal returns.
                         </p>
                     </div>
-                    <div className="glass-panel p-8 rounded-2xl hover:border-blue-500/50 transition-colors">
+                    <div className="bg-slate-800/25 backdrop-blur-lg border border-white/10 p-8 rounded-2xl hover:border-blue-500/50 transition-colors">
                         <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6">
                            <FeatureIcon iconName="hand-heart" />
                         </div>
@@ -132,7 +121,7 @@ export default function LandingPage() {
                             Designed for non-techies. Large buttons, readable text, and zero "computer jargon." If you can use an ATM, you can use BarangayOS.
                         </p>
                     </div>
-                    <div className="glass-panel p-8 rounded-2xl hover:border-purple-500/50 transition-colors">
+                    <div className="bg-slate-800/25 backdrop-blur-lg border border-white/10 p-8 rounded-2xl hover:border-purple-500/50 transition-colors">
                         <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6">
                            <FeatureIcon iconName="printer" />
                         </div>
