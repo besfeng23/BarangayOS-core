@@ -1,8 +1,9 @@
-import Dexie, { Table } from "dexie";
+
+import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 9;
+export const DB_VERSION = 10;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -235,12 +236,44 @@ class BOSDexie extends Dexie {
         sync_queue: "++id, occurredAtISO, synced, status, jobType" // Add status to index
     }).upgrade(async (tx) => {
         // Backfill missing status field on old records to prevent them from being orphaned
-        await tx.table("sync_queue").toCollection().modify(item => {
+        await tx.table("sync_queue").toCollection().modify((item: any) => {
             if (!item.status) {
                 item.status = "pending";
             }
         });
     });
+
+    // HOTFIX VERSION 10: Fix primary key change errors by migrating data
+    this.version(10).stores({
+      // Keep old definitions for migration source
+      print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
+      sync_queue: "++id, occurredAtISO, synced, status, jobType",
+      audit_queue: "++id, eventType, occurredAtISO, synced",
+      // New definitions with stable primary keys
+      print_logs_v2: "id, issuanceId, issuedAtISO",
+      sync_queue_v2: "id, status, occurredAtISO",
+      audit_queue_v2: "id, eventType, occurredAtISO",
+    }).upgrade(async (tx) => {
+      // Migrate print_logs
+      await tx.table('print_logs').each(async (old) => {
+        await tx.table('print_logs_v2').add({ ...old, id: old.id.toString() });
+      });
+      // Migrate sync_queue
+      await tx.table('sync_queue').each(async (old) => {
+        await tx.table('sync_queue_v2').add({ ...old, id: old.id.toString(), status: old.status || 'pending' });
+      });
+       // Migrate audit_queue
+       await tx.table('audit_queue').each(async (old) => {
+        await tx.table('audit_queue_v2').add({ ...old, id: old.id.toString() });
+      });
+    });
+
+    // After migration, you can rename the tables in the class instance for transparent use
+    if (this.verno >= 10) {
+      this.print_logs = this.table("print_logs_v2");
+      this.sync_queue = this.table("sync_queue_v2");
+      this.audit_queue = this.table("audit_queue_v2");
+    }
   }
 }
 
