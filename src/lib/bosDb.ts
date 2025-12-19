@@ -49,20 +49,19 @@ export type CaseLocal = {
 // Blotter
 export type BlotterLocal = {
   id: string;
-  createdAtISO: string;
-  updatedAtISO: string;
   status: "Pending" | "Resolved";
   incidentDateISO: string;
   locationText: string;
   complainantName: string;
-  respondentName: string;
-  narrative: string;
-  // optional
   complainantContact?: string;
+  respondentName: string;
   respondentContact?: string;
+  narrative: string;
   actionsTaken?: string;
   settlement?: string;
   notes?: string;
+  createdAtISO: string;
+  updatedAtISO: string;
   searchTokens: string[];
 };
 
@@ -84,14 +83,14 @@ export type BusinessLocal = {
 };
 
 export type PermitIssuanceLocal = {
-  id: string;
+  id: string; // uuid
   businessId: string;
   issuedAtISO: string;
   year: number;
   feeAmount: number;
-  orNo?: string;
+  orNo?: string; // official receipt no
   remarks?: string;
-  issuedByName?: string;
+  issuedByName?: string; // secretary/captain name
   controlNo: string;
   searchTokens: string[];
 };
@@ -275,7 +274,7 @@ export type CertificateIssuanceLocal = {
 };
 
 export type PrintLogLocal = {
-  id?: number;
+  id: string;
   issuanceId: string;
   residentId: string;
   certType: string;
@@ -299,7 +298,7 @@ class BOSDexie extends Dexie {
   settings!: Table<BOSSettings, string>;
   transactions!: Table<TransactionRecord, string>;
   certificate_issuances!: Table<CertificateIssuanceLocal, string>;
-  print_logs!: Table<PrintLogLocal, number>;
+  print_logs!: Table<PrintLogLocal, string>;
 
 
   constructor() {
@@ -315,7 +314,7 @@ class BOSDexie extends Dexie {
       syncQueue: '++id, [entityType+entityId], status',
       auditLogs: '++id, eventType, entityId, occurredAtLocal, synced',
       meta: '&key',
-      print_logs: "++id, issuanceId, issuedAtISO, residentId, synced",
+      print_logs: "id, issuanceId, issuedAtISO, residentId, certType, synced",
       settings: "id, &key",
       transactions: "id, createdAt, status",
       activityLog: "++id, createdAt, type, [entityType+entityId]",
@@ -328,6 +327,7 @@ class BOSDexie extends Dexie {
 export const db = new BOSDexie();
 
 export async function resetLocalDatabase() {
+  // manual-only reset (for dev/demo recovery)
   await db.close();
   await Dexie.delete("BarangayOS_Local");
 }

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { db } from '../lib/db';
+import { db } from '../lib/bosDb';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { firestore } from '@/firebase';
 export function useBOSSync(barangayId: string) {
