@@ -105,7 +105,7 @@ export default function LandingPage() {
                 <div className="relative mx-auto max-w-5xl">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#10b981] to-blue-600 rounded-xl blur opacity-20"></div>
                     <div className="relative rounded-xl border border-white/10 bg-gray-900 shadow-2xl overflow-hidden">
-                        <Image src="https://picsum.photos/seed/dashboard/1024/576" alt="BarangayOS Dashboard Interface" width={1024} height={576} className="w-full h-auto opacity-90"/>
+                        <Image src="/hero-terminal.png" alt="BarangayOS Dashboard Interface" width={1024} height={576} className="w-full h-auto opacity-90"/>
                     </div>
                 </div>
             </div>
