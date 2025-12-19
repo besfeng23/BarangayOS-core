@@ -1,39 +1,23 @@
 
 import { useCallback } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/lib/bosDb";
+import { db, BOSSettings } from "@/lib/bosDb";
 import { uuid } from "@/lib/uuid";
-
-export type BOSSettings = {
-  id: string;
-  key: "barangay";
-  value: {
-    barangayName: string;
-    barangayAddress: string;
-    punongBarangay: string;
-    secretaryName: string;
-    trial?: {
-      isTrialAccount: boolean;
-      daysRemaining: number;
-    };
-  };
-  updatedAt: number;
-};
 
 export function useSettings() {
   const settings = useLiveQuery(async () => {
-    const s = await (db as any).settings?.where("key").equals("barangay").first();
+    const s = await db.settings?.where("key").equals("barangay").first();
     return s as BOSSettings | undefined;
   }, [], undefined);
 
   const upsert = useCallback(async (value: BOSSettings["value"]) => {
     const now = Date.now();
-    const existing = await (db as any).settings.where("key").equals("barangay").first();
+    const existing = await db.settings.where("key").equals("barangay").first();
     if (existing) {
-      await (db as any).settings.update(existing.id, { value, updatedAt: now });
+      await db.settings.update(existing.id, { value, updatedAt: now });
       return;
     }
-    await (db as any).settings.add({
+    await db.settings.add({
       id: uuid(),
       key: "barangay",
       value,

@@ -1,5 +1,101 @@
 import Dexie, { Table } from "dexie";
 
+// IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
+// The error indicated an existing version of 4, so we are setting it to 5.
+export const DB_VERSION = 5;
+
+// Shared rows
+export type SyncQueueRow = {
+  id?: number;
+  jobType: string;
+  payload: any;
+  occurredAtISO: string;
+  synced: 0 | 1;
+};
+
+export type AuditRow = {
+  id?: number;
+  eventType: string;
+  details: any;
+  occurredAtISO: string;
+  synced: 0 | 1;
+};
+
+// Residents
+export type ResidentLocal = {
+  id: string;
+  fullName: string;
+  fullNameUpper: string;
+  householdNo?: string;
+  householdNoUpper?: string;
+  addressText?: string;
+  contact?: string;
+  // ISO strings only (local-first)
+  createdAtISO: string;
+  updatedAtISO: string;
+  // array of tokens (for multiEntry index)
+  searchTokens: string[];
+};
+
+// Cases (optional safety banner elsewhere)
+export type CaseLocal = {
+  id: string;
+  residentId: string;
+  status: "Pending" | "Resolved" | string;
+  createdAtISO: string;
+  updatedAtISO: string;
+};
+
+// Blotter
+export type BlotterLocal = {
+  id: string;
+  createdAtISO: string;
+  updatedAtISO: string;
+  status: "Pending" | "Resolved";
+  incidentDateISO: string;
+  locationText: string;
+  complainantName: string;
+  respondentName: string;
+  narrative: string;
+  // optional
+  complainantContact?: string;
+  respondentContact?: string;
+  actionsTaken?: string;
+  settlement?: string;
+  notes?: string;
+  searchTokens: string[];
+};
+
+// Business permits
+export type BusinessLocal = {
+  id: string;
+  createdAtISO: string;
+  updatedAtISO: string;
+  businessName: string;
+  ownerName: string;
+  addressText: string;
+  category?: string;
+  contact?: string;
+  permitNo?: string;
+  latestYear: number;
+  status: "Active" | "Expired" | "Suspended";
+  notes?: string;
+  searchTokens: string[];
+};
+
+export type PermitIssuanceLocal = {
+  id: string;
+  businessId: string;
+  issuedAtISO: string;
+  year: number;
+  feeAmount: number;
+  orNo?: string;
+  remarks?: string;
+  issuedByName?: string;
+  controlNo: string;
+  searchTokens: string[];
+};
+
 export type Sex = "Male" | "Female" | "Other";
 export type CivilStatus = "Single" | "Married" | "Widowed" | "Separated" | "Unknown";
 export type ResidentStatus = "ACTIVE" | "INACTIVE";
@@ -22,7 +118,7 @@ export type ResidentRecord = {
   fullNameNorm: string;
   lastNameNorm: string;
   firstNameNorm: string;
-  birthdate: string; 
+  birthdate: string;
   searchTokens: string[];
   sex: Sex;
   civilStatus: CivilStatus;
@@ -70,14 +166,6 @@ export type PrintLogItem = {
   lastError?: string;
 };
 
-export type SyncQueueRow = {
-  id?: number;
-  jobType: string;
-  payload: any;
-  occurredAtISO: string;
-  synced: 0 | 1;
-};
-
 export type SyncQueueItem = {
   id: string;
   entityType: "resident" | "blotter" | "print_log" | "transaction" | "setting" | "auditLog" | "business" | "certificate";
@@ -115,14 +203,6 @@ export type ActivityLogItem = {
   entityType: "resident" | "blotter" | "print_log";
   entityId: string;
   meta?: any;
-};
-
-export type AuditRow = {
-  id?: number;
-  eventType: string;
-  details: any;
-  occurredAtISO: string;
-  synced: 0 | 1;
 };
 
 export type AuditLogRecord = {
@@ -193,96 +273,34 @@ export type CertificateRecord = {
     createdAtLocal: string;
 }
 
-export type BlotterLocal = {
-  id: string;
-  createdAtISO: string;
-  updatedAtISO: string;
-  status: "Pending" | "Resolved";
-  incidentDateISO: string;
-  incidentTimeText?: string;
-  locationText: string;
-
-  complainantName: string;
-  complainantContact?: string;
-  respondentName: string;
-  respondentContact?: string;
-
-  narrative: string;
-  actionsTaken?: string;
-  settlement?: string;
-  notes?: string;
-
-  tags?: string[];
-  searchTokens: string[];
-};
-
-export type BusinessLocal = {
-  id: string; // uuid
-  createdAtISO: string;
-  updatedAtISO: string;
-
-  businessName: string;
-  ownerName: string;
-  addressText: string;
-
-  category?: string; // retail, food, services
-  contact?: string;
-
-  // renewal tracking
-  permitNo?: string;
-  latestYear: number;
-  status: "Active" | "Expired" | "Suspended";
-
-  // optional details
-  notes?: string;
-
-  searchTokens: string[];
-};
-
-export type PermitIssuanceLocal = {
-  id: string; // uuid
-  businessId: string;
-  issuedAtISO: string;
-  year: number;
-
-  feeAmount: number;
-  orNo?: string; // official receipt no
-  remarks?: string;
-
-  issuedByName?: string; // secretary/captain name
-  controlNo: string;
-
-  searchTokens: string[];
-};
-
-
 class BOSDexie extends Dexie {
-  residents!: Table<ResidentRecord, string>;
+  residents!: Table<ResidentLocal, string>;
+  cases!: Table<CaseLocal, string>;
   blotters!: Table<BlotterLocal, string>;
-  printLogs!: Table<PrintLogItem, string>;
-  settings!: Table<BOSSettings, string>;
-  transactions!: Table<TransactionRecord, string>;
+  businesses!: Table<BusinessLocal, string>;
+  permit_issuances!: Table<PermitIssuanceLocal, string>;
   sync_queue!: Table<SyncQueueRow, number>;
+  audit_queue!: Table<AuditRow, number>;
   syncQueue!: Table<SyncQueueItem, string>;
   activityLog!: Table<ActivityLogItem, string>;
-  audit_queue!: Table<AuditRow, number>;
   drafts!: Table<DraftItem, string>;
   auditLogs!: Table<AuditLogRecord, string>;
   meta!: Table<MetaRecord, string>;
-  businesses!: Table<BusinessLocal, string>;
-  permit_issuances!: Table<PermitIssuanceLocal, string>;
+  settings!: Table<BOSSettings, string>;
+  transactions!: Table<TransactionRecord, string>;
   certificates!: Table<CertificateRecord, string>;
-
 
   constructor() {
     super("BarangayOS_Local");
-
-    this.version(9).stores({
-      residents: "++id, fullNameUpper, householdNoUpper, *searchTokens, barangayId, updatedAt",
+    this.version(DB_VERSION).stores({
+      residents: "id, fullNameUpper, householdNoUpper, updatedAtISO, *searchTokens",
+      cases: "id, residentId, status, updatedAtISO",
       blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
-      businesses: 'id, status, latestYear, *searchTokens, updatedAtISO',
+      businesses: "id, status, latestYear, updatedAtISO, *searchTokens",
       permit_issuances: "id, businessId, year, issuedAtISO, *searchTokens",
-      certificates: '++id, residentId, certType, createdAtLocal',
+      sync_queue: "++id, jobType, occurredAtISO, synced",
+      audit_queue: "++id, eventType, occurredAtISO, synced",
+      // New/existing stores to consolidate
       syncQueue: '++id, [entityType+entityId], status',
       auditLogs: '++id, eventType, entityId, occurredAtLocal, synced',
       meta: '&key',
@@ -291,10 +309,14 @@ class BOSDexie extends Dexie {
       transactions: "id, createdAt, status",
       activityLog: "++id, createdAt, type, [entityType+entityId]",
       drafts: "id, &[module+key]",
-      sync_queue: "++id, jobType, occurredAtISO, synced",
-      audit_queue: "++id, eventType, occurredAtISO, synced",
+      certificates: '++id, residentId, certType, createdAtLocal',
     });
   }
 }
 
 export const db = new BOSDexie();
+
+export async function resetLocalDatabase() {
+  await db.close();
+  await Dexie.delete("BarangayOS_Local");
+}

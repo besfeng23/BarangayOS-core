@@ -19,9 +19,9 @@ export function useBlotterPrint() {
     const now = Date.now();
     const logId = uuid();
 
-    await db.transaction("rw", (db as any).printLogs, db.syncQueue, async () => {
+    await db.transaction("rw", db.printLogs, db.syncQueue, async () => {
       // printLogs table must already exist from Certificate Engine integration
-      await (db as any).printLogs.add({
+      await db.printLogs.add({
         id: logId,
         createdAt: now,
         docType: payload.docType,
