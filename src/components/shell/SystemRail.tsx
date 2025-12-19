@@ -25,7 +25,7 @@ export default function SystemRail() {
   const userRole = getRolePill(user?.email); // Placeholder until roles are in claims
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-black border-b border-zinc-800">
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center gap-3">
         <Image src="/bos.png" alt="BarangayOS logo" width={100} height={24} className="h-6 w-auto" />
         <span className="text-xs bg-zinc-800 text-zinc-200 px-2 py-1 rounded-full border border-zinc-700">
