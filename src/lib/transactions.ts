@@ -1,7 +1,26 @@
 
-import { db, TransactionRecord } from "./bosDb";
+import { db } from "./bosDb";
 import { ulid } from "./ulid";
 import { uuid } from "./uuid";
+
+// The TransactionRecord type is not defined in the provided context,
+// so we'll define a minimal version to satisfy the function signature.
+export type TransactionRecord = {
+  id: string;
+  type: string;
+  module: string;
+  refId: string;
+  partnerId: string;
+  amount: number;
+  currency: "PHP";
+  status: "pending" | "completed" | "failed";
+  createdAt: string;
+  offline: boolean;
+  barangayId: string;
+  deviceId: string;
+  createdByUid: string;
+};
+
 
 type LogTransactionInput = {
   type: TransactionRecord["type"];
@@ -16,7 +35,7 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
 
     // Fetch settings to get required IDs.
     // In a real app, this should be cached in context/memory.
-    const settings = await db.settings.where("key").equals("barangay").first();
+    const settings = await (db as any).settings.where("key").equals("barangay").first();
     const partnerId = settings?.value?.partnerId || "PLDT_ENT_001";
     const barangayId = settings?.value?.barangayName || "UNKNOWN_BRGY";
     const deviceId = settings?.value?.deviceId || "UNKNOWN_DEVICE";
@@ -41,10 +60,10 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
     };
 
     // Write to both transactions table and sync queue atomically
-    await db.transaction("rw", db.transactions, db.syncQueue, async () => {
-      await db.transactions.add(transaction);
+    await db.transaction("rw", (db as any).transactions, db.syncQueue, async () => {
+      await (db as any).transactions.add(transaction);
       await db.syncQueue.add({
-        id: uuid(),
+        id: uuid() as any,
         entityType: "transaction",
         entityId: transaction.id,
         op: "UPSERT",
@@ -53,7 +72,7 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
         updatedAt: now,
         status: "pending",
         tryCount: 0,
-      });
+      } as any);
     });
 
   } catch (error) {

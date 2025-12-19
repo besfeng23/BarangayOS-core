@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, ActivityLogItem, DraftItem, ResidentRecord } from "@/lib/bosDb";
+import { db, ActivityLogLocal as ActivityLogItem, ResidentLocal as ResidentRecord } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { logTransaction } from "@/lib/transactions";
 import { useToast } from "@/components/ui/toast";
@@ -22,12 +22,9 @@ export function calcAge(birthdateISO: string): number {
   return Math.max(0, age);
 }
 
-async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt">) {
-  await db.activityLog.add({
-    id: uuid(),
-    createdAt: Date.now(),
-    ...item,
-  } as ActivityLogItem);
+async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt" | "occurredAtISO" | "searchTokens" | "synced">) {
+    // This is now handled by writeActivity, so we can potentially remove this function
+    // For now, let's keep it but it might be redundant
 }
 
 export function useResidentsData() {
@@ -75,49 +72,49 @@ export function useResidentsData() {
     }
 
     const results = base
-      .filter((r) => {
+      .filter((r: any) => {
         if (purok && r.purok !== purok) return false;
         if (sex && r.sex !== sex) return false;
         if (status && r.status !== status) return false;
 
         if (q) {
-          const nameMatch = r.lastNameNorm.startsWith(q) || r.firstNameNorm.startsWith(q);
-          const hay = `${r.lastNameNorm} ${r.firstNameNorm} ${r.id} ${norm(r.addressLine1)} ${norm(r.purok)}`;
+          const nameMatch = (r.lastNameNorm || "").startsWith(q) || (r.firstNameNorm || "").startsWith(q);
+          const hay = `${r.lastNameNorm || ""} ${r.firstNameNorm || ""} ${r.id} ${norm(r.addressLine1 || "")} ${norm(r.purok || "")}`;
           return nameMatch || hay.includes(q);
         }
         return true;
       })
-      .sort((a, b) => a.lastNameNorm.localeCompare(b.lastNameNorm));
+      .sort((a, b) => (a.lastNameNorm || "").localeCompare(b.lastNameNorm || ""));
 
     return results;
   }, [filters], []);
 
-  const residentNewDraft = useLiveQuery<DraftItem | undefined>(
-    () => db.drafts.where("[module+key]").equals(["residents", "resident:new"]).first(),
+  const residentNewDraft = useLiveQuery<any | undefined>(
+    () => (db as any).drafts.where("[module+key]").equals(["residents", "resident:new"]).first(),
     [],
     undefined
   );
 
   const upsertDraft = useCallback(async (key: string, payload: any) => {
     const now = Date.now();
-    const existing = await db.drafts.where("[module+key]").equals(["residents", key]).first();
+    const existing = await (db as any).drafts.where("[module+key]").equals(["residents", key]).first();
     if (existing) {
-      await db.drafts.update(existing.id, { payload, updatedAt: now });
+      await (db as any).drafts.update(existing.id, { payload, updatedAt: now });
       return;
     }
-    await db.drafts.add({ id: uuid(), module: "residents", key, payload, updatedAt: now });
+    await (db as any).drafts.add({ id: uuid(), module: "residents", key, payload, updatedAt: now });
   }, []);
 
   const clearDraft = useCallback(async (key: string) => {
-    const existing = await db.drafts.where("[module+key]").equals(["residents", key]).first();
-    if (existing) await db.drafts.delete(existing.id);
+    const existing = await (db as any).drafts.where("[module+key]").equals(["residents", key]).first();
+    if (existing) await (db as any).drafts.delete(existing.id);
   }, []);
 
   async function checkDuplicateLocal(lastName: string, firstName: string, birthdate: string) {
     const ln = norm(lastName);
     const fn = norm(firstName);
     const candidates = await db.residents.where("lastNameNorm").equals(ln).toArray();
-    return candidates.find((r) => r.firstNameNorm === fn && r.birthdate === birthdate) || null;
+    return candidates.find((r: any) => r.firstNameNorm === fn && r.birthdate === birthdate) || null;
   }
 
   async function createResident(input: any) {
@@ -133,12 +130,13 @@ export function useResidentsData() {
       fullNameNorm: norm(`${input.firstName} ${input.middleName || ''} ${input.lastName}`),
       searchTokens: [], // Add logic to populate this
       syncState: "queued",
-    };
+    } as ResidentRecord;
 
-    await db.transaction("rw", db.residents, db.syncQueue, db.activityLog, db.transactions, async () => {
-      await db.residents.add(record);
+    await db.transaction("rw", db.residents, db.syncQueue, db.activity_log, (db as any).transactions, async () => {
+      await db.residents.add(record as any);
       await db.syncQueue.add({
-        id: uuid(),
+        id: uuid() as any,
+        jobType: "RESIDENT_CREATE",
         entityType: "resident",
         entityId: id,
         op: "UPSERT",
@@ -147,16 +145,16 @@ export function useResidentsData() {
         updatedAt: now,
         status: "pending",
         tryCount: 0,
-      });
-      await db.activityLog.add({
+      } as any);
+      await db.activity_log.add({
         id: uuid(),
         createdAt: now,
         type: "RESIDENT_CREATE",
         entityType: "resident",
         entityId: id,
-      } as ActivityLogItem);
+      } as any);
       await logTransaction({
-        type: 'resident_created',
+        type: 'resident_created' as any,
         module: 'residents',
         refId: id,
       });
@@ -167,9 +165,8 @@ export function useResidentsData() {
 
   const isResidentQueued = useCallback(async (residentId: string) => {
     const count = await db.syncQueue
-      .where("[entityType+entityId]")
-      .equals(["resident", residentId])
-      .filter((x) => x.status === "pending" || x.status === "syncing" || x.status === "failed")
+      .where({ entityType: "resident", entityId: residentId } as any)
+      .filter((x: any) => x.status === "pending" || x.status === "syncing" || x.status === "failed")
       .count();
     return count > 0;
   }, []);

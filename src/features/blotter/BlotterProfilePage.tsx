@@ -9,6 +9,7 @@ import { PrintFrame } from "@/components/print/PrintFrame";
 import { useBlotterDocs } from "@/hooks/useBlotterDocs";
 import { SummonsTemplate } from "@/features/blotter/print/SummonsTemplate";
 import { AmicableTemplate } from "@/features/blotter/print/AmicableTemplate";
+import type { BlotterRecord } from "@/lib/bosDb";
 
 const btnPrimary =
   "px-5 py-4 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold " +
@@ -37,7 +38,7 @@ export default function BlotterProfilePage() {
 
   useEffect(() => {
     if (!id) return;
-    logActivity({ type: "BLOTTER_VIEW", entityType: "blotter", entityId: id as string });
+    logActivity({ type: "BLOTTER_VIEW", entityType: "blotter", entityId: id as string } as any);
   }, [id, logActivity]);
 
   useEffect(() => {
@@ -110,14 +111,14 @@ export default function BlotterProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
                <button
                 className={btnPrimary}
-                onClick={() => issueAndPrint(blotter, "SUMMONS")}
+                onClick={() => issueAndPrint(blotter as BlotterRecord, "SUMMONS")}
               >
                 Print Summons
               </button>
 
               <button
                 className={btnPrimary}
-                onClick={() => issueAndPrint(blotter, "AMICABLE")}
+                onClick={() => issueAndPrint(blotter as BlotterRecord, "AMICABLE")}
               >
                 Print Amicable
               </button>
@@ -129,7 +130,7 @@ export default function BlotterProfilePage() {
             </div>
           </div>
         </div>
-        <PrintFrame>
+        {printJob && <PrintFrame>
             {printJob?.docType === "SUMMONS" && (
               <SummonsTemplate
                 blotter={printJob.blotter}
@@ -151,7 +152,7 @@ export default function BlotterProfilePage() {
                 signerTitle={printJob.signerTitle}
               />
             )}
-        </PrintFrame>
+        </PrintFrame>}
         
         {settleOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true">

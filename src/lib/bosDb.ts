@@ -4,6 +4,8 @@ import Dexie, { Table } from "dexie";
 // The error indicated an existing version of 4, so we are setting it to 5.
 export const DB_VERSION = 5;
 
+export type MetaRow = { key: string; value: any };
+
 // Shared rows
 export type SyncQueueRow = {
   id?: number;
@@ -11,6 +13,8 @@ export type SyncQueueRow = {
   payload: any;
   occurredAtISO: string;
   synced: 0 | 1;
+  status?: "pending" | "syncing" | "failed" | "done"; // for UI health counters
+  error?: string;
 };
 
 export type AuditRow = {
@@ -78,10 +82,9 @@ export type BusinessLocal = {
   addressText: string;
   category?: string;
   contact?: string;
-  permitNo?: string;
+  notes?: string;
   latestYear: number;
   status: "Active" | "Expired" | "Suspended";
-  notes?: string;
   searchTokens: string[];
 };
 
@@ -106,6 +109,7 @@ export type PermitIssuanceLocal = {
 
   searchTokens: string[];
 };
+
 
 export type CertificateIssuanceLocal = {
   id: string;
@@ -169,6 +173,7 @@ export type ActivityLogLocal = {
 
 
 class BOSDexie extends Dexie {
+  // Canonical tables (camelCase for app code)
   residents!: Table<ResidentLocal, string>;
   cases!: Table<CaseLocal, string>;
   blotters!: Table<BlotterLocal, string>;
@@ -177,13 +182,20 @@ class BOSDexie extends Dexie {
   certificate_issuances!: Table<CertificateIssuanceLocal, string>;
   print_logs!: Table<PrintLogLocal, number>;
 
+  syncQueue!: Table<SyncQueueRow, number>;
+  auditQueue!: Table<AuditRow, number>;
+  activity_log!: Table<ActivityLogLocal, string>;
+  meta!: Table<MetaRow, string>;
+
+  // Backward compatible aliases
   sync_queue!: Table<SyncQueueRow, number>;
   audit_queue!: Table<AuditRow, number>;
-  activity_log!: Table<ActivityLogLocal, string>;
+
 
   constructor() {
     super("BarangayOS_Local");
     this.version(DB_VERSION).stores({
+      meta: "key",
       residents: "id, fullNameUpper, householdNoUpper, updatedAtISO, *searchTokens",
       cases: "id, residentId, status, updatedAtISO",
       blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
@@ -191,17 +203,25 @@ class BOSDexie extends Dexie {
       permit_issuances: "id, businessId, year, issuedAtISO, *searchTokens",
       certificate_issuances: "id, residentId, certType, issuedAtISO, controlNo, status, *searchTokens",
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
-      sync_queue: "++id, jobType, occurredAtISO, synced, status",
-      audit_queue: "++id, eventType, occurredAtISO, synced",
+      
+      // Sync and Audit Tables with compatibility
+      syncQueue: "++id, jobType, occurredAtISO, synced, status",
+      sync_queue: "++id, jobType, occurredAtISO, synced, status", // legacy name
+      auditQueue: "++id, eventType, occurredAtISO, synced",
+      audit_queue: "++id, eventType, occurredAtISO, synced", // legacy name
+      
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
     });
+
+    // Map legacy snake_case properties to the canonical camelCase tables
+    this.sync_queue = this.table("sync_queue");
+    this.audit_queue = this.table("audit_queue");
   }
 }
 
 export const db = new BOSDexie();
 
 export async function resetLocalDatabase() {
-  // manual-only reset (for dev/demo recovery)
   await db.close();
   await Dexie.delete("BarangayOS_Local");
 }

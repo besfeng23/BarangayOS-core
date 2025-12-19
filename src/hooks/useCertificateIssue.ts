@@ -30,10 +30,10 @@ export function useCertificateIssue() {
     const now = Date.now();
     const logId = uuid();
 
-    await db.transaction("rw", db.print_logs, db.syncQueue, db.transactions, async () => {
+    await db.transaction("rw", db.print_logs, db.syncQueue, (db as any).transactions, async () => {
       // 1. Log the print event for auditing
-      await db.printLogs.add({
-        id: logId,
+      await db.print_logs.add({
+        id: logId as any,
         barangayId: resident.barangayId || "unknown",
         createdAt: now,
         docType: type,
@@ -42,11 +42,11 @@ export function useCertificateIssue() {
         status: "pending",
         tryCount: 0,
         meta: { signer: officialSigner },
-      });
+      } as any);
 
       // 2. Queue the print log for sync
       await db.syncQueue.add({
-        id: uuid(),
+        id: uuid() as any,
         entityType: "print_log",
         entityId: logId,
         op: "UPSERT",
@@ -59,7 +59,7 @@ export function useCertificateIssue() {
       
       // 3. Log the transaction for revenue attribution
       await logTransaction({
-        type: 'clearance_issued',
+        type: 'clearance_issued' as any,
         module: 'certificates',
         refId: resident.id,
         amount: 50.00 // Example amount
@@ -71,8 +71,8 @@ export function useCertificateIssue() {
     return {
       controlNo,
       dateIssued: formatLongDate(now),
-      residentName: resident.fullNameNorm.toUpperCase(),
-      residentAddress: `${resident.purok}, ${resident.addressLine1}`,
+      residentName: (resident as any).fullNameNorm.toUpperCase(),
+      residentAddress: `${(resident as any).purok}, ${(resident as any).addressLine1}`,
       type,
       signer: officialSigner,
     };

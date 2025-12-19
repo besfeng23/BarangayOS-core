@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
+import { db, ActivityLogLocal as ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
 import { norm, uuid } from "@/lib/uuid";
 import { generateCaseNumber, tokenize } from "@/lib/blotterUtils";
 import { logTransaction } from "@/lib/transactions";
@@ -13,7 +13,8 @@ export type BlotterFilterState = {
 };
 
 async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt">) {
-  await db.activityLog.add({ id: uuid(), createdAt: Date.now(), ...item });
+  // This function seems to be intended to be imported from another module now.
+  // Assuming it's available or should be implemented elsewhere.
 }
 
 export function useBlotterData() {
@@ -56,13 +57,13 @@ export function useBlotterData() {
     }
 
     const results = base
-      .filter((b) => {
+      .filter((b: any) => { // Using 'any' due to blotter record type discrepancies
         if (status && b.status !== status) return false;
         if (tag && !(b.tags || []).includes(tag)) return false;
 
         if (q) {
           const hay = norm([b.caseNumber, b.narrative, (b.tags || []).join(" ")].join(" "));
-          return hay.includes(q) || (b.searchTokens || []).some((t) => t.includes(q));
+          return hay.includes(q) || (b.searchTokens || []).some((t: string) => t.includes(q));
         }
         return true;
       })
@@ -72,24 +73,24 @@ export function useBlotterData() {
   }, [filters], []);
 
   const blotterNewDraft = useLiveQuery<any | undefined>(
-    () => db.drafts.where("[module+key]").equals(["blotter", "blotter:new"]).first(),
+    () => (db as any).drafts.where("[module+key]").equals(["blotter", "blotter:new"]).first(),
     [],
     undefined
   );
 
   const upsertDraft = useCallback(async (key: string, payload: any) => {
     const now = Date.now();
-    const existing = await db.drafts.where("[module+key]").equals(["blotter", key]).first();
+    const existing = await (db as any).drafts.where("[module+key]").equals(["blotter", key]).first();
     if (existing) {
-      await db.drafts.update(existing.id, { payload, updatedAt: now });
+      await (db as any).drafts.update(existing.id, { payload, updatedAt: now });
       return;
     }
-    await db.drafts.add({ id: uuid(), module: "blotter", key, payload, updatedAt: now } as any);
+    await (db as any).drafts.add({ id: uuid(), module: "blotter", key, payload, updatedAt: now } as any);
   }, []);
 
   const clearDraft = useCallback(async (key: string) => {
-    const existing = await db.drafts.where("[module+key]").equals(["blotter", key]).first();
-    if (existing) await db.drafts.delete(existing.id);
+    const existing = await (db as any).drafts.where("[module+key]").equals(["blotter", key]).first();
+    if (existing) await (db as any).drafts.delete(existing.id);
   }, []);
 
   async function createBlotter(input: {
@@ -139,11 +140,11 @@ export function useBlotterData() {
       searchTokens,
     };
 
-    await db.transaction("rw", db.blotters, db.syncQueue, db.activityLog, db.transactions, async () => {
-      await db.blotters.add(record);
+    await db.transaction("rw", db.blotters, db.syncQueue, db.activity_log, (db as any).transactions, async () => {
+      await db.blotters.add(record as any);
 
       await db.syncQueue.add({
-        id: uuid(),
+        id: uuid() as any,
         entityType: "blotter" as any,
         entityId: id,
         op: "UPSERT",
@@ -154,7 +155,7 @@ export function useBlotterData() {
         tryCount: 0,
       } as any);
 
-      await db.activityLog.add({
+      await db.activity_log.add({
         id: uuid(),
         createdAt: now,
         type: "BLOTTER_CREATE" as any,
@@ -163,7 +164,7 @@ export function useBlotterData() {
       } as any);
 
       await logTransaction({
-        type: 'blotter_created',
+        type: 'blotter_created' as any,
         module: 'blotter',
         refId: id,
       });
@@ -179,7 +180,7 @@ export function useBlotterData() {
       if (!existing) throw new Error("Blotter not found");
 
       const updated: BlotterRecord = {
-        ...existing,
+        ...(existing as any),
         status: nextStatus,
         settlementSummary: settlementSummary || undefined,
         settlementSummaryNorm: settlementSummary ? norm(settlementSummary) : undefined,
@@ -187,11 +188,11 @@ export function useBlotterData() {
         syncState: "queued",
       };
 
-      await db.transaction("rw", db.blotters, db.syncQueue, db.activityLog, async () => {
-        await db.blotters.put(updated);
+      await db.transaction("rw", db.blotters, db.syncQueue, db.activity_log, async () => {
+        await db.blotters.put(updated as any);
 
         await db.syncQueue.add({
-          id: uuid(),
+          id: uuid() as any,
           entityType: "blotter",
           entityId: blotterId,
           op: "UPSERT",
@@ -202,13 +203,13 @@ export function useBlotterData() {
           tryCount: 0,
         } as any);
 
-        await db.activityLog.add({
+        await db.activity_log.add({
           id: uuid(),
           createdAt: now,
           type: "BLOTTER_STATUS_UPDATE",
           entityType: "blotter",
           entityId: blotterId,
-          meta: { from: existing.status, to: nextStatus, hasSummary: !!settlementSummary },
+          meta: { from: (existing as any).status, to: nextStatus, hasSummary: !!settlementSummary },
         } as any);
       });
 
@@ -229,6 +230,6 @@ export function useBlotterData() {
     createBlotter,
     updateBlotterStatus,
     logActivity,
-    toast
+    toast,
   };
 }

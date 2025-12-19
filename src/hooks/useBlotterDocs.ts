@@ -40,9 +40,9 @@ export function useBlotterDocs() {
     const signerTitle = "Punong Barangay";
 
     // 1) Audit to local printLogs + syncQueue (atomic)
-    await db.transaction("rw", db.printLogs, db.syncQueue, async () => {
-      await db.printLogs.add({
-        id: logId,
+    await db.transaction("rw", db.print_logs, db.syncQueue, async () => {
+      await db.print_logs.add({
+        id: logId as any, // Dexie handles auto-incrementing if `id` is `++id`
         barangayId: blotter.barangayId,
         createdAt: now,
         docType,
@@ -51,10 +51,10 @@ export function useBlotterDocs() {
         status: "pending",
         tryCount: 0,
         meta: { signerName, signerTitle, caseNumber: blotter.caseNumber },
-      });
+      } as any);
 
       await db.syncQueue.add({
-        id: uuid(),
+        id: uuid() as any,
         entityType: "print_log" as any,
         entityId: logId,
         op: "UPSERT",

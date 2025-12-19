@@ -19,10 +19,10 @@ export function useBlotterPrint() {
     const now = Date.now();
     const logId = uuid();
 
-    await db.transaction("rw", db.printLogs, db.syncQueue, async () => {
+    await db.transaction("rw", db.print_logs, db.syncQueue, async () => {
       // printLogs table must already exist from Certificate Engine integration
-      await db.printLogs.add({
-        id: logId,
+      await db.print_logs.add({
+        id: logId as any,
         createdAt: now,
         docType: payload.docType,
         controlNo: payload.caseNumber,
@@ -31,10 +31,10 @@ export function useBlotterPrint() {
         status: "pending",
         tryCount: 0,
         meta: payload.meta || {},
-      });
+      } as any);
 
       await db.syncQueue.add({
-        id: uuid(),
+        id: uuid() as any,
         entityType: "print_log" as any,
         entityId: logId,
         op: "UPSERT" as any,
@@ -43,7 +43,7 @@ export function useBlotterPrint() {
         updatedAt: now,
         status: "pending",
         tryCount: 0,
-      });
+      } as any);
     });
   }
 

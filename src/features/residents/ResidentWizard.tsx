@@ -12,6 +12,7 @@ import WorkflowShell from "@/components/system/WorkflowShell";
 import StickyActionBar from "@/components/system/StickyActionBar";
 import ActionResultModal from "@/components/system/ActionResultModal";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { writeActivity } from "@/lib/bos/activity/writeActivity";
 
 type FormState = {
     lastName: string;
@@ -109,6 +110,16 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
       }
 
       const rec = await createResident({ ...form, status: "ACTIVE" }); // createResident handles both create and update
+      
+      await writeActivity({
+        type: mode === 'create' ? "RESIDENT_CREATED" : "RESIDENT_UPDATED",
+        entityType: "resident",
+        entityId: rec.id,
+        status: "ok",
+        title: `Resident ${mode === 'create' ? 'Created' : 'Updated'}`,
+        subtitle: `${rec.fullName} • ${rec.purok || 'No Purok'}`,
+      });
+
       setNewResidentId(rec.id);
       setSaveResult({ ok: true, message: "Resident Saved", statusLine: isOnline ? "Data has been synced to the cloud." : "Saved locally. Queued for sync." });
       if(onDone) onDone(rec.id);
