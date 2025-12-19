@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/firebase/auth-provider';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { SyncProvider } from '@/context/SyncContext';
+import { Analytics } from '@vercel/analytics/next';
 import AppClientLayout from './AppClientLayout';
 
 export const metadata = {
@@ -47,6 +48,7 @@ export default function RootLayout({
             </SyncProvider>
           </SettingsProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
