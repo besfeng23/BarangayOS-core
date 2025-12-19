@@ -1,15 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
+import { writeActivity } from "../activity/writeActivity";
 
 export type BarangaySettings = {
   barangayName: string;
   barangayAddress: string;
   punongBarangay: string;
   secretaryName: string;
+
   trialEnabled: boolean;
   trialDaysRemaining: number;
+
+  controlPrefix: string;
+  readOnlyMode: boolean;
+
   updatedAtISO: string;
 };
 
@@ -22,32 +29,43 @@ const DEFAULTS: BarangaySettings = {
   secretaryName: "Maria Clara",
   trialEnabled: true,
   trialDaysRemaining: 5,
+  controlPrefix: "BRGY",
+  readOnlyMode: false,
   updatedAtISO: new Date().toISOString(),
 };
 
+function uuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function useSettings() {
-  const [settings, setSettings] = useState<BarangaySettings>(DEFAULTS);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const loadLocal = useCallback(async () => {
-    const row = await (db as any).settings?.get(KEY).catch(() => null);
-    if (!row?.value) {
-      await (db as any).settings?.put({ key: KEY, value: DEFAULTS }).catch(() => {});
-      setSettings(DEFAULTS);
-    } else {
-      setSettings(row.value as BarangaySettings);
-    }
-  }, []);
+  const settingsData = useLiveQuery(
+    () => (db as any).settings?.get(KEY),
+    [],
+    null
+  );
+
+  const settings = settingsData?.value as BarangaySettings ?? DEFAULTS;
+  const loading = settingsData === null;
 
   const save = useCallback(async (next: Omit<BarangaySettings, "updatedAtISO">) => {
     setSaving(true);
     try {
-      const payload: BarangaySettings = { ...next, updatedAtISO: new Date().toISOString() };
+      const payload: BarangaySettings = {
+        ...next,
+        updatedAtISO: new Date().toISOString()
+      };
+      
       await (db as any).settings.put({ key: KEY, value: payload });
 
-      // enqueue sync
-      await (db as any).syncQueue.add({
+      await (db as any).sync_queue.add({
+        id: uuid(),
         jobType: "SETTINGS_UPSERT",
         payload,
         occurredAtISO: payload.updatedAtISO,
@@ -55,19 +73,25 @@ export function useSettings() {
         status: "pending",
       });
 
-      setSettings(payload);
+      await writeActivity({
+        type: "SETTINGS_UPDATED",
+        entityType: "system",
+        entityId: "settings",
+        status: "ok",
+        title: "Settings updated",
+        subtitle: `${payload.barangayName} • ${payload.barangayAddress}`,
+      });
+
     } finally {
       setSaving(false);
     }
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      await loadLocal();
-      setLoading(false);
-    })();
-  }, [loadLocal]);
+  return { settings, loading, saving, save };
+}
 
-  return { settings, setSettings, loading, saving, save };
+export function isReadOnly(s: BarangaySettings) {
+  if (s.readOnlyMode) return true;
+  if (s.trialEnabled && s.trialDaysRemaining <= 0) return true;
+  return false;
 }

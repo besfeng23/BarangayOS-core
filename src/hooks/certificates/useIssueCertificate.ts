@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { db, CertificateIssuanceLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
 import { buildCertificateHTML } from "@/lib/certificates/templates";
-import { useSettings } from "@/hooks/useSettings";
+import { useSettings } from "@/lib/bos/settings/useSettings";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
@@ -16,20 +16,19 @@ function uuid() {
   });
 }
 
-function makeControlNo() {
-  // Simple, human-friendly, unique enough for local-first: YYYYMMDD-HHMMSS-XXXX
+function makeControlNo(prefix: string) {
   const d = new Date();
   const pad = (n:number)=>String(n).padStart(2,"0");
   const stamp =
     `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
   const rand = Math.random().toString(16).slice(2, 6).toUpperCase();
-  return `${stamp}-${rand}`;
+  return `${prefix}-${stamp}-${rand}`;
 }
 
 export type CertType = "Barangay Clearance" | "Certificate of Residency" | "Indigency" | "Business Clearance";
 
 export function useIssueCertificate() {
-  const settings = useSettings();
+  const { settings } = useSettings();
 
   const [printingHTML, setPrintingHTML] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -63,12 +62,12 @@ export function useIssueCertificate() {
         residentName,
         certType,
         purpose: purpose.trim(),
-        controlNo: makeControlNo(),
+        controlNo: makeControlNo(settings.controlPrefix || "BRGY"),
         issuedAtISO: nowISO,
-        issuedByName: settings.issuedByName,
+        issuedByName: settings.secretaryName,
         barangayName: settings.barangayName,
-        municipalityCity: settings.municipalityCity,
-        province: settings.province,
+        municipalityCity: settings.barangayAddress, // Assuming address is municipality, province
+        province: "", // This should be a separate field in settings
         status: "Issued",
         searchTokens: toTokens([residentName, residentId, certType, purpose, nowISO].join(" ")),
       };
@@ -92,7 +91,7 @@ export function useIssueCertificate() {
       await enqueue({ type: "CERT_ISSUANCE_UPSERT", payload: issuance });
 
       // 4) prepare print HTML
-      const html = buildCertificateHTML(issuance);
+      const html = await buildCertificateHTML(issuance, settings);
       
       // 5) enqueue for print center
       const printJobId = await enqueuePrintJob({

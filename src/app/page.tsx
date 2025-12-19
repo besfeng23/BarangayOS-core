@@ -21,14 +21,17 @@ import DraftBanner from '@/components/app-hub/DraftBanner';
 import ModuleCard from '@/components/app-hub/ModuleCard';
 import { PartnerTileGuard } from "@/components/dashboard/PartnerTileGuard";
 import { TrialBanner } from "@/components/system/TrialBanner";
+import { useSettings } from '@/lib/bos/settings/useSettings';
 
 export default function Home() {
   const [activeBlotterCount, setActiveBlotterCount] = useState(0);
   const [pendingPermitsCount, setPendingPermitsCount] = useState(0);
   const { toast } = useToast();
+  const { settings, loading: settingsLoading } = useSettings();
   const pendingBlotterWrites = useQueueCount('blotter_cases');
   const pendingPermitWrites = useQueueCount('business_permits');
-  const trialVisible = true; // Replace with real flag
+  
+  const trialBannerVisible = !settings.trialEnabled;
 
   useEffect(() => {
     // Listener for active blotter cases
@@ -69,6 +72,10 @@ export default function Home() {
 
   const totalBlotterBadge = activeBlotterCount + pendingBlotterWrites;
   const totalPermitBadge = pendingPermitsCount + pendingPermitWrites;
+  
+  if (settingsLoading) {
+      return <div>Loading...</div>
+  }
 
   return (
     <div className="space-y-4 pb-24">
@@ -131,7 +138,7 @@ export default function Home() {
         </PartnerTileGuard>
       </main>
 
-      <TrialBanner visible={trialVisible} message="Activation required to unlock partner integrations" />
+      <TrialBanner visible={trialBannerVisible} message="Activation required to unlock partner integrations" />
     </div>
   );
 }

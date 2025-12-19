@@ -14,7 +14,6 @@ const processQueueItem = async (item: SyncQueueItem): Promise<void> => {
   await updateQueueItem(item.id, { status: 'syncing' });
 
   try {
-    let collectionName;
     const { jobType, payload, entityId } = item;
 
     switch (jobType) {

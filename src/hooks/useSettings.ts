@@ -1,51 +1,70 @@
 "use client";
-import { useMemo } from "react";
+import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, BOSSettings } from "@/lib/bosDb";
-import { uuid } from "@/lib/uuid";
+import { db } from "@/lib/bosDb";
 
-const SETTINGS_KEY = "barangay";
+export type BarangaySettings = {
+  barangayName: string;
+  barangayAddress: string;
+  punongBarangay: string;
+  secretaryName: string;
+  trialEnabled: boolean;
+  trialDaysRemaining: number;
+  updatedAtISO: string;
+};
 
-const defaults: BOSSettings["value"] = {
+const KEY = "barangaySettings";
+
+const DEFAULTS: BarangaySettings = {
   barangayName: "Barangay Dau",
   barangayAddress: "Mabalacat, Pampanga",
   punongBarangay: "Hon. Juan Dela Cruz",
   secretaryName: "Maria Clara",
-  trial: { isTrialAccount: true, daysRemaining: 5 },
+  trialEnabled: true,
+  trialDaysRemaining: 5,
+  updatedAtISO: new Date().toISOString(),
 };
 
+function uuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function useSettings() {
-  const liveSettings = useLiveQuery(() => db.settings.get(SETTINGS_KEY), [], null);
+  const [saving, setSaving] = useState(false);
+  const settingsData = useLiveQuery(
+    () => db.settings.get(KEY),
+    [],
+    null
+  );
+  
+  const settings = settingsData?.value as BarangaySettings ?? DEFAULTS;
+  const loading = settingsData === null;
 
-  const settings = useMemo(() => liveSettings?.value ?? defaults, [liveSettings]);
+  const save = useCallback(async (next: Omit<BarangaySettings, "updatedAtISO">) => {
+    setSaving(true);
+    try {
+      const payload: BarangaySettings = { ...next, updatedAtISO: new Date().toISOString() };
+      await db.settings.put({ key: KEY, value: payload });
 
-  const upsert = async (next: Partial<BOSSettings["value"]>) => {
-    const now = Date.now();
-    const existing = await db.settings.get(SETTINGS_KEY);
-    const payload: BOSSettings = {
-      id: SETTINGS_KEY,
-      key: "barangay",
-      value: { ...(existing?.value ?? defaults), ...next },
-      updatedAt: now,
-    };
-
-    await db.transaction("rw", db.settings, db.syncQueue, async () => {
-      await db.settings.put(payload);
-      await db.syncQueue.add({
-        id: uuid(),
-        entityType: "setting",
-        entityId: SETTINGS_KEY,
-        op: "UPSERT",
+      // enqueue sync
+      await db.sync_queue.add({
+        id: uuid() as any,
+        jobType: "SETTINGS_UPSERT",
         payload,
-        createdAt: now,
-        updatedAt: now,
+        occurredAtISO: payload.updatedAtISO,
+        synced: 0,
         status: "pending",
-        tryCount: 0,
       } as any);
-    });
 
-    return payload;
-  };
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
-  return { settings, upsert };
+
+  return { settings, loading, saving, save };
 }
