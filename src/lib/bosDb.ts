@@ -80,8 +80,8 @@ export type BusinessLocal = {
   updatedAtISO: string;
   businessName: string;
   ownerName: string;
-  addressText: string;
   owner?: ResidentPickerValue;
+  addressText: string;
   category?: string;
   contact?: string;
   notes?: string;

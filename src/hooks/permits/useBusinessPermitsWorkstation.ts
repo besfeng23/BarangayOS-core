@@ -1,15 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db, BusinessLocal, PermitIssuanceLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
-import { useSettings } from "@/hooks/useSettings";
+import { useSettings } from "@/lib/bos/settings/useSettings";
 import { buildBusinessPermitHTML } from "@/lib/permits/templates";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
-
+import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 type Mode = "list" | "businessForm" | "renewForm";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
+
+const defaultOwnerValue: ResidentPickerValue = { mode: "resident", residentId: null, residentNameSnapshot: "", manualName: "" };
+
+function getOwnerName(owner: ResidentPickerValue | undefined) {
+    if (!owner) return "";
+    if (owner.mode === 'resident' && owner.residentNameSnapshot) {
+      return owner.residentNameSnapshot;
+    }
+    return owner.manualName || "";
+}
+
 
 function uuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -46,7 +57,7 @@ export function useBusinessPermitsWorkstation() {
   const [bizDraft, setBizDraft] = useState({
     id: "",
     businessName: "",
-    ownerName: "",
+    owner: defaultOwnerValue,
     addressText: "",
     category: "",
     contact: "",
@@ -96,7 +107,7 @@ export function useBusinessPermitsWorkstation() {
   const newBusiness = useCallback(() => {
     setSelectedBusinessId(null);
     setBanner(null);
-    setBizDraft({ id: "", businessName: "", ownerName: "", addressText: "", category: "", contact: "", notes: "" });
+    setBizDraft({ id: "", businessName: "", owner: defaultOwnerValue, addressText: "", category: "", contact: "", notes: "" });
     setMode("businessForm");
   }, []);
 
@@ -108,7 +119,7 @@ export function useBusinessPermitsWorkstation() {
     setBizDraft({
       id: b.id,
       businessName: b.businessName,
-      ownerName: b.ownerName,
+      owner: b.owner || { mode: 'manual', manualName: b.ownerName },
       addressText: b.addressText,
       category: b.category ?? "",
       contact: b.contact ?? "",
@@ -123,7 +134,7 @@ export function useBusinessPermitsWorkstation() {
 
   const validateBiz = useCallback(() => {
     if (!bizDraft.businessName.trim()) throw new Error("Business name is required.");
-    if (!bizDraft.ownerName.trim()) throw new Error("Owner name is required.");
+    if (!getOwnerName(bizDraft.owner)) throw new Error("Owner is required.");
     if (!bizDraft.addressText.trim()) throw new Error("Address is required.");
   }, [bizDraft]);
 
@@ -138,11 +149,13 @@ export function useBusinessPermitsWorkstation() {
 
       const latestYear = existing?.latestYear ?? currentYear() - 1; // new business starts as expired until renewed (safe)
       const status = computeStatus(latestYear);
+      const ownerName = getOwnerName(bizDraft.owner);
 
       const rec: BusinessLocal = {
         id,
         businessName: bizDraft.businessName.trim(),
-        ownerName: bizDraft.ownerName.trim(),
+        owner: bizDraft.owner,
+        ownerName: ownerName,
         addressText: bizDraft.addressText.trim(),
         category: bizDraft.category.trim() || undefined,
         contact: bizDraft.contact.trim() || undefined,
@@ -154,7 +167,7 @@ export function useBusinessPermitsWorkstation() {
         searchTokens: toTokens([
           id,
           upper(bizDraft.businessName),
-          upper(bizDraft.ownerName),
+          upper(ownerName),
           upper(bizDraft.addressText),
           upper(bizDraft.category),
           upper(bizDraft.contact),
@@ -223,10 +236,10 @@ export function useBusinessPermitsWorkstation() {
         remarks: renewDraft.remarks.trim() || undefined,
         controlNo: makeControlNo(),
         issuedAtISO: nowISO,
-        issuedByName: settings.issuedByName,
+        issuedByName: settings.secretaryName,
         barangayName: settings.barangayName,
-        municipalityCity: settings.municipalityCity,
-        province: settings.province,
+        municipalityCity: settings.barangayAddress, // Assuming address is municipality, province
+        province: "", // This should be a separate field in settings
         searchTokens: toTokens([b.businessName, b.ownerName, b.id, String(year), String(feeAmount), renewDraft.orNo, issuanceId].join(" ")),
       };
 

@@ -3,6 +3,7 @@
 import React from "react";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBusinessPermitsWorkstation } from "@/hooks/permits/useBusinessPermitsWorkstation";
+import { ResidentPicker } from "@/components/shared/ResidentPicker";
 
 export default function BusinessPermitsPage() {
   const { enqueue } = useSyncQueue();
@@ -94,14 +95,11 @@ export default function BusinessPermitsPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-zinc-400 text-xs mb-1">Owner Name *</label>
-                  <input
-                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                    value={ws.bizDraft.ownerName}
-                    onChange={(e) => ws.setBizDraft((d) => ({ ...d, ownerName: e.target.value }))}
-                  />
-                </div>
+                <ResidentPicker
+                    label="Owner"
+                    value={ws.bizDraft.owner}
+                    onChange={(val) => ws.setBizDraft(d => ({ ...d, owner: val }))}
+                />
 
                 <div>
                   <label className="block text-zinc-400 text-xs mb-1">Address *</label>
