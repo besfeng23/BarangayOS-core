@@ -5,6 +5,7 @@ import React from "react";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBlotterWorkstation } from "@/hooks/blotter/useBlotterWorkstation";
 import { ResidentPicker } from "@/components/shared/ResidentPicker";
+import { SmartDateInput } from "@/components/ui/SmartDateInput";
 
 export default function BlotterPage() {
   const { enqueue } = useSyncQueue();
@@ -97,12 +98,10 @@ export default function BlotterPage() {
               {/* Required fields */}
               <div className="mt-4 space-y-3">
                 <div>
-                  <label className="block text-zinc-400 text-xs mb-1">Incident Date *</label>
-                  <input
-                    type="date"
-                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+                  <SmartDateInput
+                    label="Incident Date *"
                     value={ws.draft.incidentDateISO}
-                    onChange={(e) => ws.setDraft((d) => ({ ...d, incidentDateISO: e.target.value }))}
+                    onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
                   />
                 </div>
 
