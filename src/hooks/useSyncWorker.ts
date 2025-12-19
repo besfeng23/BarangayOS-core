@@ -9,6 +9,7 @@ import {
 import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { useToast } from './use-toast';
+import { writeActivity } from '@/lib/bos/activity/writeActivity';
 
 let isWorkerRunning = false;
 
@@ -49,7 +50,9 @@ const runSyncCycle = async (toast: any) => {
   if (isWorkerRunning) return;
   isWorkerRunning = true;
   
+  await writeActivity({ type:"SYNC_STARTED", entityType:"sync", entityId:"sync", status:"ok", title:"Sync started", subtitle:"Uploading queued changes…" });
   toast({ title: 'Sync started...' });
+
 
   try {
     let itemToProcess = await getOldestPendingItem();
@@ -57,9 +60,11 @@ const runSyncCycle = async (toast: any) => {
       await processQueueItem(itemToProcess);
       itemToProcess = await getOldestPendingItem();
     }
+    await writeActivity({ type:"SYNC_COMPLETE", entityType:"sync", entityId:"sync", status:"ok", title:"Sync complete", subtitle:"All local changes saved to cloud." });
     toast({ title: 'Sync complete!', description: 'All local changes are saved to the cloud.' });
-  } catch (error) {
-    console.error('Sync cycle interrupted by an error.');
+  } catch (error: any) {
+    console.error('Sync cycle interrupted by an error.', error);
+    await writeActivity({ type:"SYNC_PAUSED", entityType:"sync", entityId:"sync", status:"warn", title:"Sync paused", subtitle: (error?.message ?? "Could not save some changes. Will retry later.") });
     toast({ variant: 'destructive', title: 'Sync Paused', description: 'Could not save some changes. Will retry later.' });
   } finally {
     isWorkerRunning = false;

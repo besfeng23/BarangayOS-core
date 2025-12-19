@@ -1,62 +1,60 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { getLogs } from '@/lib/activityLog';
-import { ActivityLogItem } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+"use client";
+
+import React from "react";
+import TerminalShell from "@/components/shell/TerminalShell";
+import { useActivityHistory } from "@/hooks/useActivityHistory";
 
 export default function HistoryPage() {
-  const [logs, setLogs] = useState<ActivityLogItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchLogs() {
-      try {
-        const recentLogs = await getLogs();
-        setLogs(recentLogs);
-      } catch (error) {
-        console.error('Failed to fetch activity logs:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchLogs();
-  }, []);
+  const h = useActivityHistory();
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold mb-6">Activity History</h1>
-      <Card className="bg-zinc-900 border-zinc-800">
-        <CardHeader>
-          <CardTitle>Recent Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p>Loading history...</p>
-          ) : logs.length === 0 ? (
-            <p className="text-zinc-400">No activity has been recorded yet.</p>
+    <TerminalShell>
+      <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+        <div className="mb-4">
+          <h1 className="text-zinc-100 text-3xl font-semibold">Activity History</h1>
+          <p className="text-zinc-400 text-sm mt-2">Recent actions recorded on this device (offline-safe).</p>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
+          <div className="text-zinc-100 text-lg font-semibold">Recent Actions</div>
+
+          <input
+            className="mt-3 h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+            placeholder="Search action, name, ID…"
+            value={h.query}
+            onChange={(e) => h.setQuery(e.target.value)}
+          />
+
+          <div className="mt-3 text-xs text-zinc-400">
+            {h.loading ? "Loading…" : `${h.items.length} item(s)`}
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-2">
+          {h.items.length === 0 && !h.loading ? (
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-zinc-400 text-sm">
+              No activity has been recorded yet.
+            </div>
           ) : (
-            <ScrollArea className="h-[60vh]">
-              <ul className="space-y-4">
-                {logs.map((log) => (
-                  <li
-                    key={log.id}
-                    className="flex items-center justify-between gap-4 p-3 rounded-lg bg-zinc-800/50"
-                  >
-                    <p className="font-medium">{log.message}</p>
-                    <p className="text-xs text-zinc-400 whitespace-nowrap">
-                      {formatDistanceToNow(new Date(log.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </ScrollArea>
+            h.items.map((a) => (
+              <div
+                key={a.id}
+                className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-zinc-100 text-sm font-semibold">{a.title}</div>
+                    <div className="text-zinc-400 text-xs mt-1">{a.subtitle}</div>
+                  </div>
+                  <div className="text-zinc-400 text-xs">
+                    {new Date(a.occurredAtISO).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            ))
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </TerminalShell>
   );
 }

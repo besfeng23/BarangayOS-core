@@ -3,6 +3,8 @@ import { db, BusinessLocal, PermitIssuanceLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
 import { useSettings } from "@/hooks/useSettings";
 import { buildBusinessPermitHTML } from "@/lib/permits/templates";
+import { writeActivity } from "@/lib/bos/activity/writeActivity";
+
 
 type Mode = "list" | "businessForm" | "renewForm";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -159,12 +161,15 @@ export function useBusinessPermitsWorkstation() {
 
       await db.businesses.put(rec);
 
-      await db.audit_queue.add({
-        eventType: existing ? "BUSINESS_UPDATED" : "BUSINESS_CREATED",
-        details: { id: rec.id },
-        occurredAtISO: nowISO,
-        synced: 0,
+      await writeActivity({
+        type: existing ? "BUSINESS_UPDATED" : "BUSINESS_CREATED",
+        entityType: "business",
+        entityId: rec.id,
+        status: "ok",
+        title: existing ? "Business updated" : "Business created",
+        subtitle: `${rec.businessName} • Owner: ${rec.ownerName}`,
       });
+
 
       await enqueue({ type: "BUSINESS_UPSERT", payload: rec });
 
@@ -192,6 +197,7 @@ export function useBusinessPermitsWorkstation() {
     if (!selectedBusinessId) return;
     setBusy(true);
     setBanner(null);
+    let issuance: PermitIssuanceLocal | null = null;
     try {
       const b = await db.businesses.get(selectedBusinessId);
       if (!b) throw new Error("Business not found.");
@@ -204,7 +210,7 @@ export function useBusinessPermitsWorkstation() {
       const nowISO = new Date().toISOString();
       const issuanceId = uuid();
 
-      const issuance: PermitIssuanceLocal = {
+      issuance = {
         id: issuanceId,
         businessId: b.id,
         businessName: b.businessName,
@@ -236,12 +242,16 @@ export function useBusinessPermitsWorkstation() {
       await db.businesses.put(updated);
 
       // 3) audit + print log
-      await db.audit_queue.add({
-        eventType: "BUSINESS_RENEWED",
-        details: { businessId: b.id, issuanceId, year, controlNo: issuance.controlNo },
-        occurredAtISO: nowISO,
-        synced: 0,
+      await writeActivity({
+        type: "BUSINESS_RENEWED",
+        entityType: "permit_issuance",
+        entityId: issuance.id,
+        status: "ok",
+        title: "Business permit renewed",
+        subtitle: `${issuance.businessName} • ${issuance.year} • ${issuance.controlNo}`,
+        details: { businessId: issuance.businessId, year: issuance.year, controlNo: issuance.controlNo }
       });
+
 
       // Reuse print_logs (store issuanceId in issuanceId field; certType identifies it's a permit print)
       await db.print_logs.add({
@@ -263,7 +273,7 @@ export function useBusinessPermitsWorkstation() {
 
       setBanner({ kind: "ok", msg: "Renewed & queued ✅ Printing…" });
       setMode("list");
-      return { ok: true as const, issuanceId };
+      return { ok: true as const, issuanceId, issuance: issuance };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
       return { ok: false as const };
@@ -272,7 +282,9 @@ export function useBusinessPermitsWorkstation() {
     }
   }, [selectedBusinessId, renewDraft, settings]);
 
-  const afterPrint = useCallback(() => setPrintHTML(null), []);
+  const afterPrint = useCallback(() => {
+    setPrintHTML(null);
+  }, []);
 
   return {
     mode,

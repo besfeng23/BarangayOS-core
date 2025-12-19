@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { db, ResidentLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
 import { loadDraft, saveDraft, clearDraft } from "@/lib/bos/localDraft";
+import { writeActivity } from "@/lib/bos/activity/writeActivity";
 
 type Draft = {
   id?: string;
@@ -124,6 +125,15 @@ export function useResidentWorkstation() {
         await enqueue({
           type: existing ? "RESIDENT_UPDATE" : "RESIDENT_CREATE",
           payload: rec,
+        });
+
+        await writeActivity({
+          type: existing ? "RESIDENT_UPDATED" : "RESIDENT_CREATED",
+          entityType: "resident",
+          entityId: rec.id,
+          status: "ok",
+          title: existing ? "Resident updated" : "Resident created",
+          subtitle: `${rec.fullName} • ${rec.householdNo || 'No Household'}`
         });
 
         // 3) clear draft after success

@@ -3,6 +3,7 @@ import { db, CertificateIssuanceLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
 import { buildCertificateHTML } from "@/lib/certificates/templates";
 import { useSettings } from "@/hooks/useSettings";
+import { writeActivity } from "@/lib/bos/activity/writeActivity";
 
 function uuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -42,6 +43,7 @@ export function useIssueCertificate() {
   }) => {
     setBusy(true);
     setBanner(null);
+    let issuance: CertificateIssuanceLocal | null = null;
     try {
       const { residentId, residentName, certType, purpose, enqueue } = args;
 
@@ -52,7 +54,7 @@ export function useIssueCertificate() {
       const nowISO = new Date().toISOString();
       const issuanceId = uuid();
 
-      const issuance: CertificateIssuanceLocal = {
+      issuance = {
         id: issuanceId,
         residentId,
         residentName,
@@ -81,12 +83,16 @@ export function useIssueCertificate() {
       });
 
       // 3) audit queue
-      await db.audit_queue.add({
-        eventType: "CERT_ISSUED",
-        details: { issuanceId, residentId, certType, controlNo: issuance.controlNo },
-        occurredAtISO: nowISO,
-        synced: 0,
+      await writeActivity({
+        type: "CERT_ISSUED",
+        entityType: "certificate",
+        entityId: issuance.id,
+        status: "ok",
+        title: "Certificate issued",
+        subtitle: `${issuance.residentName} • ${issuance.certType} • ${issuance.controlNo}`,
+        details: { residentId: issuance.residentId, certType: issuance.certType, controlNo: issuance.controlNo }
       });
+
 
       // 4) enqueue sync (never block printing)
       await enqueue({ type: "CERT_ISSUANCE_UPSERT", payload: issuance });
@@ -110,7 +116,21 @@ export function useIssueCertificate() {
   const afterPrint = useCallback(() => {
     // clear html so repeated prints re-trigger
     setPrintingHTML(null);
-  }, []);
+    if(printingHTML) {
+        // This is a bit of a hack, but we can extract info from the HTML string if needed
+        // A better way would be to store the `issuance` object in state.
+        // For now, let's assume we can't easily get the issuance object here.
+        // This log will be less detailed.
+        writeActivity({
+            type: "CERT_PRINTED",
+            entityType: "certificate",
+            entityId: "unknown",
+            status: "ok",
+            title: "Certificate printed",
+            subtitle: `A document was sent to the printer.`,
+        });
+    }
+  }, [printingHTML]);
 
   return useMemo(() => ({
     busy,

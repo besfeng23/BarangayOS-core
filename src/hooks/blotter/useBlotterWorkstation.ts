@@ -4,6 +4,7 @@ import { toTokens } from "@/lib/bos/searchTokens";
 import { loadDraft, saveDraft, clearDraft } from "@/lib/bos/localDraft";
 import { useSettings } from "@/hooks/useSettings";
 import { buildBlotterPrintHTML } from "@/lib/blotter/templates";
+import { writeActivity } from "@/lib/bos/activity/writeActivity";
 
 type Mode = "list" | "form";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -201,13 +202,15 @@ export function useBlotterWorkstation() {
 
       await db.blotters.put(rec);
 
-      // audit
-      await db.audit_queue.add({
-        eventType: draft.id ? "BLOTTER_UPDATED" : "BLOTTER_CREATED",
-        details: { id: rec.id, status: rec.status },
-        occurredAtISO: nowISO,
-        synced: 0,
+      await writeActivity({
+        type: draft.id ? "BLOTTER_UPDATED" : "BLOTTER_CREATED",
+        entityType: "blotter",
+        entityId: rec.id,
+        status: "ok",
+        title: draft.id ? "Blotter updated" : "Blotter created",
+        subtitle: `${rec.complainantName} vs ${rec.respondentName} • ${rec.locationText} • ${rec.status}`,
       });
+
 
       // sync
       await enqueue({ type: "BLOTTER_UPSERT", payload: rec });
@@ -237,11 +240,13 @@ export function useBlotterWorkstation() {
       const updated: BlotterLocal = { ...b, status: "Resolved", updatedAtISO: nowISO };
       await db.blotters.put(updated);
 
-      await db.audit_queue.add({
-        eventType: "BLOTTER_RESOLVED",
-        details: { id: updated.id },
-        occurredAtISO: nowISO,
-        synced: 0,
+      await writeActivity({
+        type: "BLOTTER_RESOLVED",
+        entityType: "blotter",
+        entityId: updated.id,
+        status: "ok",
+        title: "Blotter resolved",
+        subtitle: `${updated.complainantName} vs ${updated.respondentName} • ${updated.locationText}`,
       });
 
       await enqueue({ type: "BLOTTER_UPSERT", payload: updated });
@@ -262,6 +267,16 @@ export function useBlotterWorkstation() {
     if (!draft.id) throw new Error("Save the record first before printing.");
     const b = await db.blotters.get(draft.id);
     if (!b) throw new Error("Record not found.");
+    
+    await writeActivity({
+        type: "BLOTTER_PRINTED",
+        entityType: "blotter",
+        entityId: b.id,
+        status: "ok",
+        title: "Blotter printed",
+        subtitle: `${b.complainantName} vs ${b.respondentName} • ${b.locationText}`,
+    });
+
     return buildBlotterPrintHTML({
       b,
       barangayName: settings.barangayName,
