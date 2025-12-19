@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 15%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 27%;
-    --input: 217 33% 27%;
-    --ring: 217.2 91.2% 59.8%;
+    --background: 0 0% 98%; /* slate-50 */
+    --foreground: 222 83% 5%; /* slate-950 */
+    --card: 0 0% 98%; /* slate-50 */
+    --card-foreground: 222 83% 5%; /* slate-950 */
+    --popover: 0 0% 98%; /* slate-50 */
+    --popover-foreground: 222 83% 5%; /* slate-950 */
+    --primary: 221 83% 53%; /* blue-600 */
+    --primary-foreground: 0 0% 98%; /* slate-50 */
+    --secondary: 0 0% 96.1%; /* slate-100 */
+    --secondary-foreground: 222 47.4% 11.2%; /* slate-900 */
+    --muted: 0 0% 96.1%; /* slate-100 */
+    --muted-foreground: 215.4 16.3% 46.9%; /* slate-500 */
+    --accent: 0 0% 96.1%; /* slate-100 */
+    --accent-foreground: 222 47.4% 11.2%; /* slate-900 */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%; /* slate-200 */
+    --input: 0 0% 89.8%; /* slate-200 */
+    --ring: 221 83% 53%;
     --radius: 0.5rem;
   }
 
