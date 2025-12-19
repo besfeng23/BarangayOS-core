@@ -43,7 +43,7 @@ function makeControlNo() {
 }
 
 export function useBusinessPermitsWorkstation() {
-  const settings = useSettings();
+  const { settings } = useSettings();
 
   const [mode, setMode] = useState<Mode>("list");
   const [query, setQuery] = useState("");
@@ -119,7 +119,7 @@ export function useBusinessPermitsWorkstation() {
     setBizDraft({
       id: b.id,
       businessName: b.businessName,
-      owner: b.owner || { mode: 'manual', manualName: b.ownerName },
+      owner: b.owner || { mode: 'manual', manualName: b.ownerName, residentId: null },
       addressText: b.addressText,
       category: b.category ?? "",
       contact: b.contact ?? "",
@@ -190,6 +190,7 @@ export function useBusinessPermitsWorkstation() {
 
       setBanner({ kind: "ok", msg: "Saved & queued ✅" });
       setMode("list");
+      reload();
       return { ok: true as const, id: rec.id };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
@@ -197,7 +198,7 @@ export function useBusinessPermitsWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [bizDraft, validateBiz, computeStatus]);
+  }, [bizDraft, validateBiz, computeStatus, reload]);
 
   const startRenew = useCallback(async (id: string) => {
     const b = await db.businesses.get(id);
@@ -287,6 +288,7 @@ export function useBusinessPermitsWorkstation() {
 
       setBanner({ kind: "ok", msg: "Renewed & queued ✅ Printing…" });
       setMode("list");
+      reload();
       return { ok: true as const, issuanceId, issuance: issuance };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
@@ -294,7 +296,7 @@ export function useBusinessPermitsWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [selectedBusinessId, renewDraft, settings]);
+  }, [selectedBusinessId, renewDraft, settings, reload]);
 
   const afterPrint = useCallback(() => {
     setPrintHTML(null);

@@ -96,7 +96,7 @@ export default function BusinessPermitsPage() {
                 </div>
 
                 <ResidentPicker
-                    label="Owner"
+                    label="Owner *"
                     value={ws.bizDraft.owner}
                     onChange={(val) => ws.setBizDraft(d => ({ ...d, owner: val }))}
                 />
@@ -112,7 +112,7 @@ export default function BusinessPermitsPage() {
 
                 <button
                   className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-semibold"
-                  onClick={() => ws.setBizDraft((d) => ({ ...d, notes: d.notes }))} // no-op; keep UI light (no optional toggle in v1)
+                  onClick={() => {}} // no-op; keep UI light (no optional toggle in v1)
                 >
                   More details (optional) — use Notes below
                 </button>
