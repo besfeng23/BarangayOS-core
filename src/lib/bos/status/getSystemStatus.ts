@@ -1,3 +1,4 @@
+
 import { db, DB_VERSION } from '@/lib/bosDb';
 import { getRecentErrors } from '@/lib/bos/errors/errorBus';
 import { getSettingsSnapshot } from '@/lib/bos/print/getSettingsSnapshot';

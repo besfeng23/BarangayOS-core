@@ -1,3 +1,4 @@
+
 // A lightweight, in-memory ring buffer for recent runtime errors.
 // This avoids needing a full Dexie store and migration for a simple diagnostic feature.
 const MAX_ERRORS = 20;
