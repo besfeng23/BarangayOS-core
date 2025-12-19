@@ -13,6 +13,7 @@ import {
   FileText,
   Briefcase,
   Building,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -111,6 +112,12 @@ export default function Home() {
           badgeCount={totalPermitBadge}
           badgeLabel="Renewals"
           badgeColor="red"
+        />
+         <ModuleCard
+          title="Security"
+          description="Manage security devices and incidents"
+          icon={Shield}
+          href="/security"
         />
 
         <PartnerTileGuard

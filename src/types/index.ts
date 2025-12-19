@@ -10,6 +10,7 @@ import type { BusinessPermit } from './permits';
 import type { BlotterCase } from './blotter';
 import type { Transaction } from './transactions';
 import type { ReportData } from './reports';
+import type { SecurityDevice } from './security';
 
 export type BadgeInfo = {
   visible: boolean;
@@ -222,4 +223,5 @@ export type {
   BlotterCase,
   Transaction,
   ReportData,
+  SecurityDevice,
 };
