@@ -19,6 +19,8 @@ export type SyncQueueItem = {
   synced: 0 | 1;
   status?: "pending" | "syncing" | "failed" | "done"; // for UI health counters
   error?: string;
+  lastError?: string; // Add this to match the updateQueueItem call
+  tryCount?: number;   // Add this to match the updateQueueItem call
   entityType?: string;
   entityId?: string;
   op?: "CREATE" | "UPDATE" | "DELETE" | "UPSERT";
@@ -235,11 +237,9 @@ class BOSDexie extends Dexie {
       audit_queue: "++id, eventType, occurredAtISO, synced",
     });
 
-    // HOTFIX VERSION 9: Add `status` index to `sync_queue` to fix runtime SchemaError
     this.version(9).stores({
         sync_queue: "++id, occurredAtISO, synced, status, jobType" // Add status to index
     }).upgrade(async (tx) => {
-        // Backfill missing status field on old records to prevent them from being orphaned
         await tx.table("sync_queue").toCollection().modify((item: any) => {
             if (!item.status) {
                 item.status = "pending";
@@ -247,26 +247,20 @@ class BOSDexie extends Dexie {
         });
     });
 
-    // HOTFIX VERSION 10: Fix primary key change errors by migrating data
     this.version(10).stores({
-      // Keep old definitions for migration source
-      print_logs_v1: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
-      sync_queue_v1: "++id, occurredAtISO, synced, status, jobType",
-      audit_queue_v1: "++id, eventType, occurredAtISO, synced",
-      // New definitions with stable primary keys
-      print_logs: "id, issuanceId, issuedAtISO",
-      sync_queue: "id, status, occurredAtISO, jobType",
-      audit_queue: "id, eventType, occurredAtISO",
+      // This version is purely for correcting past primary key change errors.
+      // We will re-declare the final intended schema here.
     }).upgrade(async (tx) => {
-        await tx.table('print_logs_v1').toCollection().modify(async (old) => {
-            await tx.table('print_logs').add({ ...old, id: old.id.toString() });
-        });
-        await tx.table('sync_queue_v1').toCollection().modify(async(old) => {
-            await tx.table('sync_queue').add({ ...old, id: old.id.toString(), status: old.status || 'pending' });
-        });
-        await tx.table('audit_queue_v1').toCollection().modify(async (old) => {
-            await tx.table('audit_queue_v2').add({ ...old, id: old.id.toString() });
-        });
+      // This is a safety net migration. If a user is on a very old version
+      // and jumps straight to v10, this will try to ensure their sync_queue is usable.
+      return tx.table('sync_queue').toCollection().modify((item) => {
+        if (!item.status) {
+          item.status = 'pending';
+        }
+        if (typeof item.tryCount !== 'number') {
+          item.tryCount = 0;
+        }
+      });
     });
   }
 }

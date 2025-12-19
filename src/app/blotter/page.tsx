@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -114,16 +115,16 @@ export default function BlotterPage() {
                   />
                 </div>
                 
-                <ResidentPicker 
-                  label="Complainant"
-                  value={ws.draft.complainant}
-                  onChange={(val) => ws.setDraft(d => ({ ...d, complainant: val }))}
+                <ResidentPicker
+                    label="Complainant"
+                    value={ws.draft.complainant}
+                    onChange={(val) => ws.setDraft(d => ({ ...d, complainant: val }))}
                 />
                 
-                <ResidentPicker 
-                  label="Respondent"
-                  value={ws.draft.respondent}
-                  onChange={(val) => ws.setDraft(d => ({ ...d, respondent: val }))}
+                <ResidentPicker
+                    label="Respondent"
+                    value={ws.draft.respondent}
+                    onChange={(val) => ws.setDraft(d => ({ ...d, respondent: val }))}
                 />
 
                 <div>

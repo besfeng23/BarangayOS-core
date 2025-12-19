@@ -50,7 +50,7 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
     if (!queryTerm) return allResidents.slice(0, 10);
     const lowercasedQuery = queryTerm.toLowerCase();
     return allResidents.filter(resident =>
-      resident.displayName.toLowerCase().includes(lowercasedQuery) ||
+      (resident.displayName ?? '').toLowerCase().includes(lowercasedQuery) ||
       (resident.rbiId && resident.rbiId.includes(lowercasedQuery))
     ).slice(0, 10);
   }, [queryTerm, allResidents]);
