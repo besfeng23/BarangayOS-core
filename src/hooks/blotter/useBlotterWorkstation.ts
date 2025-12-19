@@ -234,6 +234,7 @@ export function useBlotterWorkstation() {
       clearDraft(DRAFT_KEY);
       setBanner({ kind: "ok", msg: "Saved & queued ✅" });
       setMode("list");
+      reload();
       return { ok: true as const, id: rec.id };
     } catch (e: any) {
       const msg = e?.message ?? String(e);
@@ -242,7 +243,7 @@ export function useBlotterWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [draft, validate]);
+  }, [draft, validate, reload]);
 
   const resolve = useCallback(async (enqueue: (job: { type: string; payload: any }) => Promise<void>) => {
     if (!draft.id) return;
@@ -270,6 +271,7 @@ export function useBlotterWorkstation() {
       setDraft((d) => ({ ...d, status: "Resolved" }));
       setBanner({ kind: "ok", msg: "Marked as Resolved ✅" });
       setMode("list");
+      reload();
       return { ok: true as const };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
@@ -277,7 +279,7 @@ export function useBlotterWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [draft.id]);
+  }, [draft.id, reload]);
 
   const buildAndPrint = useCallback(async () => {
     if (!draft.id) throw new Error("Save the record first before printing.");

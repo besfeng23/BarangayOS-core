@@ -4,7 +4,7 @@ import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 11;
+export const DB_VERSION = 12;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -63,11 +63,13 @@ export type BlotterLocal = {
   status: "Pending" | "Resolved";
   incidentDateISO: string;
   locationText: string;
-  complainantName: string;
-  respondentName: string;
-  narrative: string;
   caseNumber?: string;
   
+  // Denormalized for simple lists
+  complainantName: string;
+  respondentName: string;
+
+  // Structured for data integrity
   complainant?: ResidentPickerValue;
   respondent?: ResidentPickerValue;
 
@@ -268,6 +270,11 @@ class BOSDexie extends Dexie {
         // No schema changes needed for adding an optional 'owner' field to businesses
         // Dexie allows adding optional properties without a schema bump, but we increment
         // for clarity and to ensure the app logic aligns with the new data shape.
+    });
+
+    this.version(12).stores({
+        // No schema changes needed for adding optional 'complainant' and 'respondent'
+        // fields to blotters table. We increment for data model clarity.
     });
   }
 }
