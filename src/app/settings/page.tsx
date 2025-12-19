@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { isReadOnly, useSettings } from "@/lib/bos/settings/useSettings";
 import { useToast } from "@/components/ui/toast";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
+import Link from 'next/link';
 
 
 export default function SettingsPage() { 
@@ -107,6 +108,12 @@ export default function SettingsPage() {
             {saving ? "Saving..." : "Save Settings"}
           </button>
            {readOnly && <p className="text-center text-amber-400 text-xs mt-2">Read-only mode. Changes cannot be saved.</p>}
+
+           <div className="mt-6 text-center">
+            <Link href="/status" className="text-sm text-zinc-400 hover:text-zinc-100 underline">
+              View System Status
+            </Link>
+          </div>
         </div>
       </div>
   );
