@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import TerminalShell from "@/components/shell/TerminalShell";
-import PrintFrame from "@/components/print/PrintFrame";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBusinessPermitsWorkstation } from "@/hooks/permits/useBusinessPermitsWorkstation";
 
@@ -11,7 +9,6 @@ export default function BusinessPermitsPage() {
   const ws = useBusinessPermitsWorkstation();
 
   return (
-    <TerminalShell>
       <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
         {/* LIST VIEW */}
         {ws.mode === "list" && (
@@ -254,9 +251,6 @@ export default function BusinessPermitsPage() {
             </div>
           </>
         )}
-
-        {ws.printHTML && <PrintFrame html={ws.printHTML} onAfterPrint={ws.afterPrint} onError={(e) => console.error("Print error:", e)} />}
       </div>
-    </TerminalShell>
   );
 }

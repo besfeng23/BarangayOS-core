@@ -2,7 +2,7 @@ import Dexie, { Table } from "dexie";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
 // The error indicated an existing version of 4, so we are setting it to 5.
-export const DB_VERSION = 5;
+export const DB_VERSION = 6;
 
 export type MetaRow = { key: string; value: any };
 
@@ -171,6 +171,27 @@ export type ActivityLogLocal = {
   synced: 0 | 1;
 };
 
+export type PrintJobLocal = {
+  id: string;                 // uuid
+  createdAtISO: string;
+  printedAtISO?: string;
+
+  // source record
+  entityType: "certificate" | "blotter" | "permit_issuance" | "resident_doc" | "system";
+  entityId: string;
+
+  title: string;              // e.g. "Barangay Clearance"
+  subtitle: string;           // e.g. "Mark • Control No 2025-00012"
+  docType: string;            // e.g. "barangay_clearance" | "blotter_report" | "business_permit"
+  html: string;               // printable HTML snapshot (already final)
+  status: "queued" | "printed" | "failed";
+  attempts: number;           // increment if print fails
+  lastError?: string;
+
+  searchTokens: string[];
+  synced: 0 | 1;
+};
+
 
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
@@ -181,6 +202,7 @@ class BOSDexie extends Dexie {
   permit_issuances!: Table<PermitIssuanceLocal, string>;
   certificate_issuances!: Table<CertificateIssuanceLocal, string>;
   print_logs!: Table<PrintLogLocal, number>;
+  print_jobs!: Table<PrintJobLocal, string>;
 
   syncQueue!: Table<SyncQueueRow, number>;
   auditQueue!: Table<AuditRow, number>;
@@ -203,6 +225,7 @@ class BOSDexie extends Dexie {
       permit_issuances: "id, businessId, year, issuedAtISO, *searchTokens",
       certificate_issuances: "id, residentId, certType, issuedAtISO, controlNo, status, *searchTokens",
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
+      print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
       
       // Sync and Audit Tables with compatibility
       syncQueue: "++id, jobType, occurredAtISO, synced, status",

@@ -4,6 +4,8 @@ import { toTokens } from "@/lib/bos/searchTokens";
 import { useSettings } from "@/hooks/useSettings";
 import { buildBusinessPermitHTML } from "@/lib/permits/templates";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
+import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
+import { performPrintJob } from "@/lib/bos/print/performPrintJob";
 
 
 type Mode = "list" | "businessForm" | "renewForm";
@@ -253,23 +255,22 @@ export function useBusinessPermitsWorkstation() {
       });
 
 
-      // Reuse print_logs (store issuanceId in issuanceId field; certType identifies it's a permit print)
-      await db.print_logs.add({
-        issuanceId,
-        residentId: b.id,            // reuse residentId field to store businessId (consistent sink)
-        certType: "BUSINESS_PERMIT", // label
-        issuedAtISO: nowISO,
-        synced: 0,
-      });
-
       // 4) enqueue sync
       await enqueue({ type: "BUSINESS_UPSERT", payload: updated });
       await enqueue({ type: "PERMIT_ISSUANCE_UPSERT", payload: issuance });
-      await enqueue({ type: "PRINTLOG_UPSERT", payload: { issuanceId, ownerOrBusinessId: b.id, type: "BUSINESS_PERMIT", issuedAtISO: nowISO } });
-
+      
       // 5) print
       const html = buildBusinessPermitHTML(issuance);
-      setPrintHTML(html);
+      const printJobId = await enqueuePrintJob({
+        entityType: "permit_issuance",
+        entityId: issuance.id,
+        docType: "business_permit",
+        title: "Business Permit",
+        subtitle: `${issuance.businessName} • ${issuance.year} • ${issuance.controlNo}`,
+        html,
+      });
+
+      await performPrintJob(printJobId);
 
       setBanner({ kind: "ok", msg: "Renewed & queued ✅ Printing…" });
       setMode("list");

@@ -5,6 +5,8 @@ import { loadDraft, saveDraft, clearDraft } from "@/lib/bos/localDraft";
 import { useSettings } from "@/hooks/useSettings";
 import { buildBlotterPrintHTML } from "@/lib/blotter/templates";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
+import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
+import { performPrintJob } from "@/lib/bos/print/performPrintJob";
 
 type Mode = "list" | "form";
 type Banner = { kind: "ok" | "error"; msg: string } | null;

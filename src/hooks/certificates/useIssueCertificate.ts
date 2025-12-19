@@ -4,6 +4,9 @@ import { toTokens } from "@/lib/bos/searchTokens";
 import { buildCertificateHTML } from "@/lib/certificates/templates";
 import { useSettings } from "@/hooks/useSettings";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
+import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
+import { performPrintJob } from "@/lib/bos/print/performPrintJob";
+
 
 function uuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -73,16 +76,7 @@ export function useIssueCertificate() {
       // 1) local write
       await db.certificate_issuances.put(issuance);
 
-      // 2) print log local (for audit trail)
-      await db.print_logs.add({
-        issuanceId,
-        residentId,
-        certType,
-        issuedAtISO: nowISO,
-        synced: 0,
-      });
-
-      // 3) audit queue
+      // 2) audit queue
       await writeActivity({
         type: "CERT_ISSUED",
         entityType: "certificate",
@@ -94,13 +88,24 @@ export function useIssueCertificate() {
       });
 
 
-      // 4) enqueue sync (never block printing)
+      // 3) enqueue sync (never block printing)
       await enqueue({ type: "CERT_ISSUANCE_UPSERT", payload: issuance });
-      await enqueue({ type: "PRINTLOG_UPSERT", payload: { issuanceId, residentId, certType, issuedAtISO: nowISO } });
 
-      // 5) prepare print HTML (PrintFrame will print when html changes)
+      // 4) prepare print HTML
       const html = buildCertificateHTML(issuance);
-      setPrintingHTML(html);
+      
+      // 5) enqueue for print center
+      const printJobId = await enqueuePrintJob({
+        entityType: "certificate",
+        entityId: issuance.id,
+        docType: issuance.certType,
+        title: issuance.certType,
+        subtitle: `${issuance.residentName} • Control No: ${issuance.controlNo}`,
+        html,
+      });
+
+      // 6) perform immediate print
+      await performPrintJob(printJobId);
 
       setBanner({ kind: "ok", msg: "Saved & queued ✅ Printing…" });
       return { ok: true as const, issuanceId };
@@ -114,30 +119,15 @@ export function useIssueCertificate() {
   }, [settings]);
 
   const afterPrint = useCallback(() => {
-    // clear html so repeated prints re-trigger
-    setPrintingHTML(null);
-    if(printingHTML) {
-        // This is a bit of a hack, but we can extract info from the HTML string if needed
-        // A better way would be to store the `issuance` object in state.
-        // For now, let's assume we can't easily get the issuance object here.
-        // This log will be less detailed.
-        writeActivity({
-            type: "CERT_PRINTED",
-            entityType: "certificate",
-            entityId: "unknown",
-            status: "ok",
-            title: "Certificate printed",
-            subtitle: `A document was sent to the printer.`,
-        });
-    }
-  }, [printingHTML]);
+    // This is now handled by performPrintJob
+  }, []);
 
   return useMemo(() => ({
     busy,
     banner,
-    printingHTML,
+    printingHTML: null, // PrintFrame is no longer needed on this page
     issueAndPreparePrint,
     afterPrint,
     clearBanner,
-  }), [busy, banner, printingHTML, issueAndPreparePrint, afterPrint, clearBanner]);
+  }), [busy, banner, issueAndPreparePrint, afterPrint, clearBanner]);
 }
