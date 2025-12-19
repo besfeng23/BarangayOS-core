@@ -24,6 +24,11 @@ export default function SystemRail() {
   const { user } = useAuth();
   const { settings } = useSettings();
   const userRole = getRolePill(user?.email); // Placeholder until roles are in claims
+  
+  const raw = (settings?.barangayName ?? "").trim();
+  const withoutBarangay = raw.replace(/^barangay\s+/i, "").trim();
+  const token = (withoutBarangay.length ? withoutBarangay : "BARANGAY").toUpperCase();
+  const subtitle = `${token} TERMINAL`;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
@@ -70,7 +75,7 @@ export default function SystemRail() {
           <div className="hidden sm:block leading-none min-w-0">
             <div className="text-zinc-100 font-semibold truncate">BarangayOS</div>
             <div className="text-[10px] tracking-widest uppercase text-zinc-400 truncate">
-              BARANGAY • TERMINAL
+              {subtitle}
             </div>
           </div>
         </div>
