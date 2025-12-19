@@ -43,14 +43,14 @@ export default function RootLayout({
             {isLoginPage ? (
               children
             ) : (
-              <AuthGuard>
+              // <AuthGuard> // AuthGuard disabled for now
                 <SyncProvider>
                   <IdleScreensaver />
                    <TerminalShell>
                       {children}
                    </TerminalShell>
                 </SyncProvider>
-              </AuthGuard>
+              // </AuthGuard>
             )}
             <Toaster />
           </SettingsProvider>
