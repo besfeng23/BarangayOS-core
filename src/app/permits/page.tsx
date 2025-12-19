@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import TerminalShell from "@/components/shell/TerminalShell";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBusinessPermitsWorkstation } from "@/hooks/businessPermits/useBusinessPermitsWorkstation";
-import { PrintFrame } from "@/components/print/PrintFrame";
+import PrintFrame from "@/components/print/PrintFrame";
 import { buildBusinessPermitHTML } from "@/lib/businessPermits/templates/permitA4";
 import { db } from "@/lib/bosDb";
 
@@ -74,6 +75,7 @@ export default function BusinessPermitsPage() {
   };
 
   return (
+    <TerminalShell>
       <div className="mx-auto w-full max-w-4xl p-4 md:p-6">
         <div className="mb-4">
           <h1 className="text-zinc-100 text-xl font-semibold">Business Permits</h1>
@@ -147,5 +149,6 @@ export default function BusinessPermitsPage() {
           />
         )}
     </div>
+    </TerminalShell>
   );
 }
