@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";

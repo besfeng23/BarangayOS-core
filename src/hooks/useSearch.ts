@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db as localDb } from '@/lib/db';
+import { db as localDb } from '@/lib/bosDb';
 import { useDebounce } from './useDebounce';
 
 export interface SearchResult {
@@ -42,8 +42,8 @@ export function useSearch(term: string) {
           ...prev,
           residents: residentResults.map(r => ({
             id: r.id,
-            title: r.displayName,
-            subtitle: `RBI ID: ${r.rbiId}`,
+            title: r.fullName,
+            subtitle: `ID: ${r.id}`,
             href: `/residents/${r.id}`,
           })),
         }));

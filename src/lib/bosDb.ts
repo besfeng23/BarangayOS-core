@@ -83,15 +83,20 @@ export type BusinessLocal = {
 };
 
 export type PermitIssuanceLocal = {
-  id: string; // uuid
+  id: string;
   businessId: string;
-  issuedAtISO: string;
+  businessName: string;
+  ownerName: string;
   year: number;
   feeAmount: number;
-  orNo?: string; // official receipt no
+  orNo?: string;
   remarks?: string;
-  issuedByName?: string; // secretary/captain name
   controlNo: string;
+  issuedAtISO: string;
+  issuedByName: string;
+  barangayName: string;
+  municipalityCity: string;
+  province: string;
   searchTokens: string[];
 };
 
@@ -274,7 +279,7 @@ export type CertificateIssuanceLocal = {
 };
 
 export type PrintLogLocal = {
-  id: string;
+  id?: number;
   issuanceId: string;
   residentId: string;
   certType: string;

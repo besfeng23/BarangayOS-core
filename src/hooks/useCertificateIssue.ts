@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { db, ResidentRecord } from "@/lib/bosDb";
 import { generateControlNumber } from "@/lib/certUtils";
@@ -31,7 +30,7 @@ export function useCertificateIssue() {
     const now = Date.now();
     const logId = uuid();
 
-    await db.transaction("rw", db.printLogs, db.syncQueue, db.transactions, async () => {
+    await db.transaction("rw", db.print_logs, db.syncQueue, db.transactions, async () => {
       // 1. Log the print event for auditing
       await db.printLogs.add({
         id: logId,
