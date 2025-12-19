@@ -2,17 +2,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
-import { bosDb, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
-import { uuid, norm } from "@/lib/uuid";
-import { generateCaseNumber } from "@/lib/blotterUtils";
-import { useResidentQuickSearch } from "@/hooks/useResidentQuickSearch";
 import { useBlotterData } from "@/hooks/useBlotterData";
+import { Party } from "@/lib/bosDb";
+import { norm } from "@/lib/uuid";
+import { useResidentQuickSearch } from "@/hooks/useResidentQuickSearch";
 
 const TAGS = ["Debt", "Noise", "Theft", "Physical Injury", "Trespassing", "Harassment", "Threats", "Property Damage"];
-const STATUS_DEFAULT: BlotterStatus = "ACTIVE";
-
-// TEMP: until Settings module exists
-const DEFAULT_BARANGAY_ID = "demo_barangay";
 
 const baseInput =
   "w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl text-zinc-100 " +
@@ -178,13 +173,13 @@ export default function BlotterCreatePage() {
 
     try {
       const rec = await createBlotter({
-        barangayId: DEFAULT_BARANGAY_ID,
+        barangayId: "TEST-BARANGAY-1", // Replace with real ID from settings/auth
         incidentDate: new Date(incidentDate).getTime(),
         complainants,
         respondents,
         narrative,
         tags,
-        status: STATUS_DEFAULT,
+        status: "ACTIVE", // Default status for new cases
       });
 
       toast({ title: "Case saved offline — queued for sync" });
