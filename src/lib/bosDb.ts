@@ -282,4 +282,6 @@ export const db = new BOSDexie();
 export async function resetLocalDatabase() {
   await db.close();
   await Dexie.delete(DB_NAME);
+  // Reload the page to re-initialize the database and app state
+  window.location.reload();
 }
