@@ -1,51 +1,50 @@
+"use client";
 import React, { useEffect, useRef } from "react";
 
 type Props = {
-  html: string; // full HTML document string
+  html: string | null;                 // complete HTML document
   onAfterPrint?: () => void;
-  onError?: (e: Error) => void;
+  onError?: (e: any) => void;
 };
 
-export function PrintFrame({ html, onAfterPrint, onError }: Props) {
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+export default function PrintFrame({ html, onAfterPrint, onError }: Props) {
+  const ref = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
-    const iframe = iframeRef.current;
+    if (!html) return;
+    const iframe = ref.current;
     if (!iframe) return;
 
-    const handleLoad = () => {
-      try {
-        const w = iframe.contentWindow;
-        if (!w) throw new Error("Print iframe has no contentWindow");
-        w.focus();
-        w.print();
-        // best-effort callback
-        setTimeout(() => onAfterPrint?.(), 300);
-      } catch (e: any) {
-        onError?.(e instanceof Error ? e : new Error(String(e)));
-      }
-    };
+    try {
+      const doc = iframe.contentWindow?.document;
+      if (!doc) return;
 
-    iframe.addEventListener("load", handleLoad);
-    return () => iframe.removeEventListener("load", handleLoad);
+      doc.open();
+      doc.write(html);
+      doc.close();
+
+      // Give browser a tick to layout before printing
+      const t = window.setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          onAfterPrint?.();
+        } catch (e) {
+          onError?.(e);
+        }
+      }, 250);
+
+      return () => window.clearTimeout(t);
+    } catch (e) {
+      onError?.(e);
+    }
   }, [html, onAfterPrint, onError]);
 
   return (
     <iframe
-      ref={iframeRef}
+      ref={ref}
       title="print"
-      // Offscreen, not display:none (prevents blank print)
-      style={{
-        position: "fixed",
-        right: 0,
-        bottom: 0,
-        width: "1px",
-        height: "1px",
-        opacity: 0,
-        pointerEvents: "none",
-        border: 0,
-      }}
-      srcDoc={html}
+      style={{ position: "absolute", width: 0, height: 0, border: 0, opacity: 0, pointerEvents: "none" }}
     />
   );
 }

@@ -258,20 +258,30 @@ export type TransactionRecord = {
   lastError?: string;
 }
 
-export type BusinessRecord = {
-    id: string;
-    businessNameUpper: string;
-    ownerNameUpper: string;
-    searchTokens: string[];
-    status: string;
-}
+export type CertificateIssuanceLocal = {
+  id: string;
+  residentId: string;
+  residentName: string;
+  certType: "Barangay Clearance" | "Certificate of Residency" | "Indigency" | "Business Clearance";
+  purpose: string;
+  controlNo: string;              // human-friendly unique control no
+  issuedAtISO: string;
+  issuedByName: string;           // from Settings or fallback "Barangay Staff"
+  barangayName: string;           // from Settings
+  municipalityCity: string;       // from Settings
+  province: string;               // from Settings
+  status: "Issued";
+  searchTokens: string[];
+};
 
-export type CertificateRecord = {
-    id: string;
-    residentId: string;
-    certType: string;
-    createdAtLocal: string;
-}
+export type PrintLogLocal = {
+  id?: number;
+  issuanceId: string;
+  residentId: string;
+  certType: string;
+  issuedAtISO: string;
+  synced: 0 | 1;
+};
 
 class BOSDexie extends Dexie {
   residents!: Table<ResidentLocal, string>;
@@ -288,7 +298,9 @@ class BOSDexie extends Dexie {
   meta!: Table<MetaRecord, string>;
   settings!: Table<BOSSettings, string>;
   transactions!: Table<TransactionRecord, string>;
-  certificates!: Table<CertificateRecord, string>;
+  certificate_issuances!: Table<CertificateIssuanceLocal, string>;
+  print_logs!: Table<PrintLogLocal, number>;
+
 
   constructor() {
     super("BarangayOS_Local");
@@ -300,16 +312,15 @@ class BOSDexie extends Dexie {
       permit_issuances: "id, businessId, year, issuedAtISO, *searchTokens",
       sync_queue: "++id, jobType, occurredAtISO, synced",
       audit_queue: "++id, eventType, occurredAtISO, synced",
-      // New/existing stores to consolidate
       syncQueue: '++id, [entityType+entityId], status',
       auditLogs: '++id, eventType, entityId, occurredAtLocal, synced',
       meta: '&key',
-      printLogs: "id, createdAt, controlNo, status",
+      print_logs: "++id, issuanceId, issuedAtISO, residentId, synced",
       settings: "id, &key",
       transactions: "id, createdAt, status",
       activityLog: "++id, createdAt, type, [entityType+entityId]",
       drafts: "id, &[module+key]",
-      certificates: '++id, residentId, certType, createdAtLocal',
+      certificate_issuances: 'id, residentId, certType, issuedAtISO, controlNo, status, *searchTokens',
     });
   }
 }
