@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, ActivityLogLocal as ActivityLogItem, ResidentLocal as ResidentRecord } from "@/lib/bosDb";
@@ -52,7 +53,7 @@ export function useResidentsData() {
     const q = norm(filters.q);
     const { purok, sex, status } = filters;
 
-    let base: ResidentRecord[];
+    let base: ResidentRecord[] = [];
 
     if (purok) {
       base = await db.residents.where("purok").equals(purok).toArray();
@@ -64,11 +65,11 @@ export function useResidentsData() {
       const byLast = await db.residents.where("lastNameNorm").startsWithIgnoreCase(q).toArray();
       const byFirst = await db.residents.where("firstNameNorm").startsWithIgnoreCase(q).toArray();
       const map = new Map<string, ResidentRecord>();
-      byLast.forEach((r) => map.set(r.id, r));
-      byFirst.forEach((r) => map.set(r.id, r));
-      base = Array.from(map.values());
+      byLast.forEach((r:any) => map.set(r.id, r));
+      byFirst.forEach((r:any) => map.set(r.id, r));
+      base = Array.from(map.values()) as ResidentRecord[];
     } else {
-      base = await db.residents.toCollection().toArray();
+      base = await db.residents.toCollection().toArray() as ResidentRecord[];
     }
 
     const results = base
@@ -84,37 +85,37 @@ export function useResidentsData() {
         }
         return true;
       })
-      .sort((a, b) => (a.lastNameNorm || "").localeCompare(b.lastNameNorm || ""));
+      .sort((a:any, b:any) => (a.lastNameNorm || "").localeCompare(b.lastNameNorm || ""));
 
     return results;
   }, [filters], []);
 
   const residentNewDraft = useLiveQuery<any | undefined>(
-    () => (db as any).drafts.where("[module+key]").equals(["residents", "resident:new"]).first(),
+    () => db.table("drafts").where("[module+key]").equals(["residents", "resident:new"]).first(),
     [],
     undefined
   );
 
   const upsertDraft = useCallback(async (key: string, payload: any) => {
     const now = Date.now();
-    const existing = await (db as any).drafts.where("[module+key]").equals(["residents", key]).first();
+    const existing = await db.table("drafts").where("[module+key]").equals(["residents", key]).first();
     if (existing) {
-      await (db as any).drafts.update(existing.id, { payload, updatedAt: now });
+      await db.table("drafts").update(existing.id, { payload, updatedAt: now });
       return;
     }
-    await (db as any).drafts.add({ id: uuid(), module: "residents", key, payload, updatedAt: now });
+    await db.table("drafts").add({ id: uuid(), module: "residents", key, payload, updatedAt: now });
   }, []);
 
   const clearDraft = useCallback(async (key: string) => {
-    const existing = await (db as any).drafts.where("[module+key]").equals(["residents", key]).first();
-    if (existing) await (db as any).drafts.delete(existing.id);
+    const existing = await db.table("drafts").where("[module+key]").equals(["residents", key]).first();
+    if (existing) await db.table("drafts").delete(existing.id);
   }, []);
 
   async function checkDuplicateLocal(lastName: string, firstName: string, birthdate: string) {
     const ln = norm(lastName);
     const fn = norm(firstName);
     const candidates = await db.residents.where("lastNameNorm").equals(ln).toArray();
-    return candidates.find((r: any) => r.firstNameNorm === fn && r.birthdate === birthdate) || null;
+    return (candidates as any[]).find((r) => r.firstNameNorm === fn && r.birthdate === birthdate) || null;
   }
 
   async function createResident(input: any) {
@@ -130,12 +131,12 @@ export function useResidentsData() {
       fullNameNorm: norm(`${input.firstName} ${input.middleName || ''} ${input.lastName}`),
       searchTokens: [], // Add logic to populate this
       syncState: "queued",
-    } as ResidentRecord;
+    } as unknown as ResidentRecord;
 
-    await db.transaction("rw", db.residents, db.sync_queue, db.activity_log, (db as any).transactions, async () => {
+    await db.transaction("rw", db.residents, db.sync_queue, db.activity_log, async () => {
       await db.residents.add(record as any);
       await db.sync_queue.add({
-        id: uuid() as any,
+        id: uuid(),
         jobType: "RESIDENT_CREATE",
         entityType: "resident",
         entityId: id,

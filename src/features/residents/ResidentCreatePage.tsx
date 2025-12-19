@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -249,7 +250,7 @@ const Step2Personal = ({ form, setForm, errors, age }: { form: FormState, setFor
                     <Input type="date" value={form.birthdate} onChange={(e) => setForm({ ...form, birthdate: e.target.value })} className={`h-12 text-lg bg-slate-900 border-slate-600 ${errors.birthdate && 'border-red-500'}`} />
                 </Field>
                 <Field label="Age">
-                    <div className="h-12 text-lg flex items-center px-3 rounded-md bg-slate-900/50 border border-slate-700">{age !== null ? `${age} years old` : '-'}</div>
+                    <div className="h-12 text-lg flex items-center px-3 rounded-md bg-slate-800/50 border border-slate-700">{age !== null ? `${age} years old` : '-'}</div>
                 </Field>
             </div>
             <Field label="Sex *" error={errors.sex}>
@@ -297,5 +298,3 @@ const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f:
         </CardContent>
     </Card>
 );
-
-    

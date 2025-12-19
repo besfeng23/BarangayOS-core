@@ -19,6 +19,9 @@ export type SyncQueueItem = {
   synced: 0 | 1;
   status?: "pending" | "syncing" | "failed" | "done"; // for UI health counters
   error?: string;
+  entityType?: string;
+  entityId?: string;
+  op?: "CREATE" | "UPDATE" | "DELETE" | "UPSERT";
 };
 
 export type AuditRow = { id?: number; eventType: string; details: any; occurredAtISO: string; synced: 0 | 1 };
@@ -60,6 +63,7 @@ export type BlotterLocal = {
   complainantName: string;
   respondentName: string;
   narrative: string;
+  caseNumber?: string;
   
   complainant?: ResidentPickerValue;
   respondent?: ResidentPickerValue;
@@ -246,34 +250,24 @@ class BOSDexie extends Dexie {
     // HOTFIX VERSION 10: Fix primary key change errors by migrating data
     this.version(10).stores({
       // Keep old definitions for migration source
-      print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
-      sync_queue: "++id, occurredAtISO, synced, status, jobType",
-      audit_queue: "++id, eventType, occurredAtISO, synced",
+      print_logs_v1: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
+      sync_queue_v1: "++id, occurredAtISO, synced, status, jobType",
+      audit_queue_v1: "++id, eventType, occurredAtISO, synced",
       // New definitions with stable primary keys
-      print_logs_v2: "id, issuanceId, issuedAtISO",
-      sync_queue_v2: "id, status, occurredAtISO",
-      audit_queue_v2: "id, eventType, occurredAtISO",
+      print_logs: "id, issuanceId, issuedAtISO",
+      sync_queue: "id, status, occurredAtISO, jobType",
+      audit_queue: "id, eventType, occurredAtISO",
     }).upgrade(async (tx) => {
-      // Migrate print_logs
-      await tx.table('print_logs').each(async (old) => {
-        await tx.table('print_logs_v2').add({ ...old, id: old.id.toString() });
-      });
-      // Migrate sync_queue
-      await tx.table('sync_queue').each(async (old) => {
-        await tx.table('sync_queue_v2').add({ ...old, id: old.id.toString(), status: old.status || 'pending' });
-      });
-       // Migrate audit_queue
-       await tx.table('audit_queue').each(async (old) => {
-        await tx.table('audit_queue_v2').add({ ...old, id: old.id.toString() });
-      });
+        await tx.table('print_logs_v1').toCollection().modify(async (old) => {
+            await tx.table('print_logs').add({ ...old, id: old.id.toString() });
+        });
+        await tx.table('sync_queue_v1').toCollection().modify(async(old) => {
+            await tx.table('sync_queue').add({ ...old, id: old.id.toString(), status: old.status || 'pending' });
+        });
+        await tx.table('audit_queue_v1').toCollection().modify(async (old) => {
+            await tx.table('audit_queue_v2').add({ ...old, id: old.id.toString() });
+        });
     });
-
-    // After migration, you can rename the tables in the class instance for transparent use
-    if (this.verno >= 10) {
-      this.print_logs = this.table("print_logs_v2");
-      this.sync_queue = this.table("sync_queue_v2");
-      this.audit_queue = this.table("audit_queue_v2");
-    }
   }
 }
 

@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -166,7 +167,7 @@ export default function ResidentsPage() {
                 No residents found. <br /> Register a new resident to begin.
               </div>
             ) : (
-              residents.map((r) => (
+              residents.map((r: any) => (
                 <button
                   key={r.id}
                   onClick={() => router.push(`/residents/${r.id}`)}

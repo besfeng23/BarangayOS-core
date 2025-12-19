@@ -35,7 +35,7 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
 
     // Fetch settings to get required IDs.
     // In a real app, this should be cached in context/memory.
-    const settings = await (db as any).settings.where("key").equals("barangay").first();
+    const settings = await db.table("settings").where("key").equals("barangay").first();
     const partnerId = settings?.value?.partnerId || "PLDT_ENT_001";
     const barangayId = settings?.value?.barangayName || "UNKNOWN_BRGY";
     const deviceId = settings?.value?.deviceId || "UNKNOWN_DEVICE";
@@ -60,10 +60,10 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
     };
 
     // Write to both transactions table and sync queue atomically
-    await db.transaction("rw", (db as any).transactions, db.sync_queue, async () => {
-      await (db as any).transactions.add(transaction);
+    await db.transaction("rw", db.table("transactions"), db.sync_queue, async () => {
+      await db.table("transactions").add(transaction);
       await db.sync_queue.add({
-        id: uuid() as any,
+        id: uuid(),
         entityType: "transaction",
         entityId: transaction.id,
         op: "UPSERT",

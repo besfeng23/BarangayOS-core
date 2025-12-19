@@ -19,12 +19,12 @@ export default function ResidentProfilePage() {
   const { toast } = useToast();
   const toastShownRef = useRef(false);
 
-  const resident = useLiveQuery(() => db.residents.get(id), [id], undefined);
+  const resident = useLiveQuery(() => db.residents.get(id as string), [id], undefined);
 
   // Log View
   useEffect(() => {
     if (!id) return;
-    logActivity({ type: "RESIDENT_VIEW", entityType: "resident", entityId: id });
+    logActivity({ type: "RESIDENT_VIEW", entityType: "resident", entityId: id } as any);
   }, [id, logActivity]);
   
   // This effect can be used to show a toast passed via query param or other means
@@ -72,24 +72,23 @@ export default function ResidentProfilePage() {
 
               <div className="flex flex-col sm:flex-row gap-5 items-start">
                 <div className="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 font-bold text-xl">
-                  {resident.lastName[0]}{resident.firstName[0]}
+                  {(resident as any).firstName[0]}{(resident as any).lastName[0]}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <h1 className="text-3xl font-bold text-zinc-100 truncate">
-                    {resident.lastName.toUpperCase()}, {resident.firstName}
+                    {(resident as any).lastName.toUpperCase()}, {(resident as any).firstName}
                   </h1>
-                  <SyncStatusBadge residentId={resident.id} />
+                  <SyncStatusBadge residentId={(resident as any).id} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 text-zinc-400">
-                    <p><span className="text-zinc-100">ID:</span> <span className="font-mono text-zinc-400">{resident.id}</span></p>
-                    <p><span className="text-zinc-100">Status:</span> {resident.status}</p>
-                    <p><span className="text-zinc-100">Address:</span> {resident.purok}, {resident.addressLine1}</p>
-                    <p><span className="text-zinc-100">Demographics:</span> {calcAge(resident.birthdate)} y/o • {resident.sex} • {resident.civilStatus}</p>
+                    <p><span className="text-zinc-100">ID:</span> <span className="font-mono text-zinc-400">{(resident as any).id}</span></p>
+                    <p><span className="text-zinc-100">Status:</span> {(resident as any).status}</p>
+                    <p><span className="text-zinc-100">Address:</span> {(resident as any).purok}, {(resident as any).addressLine1}</p>
+                    <p><span className="text-zinc-100">Demographics:</span> {calcAge((resident as any).birthdate)} y/o • {(resident as any).sex} • {(resident as any).civilStatus}</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-                    <button className={btnPrimary} onClick={() => router.push(`/certificates/${resident.id}`)}>Issue Clearance</button>
-                    <button className={btnPrimary}>Issue Certificate</button>
+                    <button className={btnPrimary} onClick={() => router.push(`/certificates?residentId=${resident.id}`)}>Issue Document</button>
                     
                     <button
                       className={btnPrimary}
@@ -101,7 +100,8 @@ export default function ResidentProfilePage() {
                     >
                       Create Blotter Case
                     </button>
-
+                    
+                    <button className={btnSecondary}>Edit Record</button>
                     <button className={btnSecondary}>Print Record</button>
                   </div>
                 </div>
