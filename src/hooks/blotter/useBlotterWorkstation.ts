@@ -83,6 +83,15 @@ export function useBlotterWorkstation() {
 
   useEffect(() => { saveDraft(DRAFT_KEY, draft); }, [draft]);
 
+  const canSave = useMemo(() => {
+    if (!draft.incidentDateISO) return false;
+    if (!draft.locationText.trim()) return false;
+    if (!getPartyName(draft.complainant)) return false;
+    if (!getPartyName(draft.respondent)) return false;
+    if (!draft.narrative.trim()) return false;
+    return true;
+  }, [draft]);
+
   const fetchList = useCallback(async (qRaw: string) => {
     setLoading(true);
     try {
@@ -305,6 +314,7 @@ export function useBlotterWorkstation() {
     items, loading,
     banner, setBanner,
     busy,
+    canSave,
     selectedId,
     draft, setDraft,
     more, setMore,

@@ -149,8 +149,8 @@ export default function BlotterPage() {
                       <label className="block text-zinc-400 text-xs mb-1">Complainant Contact</label>
                       <input
                         className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                        value={ws.draft.complainantContact}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, complainantContact: e.target.value }))}
+                        value={ws.draft.actionsTaken}
+                        onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
                       />
                     </div>
 
@@ -158,8 +158,8 @@ export default function BlotterPage() {
                       <label className="block text-zinc-400 text-xs mb-1">Respondent Contact</label>
                       <input
                         className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                        value={ws.draft.respondentContact}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, respondentContact: e.target.value }))}
+                        value={ws.draft.actionsTaken}
+                        onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
                       />
                     </div>
 
@@ -202,9 +202,9 @@ export default function BlotterPage() {
                 <button
                   className={[
                     "h-12 w-full rounded-xl font-semibold",
-                    ws.busy ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
+                    ws.busy || !ws.canSave ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
                   ].join(" ")}
-                  disabled={ws.busy}
+                  disabled={ws.busy || !ws.canSave}
                   onClick={() => ws.save(enqueue)}
                 >
                   {ws.busy ? "Saving…" : "Save Record"}

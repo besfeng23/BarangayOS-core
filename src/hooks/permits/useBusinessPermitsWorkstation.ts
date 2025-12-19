@@ -73,6 +73,21 @@ export function useBusinessPermitsWorkstation() {
 
   const [printHTML, setPrintHTML] = useState<string | null>(null);
 
+  const canSaveBusiness = useMemo(() => {
+    if (!bizDraft.businessName.trim()) return false;
+    if (!getOwnerName(bizDraft.owner)) return false;
+    if (!bizDraft.addressText.trim()) return false;
+    return true;
+  }, [bizDraft]);
+
+  const canRenew = useMemo(() => {
+    const year = Number(renewDraft.year);
+    if (!year || year < 2000) return false;
+    const fee = Number(renewDraft.feeAmount);
+    if (!isFinite(fee) || fee < 0) return false;
+    return true;
+  }, [renewDraft]);
+
   const computeStatus = useCallback((latestYear:number, suspended?: boolean) => {
     if (suspended) return "Suspended" as const;
     return latestYear >= currentYear() ? "Active" as const : "Expired" as const;
@@ -309,7 +324,9 @@ export function useBusinessPermitsWorkstation() {
     banner, setBanner,
     busy,
     bizDraft, setBizDraft,
+    canSaveBusiness,
     renewDraft, setRenewDraft,
+    canRenew,
     selectedBusinessId,
     newBusiness,
     openBusiness,

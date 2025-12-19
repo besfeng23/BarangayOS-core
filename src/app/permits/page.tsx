@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -154,9 +155,9 @@ export default function BusinessPermitsPage() {
                 <button
                   className={[
                     "h-12 w-full rounded-xl font-semibold",
-                    ws.busy ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
+                    ws.busy || !ws.canSaveBusiness ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
                   ].join(" ")}
-                  disabled={ws.busy}
+                  disabled={ws.busy || !ws.canSaveBusiness}
                   onClick={() => ws.saveBusiness(enqueue)}
                 >
                   {ws.busy ? "Saving…" : "Save Business"}
@@ -234,9 +235,9 @@ export default function BusinessPermitsPage() {
                 <button
                   className={[
                     "h-12 w-full rounded-xl font-semibold",
-                    ws.busy ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
+                    ws.busy || !ws.canRenew ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
                   ].join(" ")}
-                  disabled={ws.busy}
+                  disabled={ws.busy || !ws.canRenew}
                   onClick={() => ws.renewAndPrint(enqueue)}
                 >
                   {ws.busy ? "Renewing…" : "Renew & Print"}
