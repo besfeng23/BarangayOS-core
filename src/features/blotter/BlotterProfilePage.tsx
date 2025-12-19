@@ -59,7 +59,7 @@ export default function BlotterProfilePage() {
               <button
                 onClick={() => router.push("/blotter")}
                 className="mt-4 px-5 py-3 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold
-                  focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950"
+                  focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
               >
                 Back to Blotter
               </button>
