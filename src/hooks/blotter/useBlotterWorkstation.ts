@@ -6,6 +6,7 @@ import { buildBlotterPrintHTML } from "@/lib/blotter/templates";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
+import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 type Mode = "list" | "form";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -14,10 +15,8 @@ type Draft = {
   id?: string;
   incidentDateISO: string; // yyyy-mm-dd
   locationText: string;
-  complainantName: string;
-  complainantContact: string;
-  respondentName: string;
-  respondentContact: string;
+  complainant: ResidentPickerValue;
+  respondent: ResidentPickerValue;
   narrative: string;
   actionsTaken: string;
   settlement: string;
@@ -41,8 +40,18 @@ function todayISO() {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 }
 
+const defaultPickerValue: ResidentPickerValue = { mode: "resident", residentId: null, residentNameSnapshot: "", manualName: "" };
+
 function upper(s: string) {
   return (s ?? "").trim().toUpperCase();
+}
+
+function getPartyName(party: ResidentPickerValue | undefined) {
+  if (!party) return "";
+  if (party.mode === 'resident' && party.residentNameSnapshot) {
+    return party.residentNameSnapshot;
+  }
+  return party.manualName || "";
 }
 
 export function useBlotterWorkstation() {
@@ -57,13 +66,13 @@ export function useBlotterWorkstation() {
   const [more, setMore] = useState(false);
 
   const [draft, setDraft] = useState<Draft>(() => {
-    return loadDraft<Draft>(DRAFT_KEY) ?? {
+    const saved = loadDraft<Draft>(DRAFT_KEY);
+    if (saved) return saved;
+    return {
       incidentDateISO: todayISO(),
       locationText: "",
-      complainantName: "",
-      complainantContact: "",
-      respondentName: "",
-      respondentContact: "",
+      complainant: defaultPickerValue,
+      respondent: defaultPickerValue,
       narrative: "",
       actionsTaken: "",
       settlement: "",
@@ -114,10 +123,8 @@ export function useBlotterWorkstation() {
     setDraft({
       incidentDateISO: todayISO(),
       locationText: "",
-      complainantName: "",
-      complainantContact: "",
-      respondentName: "",
-      respondentContact: "",
+      complainant: defaultPickerValue,
+      respondent: defaultPickerValue,
       narrative: "",
       actionsTaken: "",
       settlement: "",
@@ -137,10 +144,8 @@ export function useBlotterWorkstation() {
       id: b.id,
       incidentDateISO: b.incidentDateISO.slice(0,10),
       locationText: b.locationText,
-      complainantName: b.complainantName,
-      complainantContact: b.complainantContact ?? "",
-      respondentName: b.respondentName,
-      respondentContact: b.respondentContact ?? "",
+      complainant: b.complainant || { mode: 'manual', manualName: b.complainantName },
+      respondent: b.respondent || { mode: 'manual', manualName: b.respondentName },
       narrative: b.narrative,
       actionsTaken: b.actionsTaken ?? "",
       settlement: b.settlement ?? "",
@@ -158,8 +163,8 @@ export function useBlotterWorkstation() {
   const validate = useCallback((d: Draft) => {
     if (!d.incidentDateISO) throw new Error("Incident date is required.");
     if (!d.locationText.trim()) throw new Error("Location is required.");
-    if (!d.complainantName.trim()) throw new Error("Complainant name is required.");
-    if (!d.respondentName.trim()) throw new Error("Respondent name is required.");
+    if (!getPartyName(d.complainant)) throw new Error("Complainant is required.");
+    if (!getPartyName(d.respondent)) throw new Error("Respondent is required.");
     if (!d.narrative.trim()) throw new Error("Narrative is required.");
   }, []);
 
@@ -171,15 +176,18 @@ export function useBlotterWorkstation() {
       const nowISO = new Date().toISOString();
       const id = draft.id ?? uuid();
 
+      const complainantName = getPartyName(draft.complainant);
+      const respondentName = getPartyName(draft.respondent);
+
       const rec: BlotterLocal = {
         id,
         status: (draft.status ?? "Pending") as any,
         incidentDateISO: new Date(draft.incidentDateISO).toISOString(),
         locationText: draft.locationText.trim(),
-        complainantName: draft.complainantName.trim(),
-        complainantContact: draft.complainantContact.trim() || undefined,
-        respondentName: draft.respondentName.trim(),
-        respondentContact: draft.respondentContact.trim() || undefined,
+        complainantName,
+        respondentName,
+        complainant: draft.complainant,
+        respondent: draft.respondent,
         narrative: draft.narrative.trim(),
         actionsTaken: draft.actionsTaken.trim() || undefined,
         settlement: draft.settlement.trim() || undefined,
@@ -189,8 +197,8 @@ export function useBlotterWorkstation() {
         searchTokens: toTokens([
           id,
           upper(draft.locationText),
-          upper(draft.complainantName),
-          upper(draft.respondentName),
+          upper(complainantName),
+          upper(respondentName),
           upper(draft.narrative),
           upper(draft.actionsTaken),
           upper(draft.settlement),
