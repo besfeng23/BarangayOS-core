@@ -221,7 +221,7 @@ class BOSDexie extends Dexie {
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
       print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
-      sync_queue: "++id, jobType, occurredAtISO, synced, status",
+      sync_queue: "++id, occurredAtISO, synced, status, jobType",
       audit_queue: "++id, eventType, occurredAtISO, synced",
     });
   }

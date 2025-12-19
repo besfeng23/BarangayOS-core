@@ -60,16 +60,15 @@ export async function logTransaction(input: LogTransactionInput): Promise<void> 
     };
 
     // Write to both transactions table and sync queue atomically
-    await db.transaction("rw", (db as any).transactions, db.syncQueue, async () => {
+    await db.transaction("rw", (db as any).transactions, db.sync_queue, async () => {
       await (db as any).transactions.add(transaction);
-      await db.syncQueue.add({
+      await db.sync_queue.add({
         id: uuid() as any,
         entityType: "transaction",
         entityId: transaction.id,
         op: "UPSERT",
         payload: transaction,
-        createdAt: now,
-        updatedAt: now,
+        occurredAtISO: transaction.createdAt,
         status: "pending",
         tryCount: 0,
       } as any);

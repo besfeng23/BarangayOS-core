@@ -267,7 +267,7 @@ export default function NewCaseModal({ onClose }: { onClose: () => void }) {
       });
 
       try {
-        await addDoc(collection(db, "blotters"), {
+        await addDoc(collection(db, "blotter_cases"), {
           status: "NEW",
           narrative: narrative.trim(),
           participants: { complainant, respondent },

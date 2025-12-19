@@ -11,6 +11,7 @@ import { writeActivity } from '@/lib/bos/activity/writeActivity';
 let isWorkerRunning = false;
 
 const processQueueItem = async (item: SyncQueueItem): Promise<void> => {
+  if (!item.id) throw new Error("Queue item is missing an ID");
   await updateQueueItem(item.id, { status: 'syncing' });
 
   try {
@@ -54,6 +55,7 @@ const processQueueItem = async (item: SyncQueueItem): Promise<void> => {
     await updateQueueItem(item.id, { status: 'synced', synced: 1 });
     
   } catch (error: any) {
+    if (!item.id) throw new Error("Queue item is missing an ID");
     console.error('Sync failed for item:', item.id, error);
     await updateQueueItem(item.id, {
       status: 'failed',

@@ -30,7 +30,7 @@ export function useCertificateIssue() {
     const now = Date.now();
     const logId = uuid();
 
-    await db.transaction("rw", db.print_logs, db.syncQueue, (db as any).transactions, async () => {
+    await db.transaction("rw", db.print_logs, db.sync_queue, (db as any).transactions, async () => {
       // 1. Log the print event for auditing
       await db.print_logs.add({
         id: logId as any,
@@ -45,14 +45,13 @@ export function useCertificateIssue() {
       } as any);
 
       // 2. Queue the print log for sync
-      await db.syncQueue.add({
+      await db.sync_queue.add({
         id: uuid() as any,
         entityType: "print_log",
         entityId: logId,
         op: "UPSERT",
         payload: { /* ... full payload ... */ },
-        createdAt: now,
-        updatedAt: now,
+        occurredAtISO: new Date(now).toISOString(),
         status: "pending",
         tryCount: 0,
       } as any);

@@ -32,7 +32,7 @@ export function useResidentsData() {
   const { toast } = useToast();
 
   const queueCount = useLiveQuery(
-    () => db.syncQueue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
+    () => db.sync_queue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
     [],
     0
   );
@@ -40,8 +40,8 @@ export function useResidentsData() {
   const snapshot = useLiveQuery(
     async () => {
       const total = await db.residents.count();
-      const active = await db.residents.where("status").equals("ACTIVE").count();
-      const inactive = await db.residents.where("status").equals("INACTIVE").count();
+      const active = await db.residents.where("status").equals("ACTIVE" as any).count();
+      const inactive = await db.residents.where("status").equals("INACTIVE" as any).count();
       return { total, active, inactive };
     },
     [],
@@ -57,7 +57,7 @@ export function useResidentsData() {
     if (purok) {
       base = await db.residents.where("purok").equals(purok).toArray();
     } else if (status) {
-      base = await db.residents.where("status").equals(status).toArray();
+      base = await db.residents.where("status").equals(status as any).toArray();
     } else if (sex) {
       base = await db.residents.where("sex").equals(sex as any).toArray();
     } else if (q) {
@@ -132,16 +132,16 @@ export function useResidentsData() {
       syncState: "queued",
     } as ResidentRecord;
 
-    await db.transaction("rw", db.residents, db.syncQueue, db.activity_log, (db as any).transactions, async () => {
+    await db.transaction("rw", db.residents, db.sync_queue, db.activity_log, (db as any).transactions, async () => {
       await db.residents.add(record as any);
-      await db.syncQueue.add({
+      await db.sync_queue.add({
         id: uuid() as any,
         jobType: "RESIDENT_CREATE",
         entityType: "resident",
         entityId: id,
         op: "UPSERT",
         payload: record,
-        createdAt: now,
+        occurredAtISO: new Date(now).toISOString(),
         updatedAt: now,
         status: "pending",
         tryCount: 0,
@@ -164,7 +164,7 @@ export function useResidentsData() {
   }
 
   const isResidentQueued = useCallback(async (residentId: string) => {
-    const count = await db.syncQueue
+    const count = await db.sync_queue
       .where({ entityType: "resident", entityId: residentId } as any)
       .filter((x: any) => x.status === "pending" || x.status === "syncing" || x.status === "failed")
       .count();

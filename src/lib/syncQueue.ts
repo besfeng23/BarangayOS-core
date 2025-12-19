@@ -1,61 +1,44 @@
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { logActivity } from './activityLog';
 import { db } from './bosDb';
+import { logActivity } from './activityLog';
+import type { SyncQueueItem } from './bosDb';
 
 export type SyncOpType = 'create' | 'update' | 'delete';
 export type SyncStatus = 'pending' | 'syncing' | 'failed' | 'synced';
 export type EntityType = 'residents' | 'blotter_cases' | 'business_permits' | 'transactions';
 
-export interface SyncQueueItem {
-  id: string;
-  entityType: EntityType;
-  entityId: string; // The ID of the document being acted upon
-  opType: SyncOpType;
-  payload: any;
-  status: SyncStatus;
-  createdAt: number; // timestamp
-  lastAttempt?: number;
-  retries?: number;
-  lastError?: string;
-}
+export { type SyncQueueItem };
 
 export async function addToQueue(item: Omit<SyncQueueItem, 'id' | 'status' | 'createdAt'>): Promise<string> {
   const id = `${item.entityType}-${item.entityId}-${Date.now()}`;
-  const newItem: SyncQueueItem = {
+  const newItem: any = { // Using 'any' to match Dexie's flexible add method
     ...item,
     id,
     status: 'pending',
     createdAt: Date.now(),
   };
-  await db.sync_queue.add(newItem as any);
+  await db.sync_queue.add(newItem);
   await logActivity(`Queued ${item.opType} for ${item.entityType}`);
   window.dispatchEvent(new CustomEvent('queue-changed'));
   return id;
 }
 
-export async function getOldestPendingItem(): Promise<any | undefined> {
-  const tx = db.transaction('sync_queue', 'readonly');
-  const index = tx.store.index('createdAt');
-  const cursor = await index.openCursor();
+export async function getOldestPendingItem(): Promise<SyncQueueItem | undefined> {
+  // Dexie-native way, which is safer and more efficient.
+  // It uses the compound index `[status+occurredAtISO]` if available,
+  // or falls back to filtering by `status` and then sorting in-memory.
+  const pendingItems = await db.sync_queue
+    .where('status')
+    .anyOf(['pending', 'failed'])
+    .sortBy('occurredAtISO');
   
-  let oldestItem: SyncQueueItem | undefined;
-  let currentCursor = cursor;
-  while (currentCursor) {
-    if (currentCursor.value.status === 'pending' || currentCursor.value.status === 'failed') {
-      oldestItem = currentCursor.value;
-      break; 
-    }
-    currentCursor = await currentCursor.continue();
-  }
-  await tx.done;
-  return oldestItem;
+  return pendingItems[0];
 }
 
-export async function updateQueueItem(id: string, updates: Partial<Omit<SyncQueueItem, 'id'>>): Promise<void> {
-  const item = await db.sync_queue.get(id as any);
+export async function updateQueueItem(id: number, updates: Partial<Omit<SyncQueueItem, 'id'>>): Promise<void> {
+  const item = await db.sync_queue.get(id);
   if (item) {
-    const updatedItem = { ...item, ...updates, lastAttempt: Date.now() };
-    await db.sync_queue.put(updatedItem as any);
+    const updatedItem: any = { ...item, ...updates, lastAttempt: Date.now() };
+    await db.sync_queue.put(updatedItem);
     if(updates.status) {
        await logActivity(`Sync item ${id} status changed to ${updates.status}`);
     }
@@ -64,14 +47,12 @@ export async function updateQueueItem(id: string, updates: Partial<Omit<SyncQueu
 }
 
 export async function getPendingCount(entityType?: string): Promise<number> {
-    const items = await db.sync_queue.where('status').equals('pending').toArray();
-    const failedItems = await db.sync_queue.where('status').equals('failed').toArray();
-    const syncingItems = await db.sync_queue.where('status').equals('syncing').toArray();
+  let query = db.sync_queue.where('status').anyOf(['pending', 'failed', 'syncing']);
+  
+  if (entityType) {
+    // This filter will be applied in-memory after the initial index query.
+    return query.filter(item => item.entityType === entityType).count();
+  }
 
-    let allPending = [...items, ...failedItems, ...syncingItems];
-
-    if (entityType) {
-        allPending = allPending.filter(item => item.entityType === entityType);
-    }
-    return allPending.length;
+  return query.count();
 }

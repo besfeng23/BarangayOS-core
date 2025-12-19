@@ -39,8 +39,8 @@ export function useBlotterDocs() {
     const signerName = "Hon. Barangay Captain";
     const signerTitle = "Punong Barangay";
 
-    // 1) Audit to local printLogs + syncQueue (atomic)
-    await db.transaction("rw", db.print_logs, db.syncQueue, async () => {
+    // 1) Audit to local printLogs + sync_queue (atomic)
+    await db.transaction("rw", db.print_logs, db.sync_queue, async () => {
       await db.print_logs.add({
         id: logId as any, // Dexie handles auto-incrementing if `id` is `++id`
         barangayId: blotter.barangayId,
@@ -53,7 +53,7 @@ export function useBlotterDocs() {
         meta: { signerName, signerTitle, caseNumber: blotter.caseNumber },
       } as any);
 
-      await db.syncQueue.add({
+      await db.sync_queue.add({
         id: uuid() as any,
         entityType: "print_log" as any,
         entityId: logId,
@@ -67,8 +67,7 @@ export function useBlotterDocs() {
           blotterId: blotter.id,
           meta: { signerName, signerTitle, caseNumber: blotter.caseNumber },
         },
-        createdAt: now,
-        updatedAt: now,
+        occurredAtISO: new Date(now).toISOString(),
         status: "pending",
         tryCount: 0,
       } as any);

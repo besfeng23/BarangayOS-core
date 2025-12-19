@@ -22,7 +22,7 @@ export function useBlotterData() {
   const { toast } = useToast();
 
   const queueCount = useLiveQuery(
-    () => db.syncQueue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
+    () => db.sync_queue.where("status").anyOf(["pending", "syncing", "failed"]).count(),
     [],
     0
   );
@@ -140,16 +140,16 @@ export function useBlotterData() {
       searchTokens,
     };
 
-    await db.transaction("rw", db.blotters, db.syncQueue, db.activity_log, (db as any).transactions, async () => {
+    await db.transaction("rw", db.blotters, db.sync_queue, db.activity_log, (db as any).transactions, async () => {
       await db.blotters.add(record as any);
 
-      await db.syncQueue.add({
+      await db.sync_queue.add({
         id: uuid() as any,
         entityType: "blotter",
         entityId: id,
         op: "UPSERT",
         payload: record,
-        createdAt: now,
+        occurredAtISO: new Date(now).toISOString(),
         updatedAt: now,
         status: "pending",
         tryCount: 0,
@@ -188,16 +188,16 @@ export function useBlotterData() {
         syncState: "queued",
       };
 
-      await db.transaction("rw", db.blotters, db.syncQueue, db.activity_log, async () => {
+      await db.transaction("rw", db.blotters, db.sync_queue, db.activity_log, async () => {
         await db.blotters.put(updated as any);
 
-        await db.syncQueue.add({
+        await db.sync_queue.add({
           id: uuid() as any,
           entityType: "blotter",
           entityId: blotterId,
           op: "UPSERT",
           payload: updated,
-          createdAt: now,
+          occurredAtISO: new Date(now).toISOString(),
           updatedAt: now,
           status: "pending",
           tryCount: 0,

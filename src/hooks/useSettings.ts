@@ -2,6 +2,7 @@
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
+import { writeActivity } from "@/lib/bos/activity/writeActivity";
 
 export type BarangaySettings = {
   barangayName: string;
