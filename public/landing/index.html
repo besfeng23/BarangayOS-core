@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BarangayOS | Digital Governance Terminal</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gov: {
+                            900: '#0f172a', // Slate 900
+                            800: '#1e293b', // Slate 800
+                            700: '#334155',
+                            accent: '#10b981', // Emerald 500 (Sync Green)
+                            gold: '#fbbf24', // Warning/Trial Gold
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #050505;
+            color: #ffffff;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hero-glow {
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, rgba(0,0,0,0) 70%);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-gov-accent selection:text-white">
+
+    <nav class="fixed w-full z-50 top-0 border-b border-white/10 bg-black/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex-shrink-0 flex items-center gap-3">
+                    <svg width="40" height="48" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 115C50 115 90 95 90 30V10L50 0L10 10V30C10 95 50 115 50 115Z" stroke="white" stroke-width="6" fill="transparent"/>
+                        <circle cx="50" cy="50" r="12" fill="white"/>
+                        <path d="M50 25L50 35M50 65L50 75M25 50L35 50M65 50L75 50M32 32L39 39M61 61L68 68M32 68L39 61M61 39L68 32" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-white leading-none">BarangayOS</h1>
+                        <span class="text-xs text-gray-400 font-medium tracking-widest uppercase">GovTech Terminal</span>
+                    </div>
+                </div>
+
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#features" class="hover:text-gov-accent transition-colors text-sm font-medium">Core Modules</a>
+                        <a href="#specs" class="hover:text-gov-accent transition-colors text-sm font-medium">Specs</a>
+                        <a href="#compliance" class="hover:text-gov-accent transition-colors text-sm font-medium">Compliance</a>
+                    </div>
+                </div>
+
+                <div>
+                    <a href="#contact" class="bg-white text-black hover:bg-gray-200 px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg hover:shadow-white/20">
+                        Request Deployment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full hero-glow z-0 pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gov-gold/30 bg-gov-gold/10 text-gov-gold text-xs font-semibold mb-8">
+                <span class="w-2 h-2 rounded-full bg-gov-gold animate-pulse"></span>
+                PHASE 1 DEPLOYMENT READY
+            </div>
+
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-white">
+                The Operating System for <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Modern Governance.</span>
+            </h1>
+            
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-400 mb-10">
+                Not a website. Not a download. A complete <strong>Digital Governance Terminal</strong> designed to replace logbooks, speed up clearance, and pass audits.
+            </p>
+
+            <div class="flex justify-center gap-4 mb-16">
+                <button class="bg-gov-accent hover:bg-emerald-400 text-black px-8 py-4 rounded-lg text-lg font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                    Activate Trial Unit
+                </button>
+                <button class="border border-white/20 hover:border-white hover:bg-white/5 px-8 py-4 rounded-lg text-lg font-medium transition-all">
+                    View Demo Script
+                </button>
+            </div>
+
+            <div class="relative mx-auto max-w-5xl">
+                <div class="absolute -inset-1 bg-gradient-to-r from-gov-accent to-blue-600 rounded-xl blur opacity-20"></div>
+                <div class="relative rounded-xl border border-white/10 bg-gray-900 shadow-2xl overflow-hidden">
+                    <img src="path/to/image_480181.png" alt="BarangayOS Dashboard Interface" class="w-full h-auto opacity-90">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 bg-gray-900/50 -z-10">
+                        <i class="ph ph-desktop text-6xl mb-4"></i>
+                        <span>Dashboard Preview</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="specs" class="py-20 bg-black border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <div class="glass-panel p-8 rounded-2xl hover:border-gov-accent/50 transition-colors">
+                    <div class="w-12 h-12 bg-gov-accent/20 rounded-lg flex items-center justify-center mb-6">
+                        <i class="ph-fill ph-wifi-slash text-2xl text-gov-accent"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Offline-First Architecture</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Internet down? No problem. Encode residents, issue permits, and log blotters offline. Syncs automatically when signal returns.
+                    </p>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl hover:border-gov-accent/50 transition-colors">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6">
+                        <i class="ph-fill ph-hand-heart text-2xl text-blue-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Lola-Proof Simplicity</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Designed for non-techies. Large buttons, readable text, and zero "computer jargon." If you can use an ATM, you can use BarangayOS.
+                    </p>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl hover:border-gov-accent/50 transition-colors">
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6">
+                        <i class="ph-fill ph-printer text-2xl text-purple-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Instant Documentation</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Generates official, DILG-compliant certificates and blotter reports in seconds. Print directly from the terminal.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="py-24 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-white mb-4">Core Operating Modules</h2>
+                <p class="text-gray-400">Everything a Barangay Hall needs. Nothing it doesn't.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <div class="bg-gray-900 border border-white/10 p-6 rounded-xl flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="ph ph-users text-3xl text-gray-300"></i>
+                        <span class="text-xs bg-gov-accent/20 text-gov-accent px-2 py-1 rounded">CORE</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-white">Resident Index</h4>
+                    <p class="text-sm text-gray-500 mt-2">Searchable database of all constituents, households, and history.</p>
+                </div>
+
+                <div class="bg-gray-900 border border-white/10 p-6 rounded-xl flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="ph ph-file-text text-3xl text-gray-300"></i>
+                        <span class="text-xs bg-gov-accent/20 text-gov-accent px-2 py-1 rounded">CORE</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-white">Certificates</h4>
+                    <p class="text-sm text-gray-500 mt-2">Issue Clearance, Indigency, and Residency in under 60 seconds.</p>
+                </div>
+
+                <div class="bg-gray-900 border border-white/10 p-6 rounded-xl flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="ph ph-gavel text-3xl text-gray-300"></i>
+                        <span class="text-xs bg-gov-accent/20 text-gov-accent px-2 py-1 rounded">CORE</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-white">Digital Blotter</h4>
+                    <p class="text-sm text-gray-500 mt-2">Secure logging of disputes, narratives, and resolutions.</p>
+                </div>
+
+                <div class="bg-gray-900 border border-white/10 p-6 rounded-xl flex flex-col h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="ph ph-chart-bar text-3xl text-gray-300"></i>
+                        <span class="text-xs bg-gov-accent/20 text-gov-accent px-2 py-1 rounded">CORE</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-white">Audit Reports</h4>
+                    <p class="text-sm text-gray-500 mt-2">One-click generation of weekly/monthly summaries for the Captain.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact" class="bg-gray-900 pt-20 pb-10 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            
+            <div class="max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl font-bold text-white mb-6">Ready to modernize your Barangay?</h2>
+                <p class="text-gray-400 mb-8">Deploy the terminal that works as hard as you do. Secure, compliant, and ready for deployment.</p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="mailto:deploy@barangayos.gov" class="w-full sm:w-auto bg-white text-black font-bold py-3 px-8 rounded-lg hover:bg-gray-200 transition-colors">
+                        Contact Sales
+                    </a>
+                    <a href="#" class="w-full sm:w-auto border border-white/20 text-white font-medium py-3 px-8 rounded-lg hover:bg-white/10 transition-colors">
+                        Request Specs Sheet
+                    </a>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                <div class="flex items-center gap-2 mb-4 md:mb-0">
+                    <svg width="20" height="24" viewBox="0 0 100 120" fill="none">
+                        <path d="M50 115C50 115 90 95 90 30V10L50 0L10 10V30C10 95 50 115 50 115Z" stroke="gray" stroke-width="8" fill="transparent"/>
+                    </svg>
+                    <span>&copy; 2024 BarangayOS. All rights reserved.</span>
+                </div>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-white">Privacy Policy</a>
+                    <a href="#" class="hover:text-white">Terms of Service</a>
+                    <a href="#" class="hover:text-white">DILG Compliance</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
