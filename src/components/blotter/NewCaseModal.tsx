@@ -14,6 +14,7 @@ import Step2Incident from './BlotterLogModule/Step2_Incident';
 import Step3Narrative from './BlotterLogModule/Step3_Narrative';
 import ActionResultModal from '../system/ActionResultModal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useRouter } from 'next/navigation';
 
 interface NewCaseModalProps {
   isOpen: boolean;
@@ -23,11 +24,12 @@ interface NewCaseModalProps {
 const steps = ['The People', 'The Incident', 'The Narrative'];
 
 const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<BlotterCase & { complainant?: Resident | { fullName: string }, respondent?: Resident | { fullName: string } }>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
-  const [saveResult, setSaveResult] = useState<{ ok: boolean; message: string; statusLine: string } | null>(null);
+  const [saveResult, setSaveResult] = useState<{ ok: boolean; message: string; statusLine: string; newId?: string } | null>(null);
   const isOnline = useOnlineStatus();
   const { toast } = useToast();
 
@@ -40,6 +42,8 @@ const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    } else {
+      onClose();
     }
   };
 
@@ -77,15 +81,14 @@ const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
             createdBy: "SECRETARY-DEVICE-1",
         };
         
-        // This simulates saving locally first.
-        // In a real Dexie implementation, this would be an offline-first DB write.
         const blotterRef = collection(db, 'blotter_cases').withConverter(blotterCaseConverter);
-        await addDoc(blotterRef, newCase);
+        const docRef = await addDoc(blotterRef, newCase);
         
         setSaveResult({ 
             ok: true, 
-            message: `Case #${newCase.caseId} has been saved locally.`,
-            statusLine: isOnline ? "Synced with server." : "Queued for sync."
+            message: `Case #${newCase.caseId} has been saved.`,
+            statusLine: isOnline ? "Synced with server." : "Queued for sync.",
+            newId: docRef.id,
         });
 
     } catch (error: any) {
@@ -114,8 +117,20 @@ const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
   const resetAndClose = () => {
     setFormData({});
     setCurrentStep(1);
-    onClose();
     setShowResultModal(false);
+    onClose();
+  }
+
+  const handleAddAnother = () => {
+      resetAndClose();
+      // Since the modal is controlled by the page, just closing it and resetting state is enough
+  }
+
+  const handleViewCase = () => {
+      if(saveResult?.newId) {
+          router.push(`/blotter/${saveResult.newId}`);
+      }
+      resetAndClose();
   }
 
   return (
@@ -142,10 +157,10 @@ const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
           <StickyActionBar>
             <button
                 onClick={handleBack}
-                disabled={isSaving || currentStep === 1}
+                disabled={isSaving}
                 className="px-5 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold disabled:opacity-50"
             >
-                Back
+                {currentStep === 1 ? 'Cancel' : 'Back'}
             </button>
             {currentStep < steps.length ? (
               <button onClick={handleNext} disabled={isNextDisabled()} className="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold disabled:opacity-50">
@@ -169,7 +184,9 @@ const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
               onRetry={handleSave}
               retryText="Retry Save"
               primaryActionText="Log Another Case"
-              onPrimaryAction={resetAndClose}
+              onPrimaryAction={handleAddAnother}
+              secondaryActionText="View Case Details"
+              onSecondaryAction={handleViewCase}
           />
       )}
     </>

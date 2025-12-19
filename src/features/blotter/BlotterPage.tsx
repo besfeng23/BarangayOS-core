@@ -91,7 +91,7 @@ export default function BlotterPage() {
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-3 space-y-3">
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => router.push('/blotter/new')}
                   className="px-6 py-3 bg-blue-600 text-white font-bold rounded-2xl min-h-[48px] flex items-center justify-center
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
                   aria-label="Create new blotter case"
@@ -146,7 +146,7 @@ export default function BlotterPage() {
                         title={hasFilters ? 'No Matches Found' : 'No Cases Yet'}
                         body={hasFilters ? 'Try a different search term or clear the filters.' : 'Create the first blotter case record for your barangay.'}
                         actionText={hasFilters ? 'Clear Filters' : 'Create New Case'}
-                        onAction={hasFilters ? clearFilters : () => setIsModalOpen(true)}
+                        onAction={hasFilters ? clearFilters : () => router.push('/blotter/new')}
                     />
                 </div>
             ) : (
@@ -177,7 +177,6 @@ export default function BlotterPage() {
             )}
           </section>
         </div>
-        <NewCaseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       </div>
   );
 }
