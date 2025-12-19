@@ -50,8 +50,8 @@ export function useBlotterWorkstation() {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<BlotterLocal[]>([]);
   const [loading, setLoading] = useState(false);
-  const [banner, setBanner] = useState<Banner>(null);
   const [busy, setBusy] = useState(false);
+  const [banner, setBanner] = useState<Banner>(null);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [more, setMore] = useState(false);

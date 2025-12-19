@@ -10,13 +10,9 @@ export default function BlotterPage() {
   const { enqueue } = useSyncQueue();
   const ws = useBlotterWorkstation();
 
-  const [printHTML, setPrintHTML] = useState<string | null>(null);
-
   const onPrint = async () => {
     try {
-      const html = await ws.buildPrintHTML();
-      setPrintHTML(html);
-      // (optional) add a print log record if you want blotter prints tracked in print_logs
+      await ws.buildAndPrint();
     } catch (e: any) {
       ws.setBanner({ kind: "error", msg: e?.message ?? String(e) });
     }
@@ -251,7 +247,6 @@ export default function BlotterPage() {
           </>
         )}
 
-        {printHTML && <PrintFrame html={printHTML} onAfterPrint={() => setPrintHTML(null)} onError={(e) => console.error("Print error:", e)} />}
       </div>
     </TerminalShell>
   );
