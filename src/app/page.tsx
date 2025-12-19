@@ -119,6 +119,12 @@ export default function Home() {
           icon={Shield}
           href="/security"
         />
+        <ModuleCard
+          title="Add-ons & Procurement"
+          description="View and request hardware add-ons"
+          icon={Briefcase}
+          href="/addons"
+        />
 
         <PartnerTileGuard
           label="Request Activation"
