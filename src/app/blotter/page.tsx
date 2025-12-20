@@ -101,7 +101,8 @@ export default function BlotterPage() {
               {/* Required fields */}
               <div className="mt-4 space-y-3">
                 <SmartDateInput
-                  label="Petsa ng Insidente *"
+                  labelText="Petsa ng Insidente *"
+                  helperText="Kelan nangyari ang insidente?"
                   value={ws.draft.incidentDateISO}
                   onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
                 />

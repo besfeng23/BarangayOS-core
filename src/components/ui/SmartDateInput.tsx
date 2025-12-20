@@ -9,7 +9,8 @@ import { getManilaDate, getManilaYesterday } from '@/lib/date';
 interface SmartDateInputProps {
   value: string; // Expects "YYYY-MM-DD"
   onChange: (newDate: string) => void;
-  label?: string;
+  labelText?: string;
+  helperText?: string;
   className?: string;
 }
 
@@ -26,7 +27,7 @@ const QuickActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>>
   </button>
 );
 
-export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange, label, className }) => {
+export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange, labelText, helperText, className }) => {
 
   const handleQuickAction = (action: 'today' | 'yesterday') => {
     if (action === 'today') {
@@ -38,10 +39,13 @@ export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange,
 
   return (
     <div className={cn('w-full', className)}>
-      {label && (
-        <label className="mb-2 block text-sm text-slate-400">
-          {label}
+      {labelText && (
+        <label className="mb-1 block text-sm font-medium text-slate-300">
+          {labelText}
         </label>
+      )}
+       {helperText && (
+        <p className="mb-2 text-xs text-slate-400">{helperText}</p>
       )}
       <div className="mb-2 flex items-center gap-2">
         <QuickActionButton onClick={() => handleQuickAction('today')}>
