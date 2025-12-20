@@ -3,7 +3,7 @@ import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 13;
+export const DB_VERSION = 14;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -169,9 +169,13 @@ export type ActivityLogLocal = {
     | "SYNC_COMPLETE"
     | "SYNC_PAUSED"
     | "ERROR"
-    | "SETTINGS_UPDATED";
+    | "SETTINGS_UPDATED"
+    | "QUOTATION_REQUESTED"
+    | "PAYMENT_COLLECTED"
+    | "DEVICE_CREATED"
+    | "DEVICE_UPDATED";
 
-  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system";
+  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system" | "procurement" | "emango";
   entityId: string; // id of record or "sync"
   status: "ok" | "warn" | "error"; // for UI color/badge (lightweight)
 
@@ -221,6 +225,22 @@ export type SecurityDeviceLocal = {
   synced: 0 | 1;
 }
 
+// Clinic Module
+export type ClinicVisitStatus = "WAITING" | "TRIAGE" | "CONSULT" | "DONE" | "CANCELLED";
+
+export type ClinicQueueItem = {
+    id: string;
+    createdAtISO: string;
+    updatedAtISO: string;
+    patient: ResidentPickerValue;
+    patientName: string;
+    reason: string;
+    status: ClinicVisitStatus;
+    tags: string[];
+    searchTokens: string[];
+    synced: 0 | 1;
+}
+
 
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
@@ -234,6 +254,7 @@ class BOSDexie extends Dexie {
   print_jobs!: Table<PrintJobLocal, string>;
   activity_log!: Table<ActivityLogLocal, string>;
   devices!: Table<SecurityDeviceLocal, string>;
+  clinic_queue!: Table<ClinicQueueItem, string>;
   settings!: Table<SettingsRow, string>;
   meta!: Table<MetaRow, string>;
   sync_queue!: Table<SyncQueueItem, number>;
@@ -296,7 +317,11 @@ class BOSDexie extends Dexie {
 
     this.version(13).stores({
         devices: "id, type, status, updatedAtISO, *searchTokens",
-    })
+    });
+
+    this.version(14).stores({
+        clinic_queue: "id, status, createdAtISO, *searchTokens"
+    });
   }
 }
 

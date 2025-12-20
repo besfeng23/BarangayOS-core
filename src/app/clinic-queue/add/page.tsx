@@ -1,75 +1,135 @@
+
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Filter, ArrowLeft, ArrowDownUp } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ResidentPicker, ResidentPickerValue } from '@/components/shared/ResidentPicker';
+import { useToast } from '@/components/ui/toast';
+import { db } from '@/lib/bosDb';
+import { toTokens } from '@/lib/bos/searchTokens';
+import { uuid } from '@/lib/uuid';
 
-const QueueCard = ({ name, age, sex, status, tags, vitals }: { name: string, age: number, sex: string, status: 'waiting' | 'in-consult' | 'done', tags: string[], vitals?: string }) => (
-    <Card className="bg-slate-800/50 border-slate-700 mb-4">
-        <CardContent className="p-4 flex flex-col md:flex-row md:items-center gap-4">
-            <div className="flex-1">
-                <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-bold">{name}</h3>
-                    <Badge variant={status === 'waiting' ? 'default' : status === 'in-consult' ? 'secondary' : 'outline'}>
-                        {status.toUpperCase()}
-                    </Badge>
+export default function AddToQueuePage() {
+    const [patient, setPatient] = useState<ResidentPickerValue | undefined>(undefined);
+    const [reason, setReason] = useState('');
+    const [tags, setTags] = useState<string[]>([]);
+    const [saving, setSaving] = useState(false);
+    const { toast } = useToast();
+    const router = useRouter();
+
+    const canSave = (patient?.mode === 'resident' || (patient?.mode === 'manual' && patient?.manualName)) && reason;
+
+    const getPatientName = () => {
+        if (!patient) return '';
+        return patient.mode === 'resident' ? patient.residentNameSnapshot : patient.manualName;
+    }
+
+    const handleSave = async () => {
+        if (!canSave) return;
+        setSaving(true);
+        try {
+            const nowISO = new Date().toISOString();
+            const newItem = {
+                id: uuid(),
+                createdAtISO: nowISO,
+                updatedAtISO: nowISO,
+                patient: patient!,
+                patientName: getPatientName()!,
+                reason: reason,
+                status: 'WAITING',
+                tags: tags,
+                searchTokens: toTokens(`${getPatientName()} ${reason}`),
+                synced: 0,
+            };
+
+            await db.clinic_queue.add(newItem as any);
+
+            // For now, let's assume no sync queue for this module yet.
+            
+            toast({
+                title: 'Patient Added to Queue',
+                description: `${getPatientName()} is now waiting for triage.`
+            });
+            router.push('/city-health/queue');
+
+        } catch (error) {
+            console.error(error);
+            toast({
+                variant: 'destructive',
+                title: 'Failed to add patient',
+                description: 'An error occurred while saving the data.'
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center gap-4 mb-8">
+                <Link href="/city-health/queue" passHref>
+                    <Button variant="outline" size="icon">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-bold">Add Patient to Queue</h1>
+                    <p className="text-muted-foreground">Register a patient for today's consultation.</p>
                 </div>
-                <p className="text-sm text-slate-400">{age}yo • {sex}</p>
-                <div className="flex gap-2 mt-2">
-                    {tags.map(tag => <Badge key={tag} variant="destructive" className="text-xs">{tag}</Badge>)}
-                </div>
-                {vitals && <p className="text-xs text-green-400 mt-2 font-mono">{vitals}</p>}
             </div>
-            <div className="flex gap-2 self-end md:self-center">
-                <Button variant="outline" size="sm">Record Vitals</Button>
-                <Button size="sm">Start Consult</Button>
-            </div>
-        </CardContent>
-    </Card>
-);
 
-export default function QueuePage() {
-  return (
-    <div className="flex flex-col h-screen bg-slate-900 text-gray-200">
-        <header className="flex items-center justify-between p-4 border-b border-slate-700 sticky top-0 bg-slate-900/80 backdrop-blur-lg z-10">
-            <Link href="/city-health" passHref>
-                <Button variant="ghost" size="icon"><ArrowLeft /></Button>
-            </Link>
-            <h1 className="text-2xl font-bold">Today's Clinic Queue</h1>
-            <div className="flex items-center gap-2">
-                <Button variant="outline"><Filter className="mr-2 h-4 w-4" /> Filters</Button>
-                <Button variant="outline"><ArrowDownUp className="mr-2 h-4 w-4" /> Sort</Button>
-            </div>
-        </header>
+            <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                    <CardTitle>Patient Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <ResidentPicker
+                        label="Patient"
+                        value={patient}
+                        onChange={setPatient}
+                        placeholder="Search for resident or enter name manually"
+                        allowManual={true}
+                    />
 
-        <main className="flex-1 overflow-y-auto">
-            <Tabs defaultValue="waiting" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 sticky top-[73px] z-10 rounded-none">
-                    <TabsTrigger value="waiting">Waiting (8)</TabsTrigger>
-                    <TabsTrigger value="in-consult">In Consult (5)</TabsTrigger>
-                    <TabsTrigger value="done">Done (12)</TabsTrigger>
-                </TabsList>
-                <div className="p-4">
-                    <TabsContent value="waiting">
-                        <QueueCard name="Juan Dela Cruz" age={68} sex="M" status="waiting" tags={["Senior"]} />
-                        <QueueCard name="Maria Santos" age={32} sex="F" status="waiting" tags={["Pregnant", "High-Risk"]} vitals="BP: 140/90" />
-                    </TabsContent>
-                    <TabsContent value="in-consult">
-                        <QueueCard name="Pedro Penduko" age={45} sex="M" status="in-consult" tags={[]} vitals="Temp: 38.1°C" />
-                    </TabsContent>
-                    <TabsContent value="done">
-                         <QueueCard name="Ana Reyes" age={25} sex="F" status="done" tags={["Child"]} vitals="Weight: 12kg" />
-                    </TabsContent>
-                </div>
-            </Tabs>
-        </main>
+                    <div>
+                        <label className="text-lg font-medium mb-2 block">Reason for Visit / Chief Complaint</label>
+                        <Textarea
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            placeholder="e.g., Fever and cough for 3 days..."
+                            className="min-h-[100px] text-lg bg-zinc-900 border-zinc-700"
+                        />
+                    </div>
+                     <div>
+                        <label className="text-lg font-medium mb-2 block">Tags (Optional)</label>
+                        <p className="text-sm text-muted-foreground mb-2">Select all that apply.</p>
+                        <div className="flex flex-wrap gap-2">
+                            {['Fever', 'Cough', 'Follow-up', 'Prenatal', 'Child', 'Senior'].map(tag => (
+                                <Button
+                                    key={tag}
+                                    variant={tags.includes(tag) ? 'secondary' : 'outline'}
+                                    onClick={() => setTags(prev => 
+                                        prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+                                    )}
+                                >
+                                    {tag}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
 
-        <div className="fixed bottom-6 right-6 z-20">
-            <Button className="rounded-full w-16 h-16 shadow-lg">
-                <Plus className="h-8 w-8" />
-            </Button>
+
+                    <Button onClick={handleSave} disabled={!canSave || saving} size="lg" className="w-full h-14 text-xl">
+                        {saving ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : null}
+                        {saving ? 'Adding to Queue...' : 'Add Patient to Queue'}
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
-    </div>
-  );
+    );
 }
