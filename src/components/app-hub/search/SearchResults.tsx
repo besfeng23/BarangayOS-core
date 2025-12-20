@@ -1,6 +1,6 @@
 'use client';
 import { SearchResult } from '@/hooks/useSearch';
-import { Users, Scale, FileText } from 'lucide-react';
+import { Users, Scale, Building } from 'lucide-react';
 import Link from 'next/link';
 
 const groupConfig = {
@@ -14,7 +14,7 @@ const groupConfig = {
   },
   permits: {
     title: 'Business Permits',
-    icon: FileText,
+    icon: Building,
   },
 };
 
@@ -55,7 +55,7 @@ export default function SearchResults({
     <div className={isOverlay ? 'p-3' : ''}>
       {Object.entries(results).map(([groupKey, items]) => {
         if (items.length === 0) return null;
-        const config = groupConfig[groupKey as keyof typeof groupConfig] || { title: groupKey, icon: FileText };
+        const config = groupConfig[groupKey as keyof typeof groupConfig] || { title: groupKey, icon: Users };
         const { title, icon: Icon } = config;
         
         return (
@@ -66,7 +66,7 @@ export default function SearchResults({
             </h4>
             <div className="space-y-1">
               {items.map((item) => (
-                <SearchResultItem key={item.href} item={item} />
+                <SearchResultItem key={item.id} item={item} />
               ))}
             </div>
           </div>
