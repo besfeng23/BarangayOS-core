@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/use-auth";
 import GlobalSearch from "../app-hub/search/GlobalSearch";
 import { StatusIndicator } from "../shell/StatusIndicator";
 import { useSettings } from "@/lib/bos/settings/useSettings";
+import { Button } from "../ui/button";
+import { HelpCircle } from "lucide-react";
 
 
 function getRolePill(role: string | null | undefined): string {
@@ -22,7 +24,7 @@ function getRolePill(role: string | null | undefined): string {
   }
 }
 
-export default function SystemRail() {
+export default function SystemRail({ onHelpClick }: { onHelpClick?: () => void }) {
   const { user } = useAuth();
   const { settings } = useSettings();
   const userRole = getRolePill(user?.email); // Placeholder until roles are in claims
@@ -87,6 +89,11 @@ export default function SystemRail() {
         </div>
 
         <div className="flex items-center gap-2">
+            {onHelpClick && (
+                <Button variant="ghost" size="icon" onClick={onHelpClick}>
+                    <HelpCircle className="h-5 w-5" />
+                </Button>
+            )}
             {settings.trialEnabled && (
                 <div className="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full px-2 py-1">
                     Trial • {settings.trialDaysRemaining} days

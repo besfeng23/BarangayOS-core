@@ -28,3 +28,17 @@ export const NLQOutputSchema = z.object({
   targetModule: z.enum(['residents', 'blotter', 'permits', 'unknown']).describe('The most likely module the user is searching for.'),
 });
 export type NLQOutput = z.infer<typeof NLQOutputSchema>;
+
+
+// New schemas for the Help Assistant
+export const HelpInputSchema = z.object({
+  query: z.string().describe("The user's question for the help assistant."),
+  context: z.string().describe("The current page or module the user is on."),
+  errorContext: z.string().optional().describe("Any relevant error message or code."),
+});
+export type HelpInput = z.infer<typeof HelpInputSchema>;
+
+export const HelpOutputSchema = z.object({
+  response: z.string().describe("The AI assistant's helpful response."),
+});
+export type HelpOutput = z.infer<typeof HelpOutputSchema>;

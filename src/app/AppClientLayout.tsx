@@ -9,6 +9,8 @@ import TerminalShell from '@/components/shell/TerminalShell';
 import { recordError } from '@/lib/bos/errors/errorBus';
 import { Button } from '@/components/ui/button';
 import { resetLocalDatabase } from '@/lib/bosDb';
+import { HelpCircle } from 'lucide-react';
+import HelpDrawer from '@/components/ai/HelpDrawer';
 
 const ErrorPanel = ({ error, onReset }: { error: Error, onReset: () => void }) => (
   <div className="flex items-center justify-center min-h-screen bg-zinc-950">
@@ -41,6 +43,7 @@ export default function AppClientLayout({
   const pathname = usePathname();
   const [bootState, setBootState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [bootError, setBootError] = useState<Error | null>(null);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   useEffect(() => {
     async function initialize() {
@@ -100,9 +103,10 @@ export default function AppClientLayout({
   return (
     <>
       <IdleScreensaver />
-      <TerminalShell>
+      <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
         {children}
       </TerminalShell>
+      <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </>
   );
 }
