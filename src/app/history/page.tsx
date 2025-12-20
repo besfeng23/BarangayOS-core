@@ -2,14 +2,12 @@
 "use client";
 
 import React from "react";
-import TerminalShell from "@/components/shell/TerminalShell";
 import { useActivityHistory } from "@/hooks/useActivityHistory";
 
 export default function HistoryPage() {
   const h = useActivityHistory();
 
   return (
-    <TerminalShell>
       <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
         <div className="mb-4">
           <h1 className="text-white text-3xl font-semibold">Activity History</h1>
@@ -56,6 +54,5 @@ export default function HistoryPage() {
           )}
         </div>
       </div>
-    </TerminalShell>
   );
 }
