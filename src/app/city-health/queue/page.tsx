@@ -139,7 +139,7 @@ export default function QueuePage() {
             </Link>
         </footer>
 
-        <Link href="/city-health/queue/add" passHref legacyBehavior>
+        <Link href="/clinic-queue/add" passHref legacyBehavior>
             <a className="fixed bottom-24 right-6 z-20 md:bottom-6">
                 <Button className="rounded-full w-16 h-16 shadow-lg">
                     <Plus className="h-8 w-8" />
