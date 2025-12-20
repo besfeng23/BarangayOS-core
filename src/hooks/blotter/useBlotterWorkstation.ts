@@ -64,6 +64,8 @@ export function useBlotterWorkstation() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [more, setMore] = useState(false);
 
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+
   const [draft, setDraft] = useState<Draft>(() => {
     const saved = loadDraft<Draft>(DRAFT_KEY);
     if (saved) return saved;
@@ -313,6 +315,12 @@ export function useBlotterWorkstation() {
 
   }, [draft.id]);
 
+  const openAiDrawer = useCallback(() => setIsAiDrawerOpen(true), []);
+  const closeAiDrawer = useCallback(() => setIsAiDrawerOpen(false), []);
+  const handleAiDraft = useCallback((newText: string) => {
+    setDraft(d => ({ ...d, narrative: newText }));
+  }, []);
+
   return {
     mode, setMode,
     query, setQuery,
@@ -330,5 +338,9 @@ export function useBlotterWorkstation() {
     save,
     resolve,
     buildAndPrint,
+    isAiDrawerOpen,
+    openAiDrawer,
+    closeAiDrawer,
+    handleAiDraft,
   };
 }

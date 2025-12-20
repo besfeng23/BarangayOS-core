@@ -6,6 +6,8 @@ import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBlotterWorkstation } from "@/hooks/blotter/useBlotterWorkstation";
 import { ResidentPicker } from "@/components/shared/ResidentPicker";
 import { SmartDateInput } from "@/components/ui/SmartDateInput";
+import AIAssistButton from "@/components/ai/AIAssistButton";
+import AIDrawer from "@/components/ai/AIDrawer";
 
 export default function BlotterPage() {
   const { enqueue } = useSyncQueue();
@@ -20,6 +22,7 @@ export default function BlotterPage() {
   };
 
   return (
+    <>
       <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
         {ws.mode === "list" && (
           <>
@@ -129,7 +132,10 @@ export default function BlotterPage() {
                 />
 
                 <div>
-                  <label className="block text-slate-200 text-xs mb-1">Salaysay (Narrative) *</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-slate-200 text-xs">Salaysay (Narrative) *</label>
+                    <AIAssistButton onClick={ws.openAiDrawer} disabled={!ws.draft.narrative.trim()} />
+                  </div>
                   <textarea
                     className="min-h-[120px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
                     value={ws.draft.narrative}
@@ -197,7 +203,14 @@ export default function BlotterPage() {
             </div>
           </>
         )}
-
       </div>
+
+      <AIDrawer
+        isOpen={ws.isAiDrawerOpen}
+        onClose={ws.closeAiDrawer}
+        originalText={ws.draft.narrative}
+        onDraft={ws.handleAiDraft}
+      />
+    </>
   );
 }
