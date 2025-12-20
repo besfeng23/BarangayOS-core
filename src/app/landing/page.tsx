@@ -1,4 +1,5 @@
 
+
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -49,7 +50,7 @@ export default function LandingPage() {
                     <div className="ml-10 flex items-baseline space-x-8">
                         <a href="#features" className="hover:text-[#10b981] transition-colors text-sm font-medium">Core Modules</a>
                         <a href="#specs" className="hover:text-[#10b981] transition-colors text-sm font-medium">Specs</a>
-                        <Link href="/compliance" className="hover:text-[#10b981] transition-colors text-sm font-medium">Compliance</Link>
+                        <Link href="/landing/compliance" className="hover:text-[#10b981] transition-colors text-sm font-medium">Compliance</Link>
                     </div>
                 </div>
 
@@ -201,9 +202,9 @@ export default function LandingPage() {
                     <span>&copy; 2024 BarangayOS. All rights reserved.</span>
                 </div>
                 <div className="flex gap-6">
-                    <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
-                    <Link href="/terms" className="hover:text-white">Terms of Service</Link>
-                    <Link href="/compliance" className="hover:text-white">DILG Compliance</Link>
+                    <Link href="/landing/privacy" className="hover:text-white">Privacy Policy</Link>
+                    <Link href="/landing/terms" className="hover:text-white">Terms of Service</Link>
+                    <Link href="/landing/compliance" className="hover:text-white">DILG Compliance</Link>
                 </div>
             </div>
         </div>

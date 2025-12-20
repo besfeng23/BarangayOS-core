@@ -48,9 +48,9 @@ export default function LegalShell({ title, children }: { title: string, childre
                     <span>&copy; 2024 BarangayOS. All rights reserved.</span>
                 </div>
                 <div className="flex gap-6">
-                    <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
-                    <Link href="/terms" className="hover:text-white">Terms of Service</Link>
-                    <Link href="/compliance" className="hover:text-white">DILG Compliance</Link>
+                    <Link href="/landing/privacy" className="hover:text-white">Privacy Policy</Link>
+                    <Link href="/landing/terms" className="hover:text-white">Terms of Service</Link>
+                    <Link href="/landing/compliance" className="hover:text-white">DILG Compliance</Link>
                 </div>
             </div>
         </div>

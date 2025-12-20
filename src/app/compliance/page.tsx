@@ -1,4 +1,5 @@
 
+
 import LegalShell from '@/components/marketing/LegalShell';
 
 export const metadata = {

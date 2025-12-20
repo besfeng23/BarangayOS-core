@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Shield } from 'lucide-react';
 import { app } from '@/lib/firebase/client';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -39,6 +40,10 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-900 relative">
+      <div className="absolute top-8 left-8">
+        <Link href="/landing" className="text-sm text-slate-400 hover:text-white transition-colors">&larr; Back to Landing Page</Link>
+      </div>
+
       <Card className="w-full max-w-md mx-4 bg-slate-800/50 border-slate-700 text-white">
         <CardHeader className="text-center">
           <Shield className="mx-auto h-12 w-12 text-blue-400" />
