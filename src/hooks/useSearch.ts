@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { db as localDb } from '@/lib/bosDb';
 import { useDebounce } from './useDebounce';
 import { toTokens } from '@/lib/bos/searchTokens';
+import { nlq } from '@/ai/flows/nlq';
 
 export interface SearchResult {
   id: string;
@@ -23,7 +24,7 @@ export function useSearch(term: string) {
     permits: [],
   });
   const [loading, setLoading] = useState(false);
-  const debouncedTerm = useDebounce(term, 300);
+  const debouncedTerm = useDebounce(term, 400); // Increased debounce for AI
 
   useEffect(() => {
     if (debouncedTerm.length < 3) {
@@ -35,26 +36,39 @@ export function useSearch(term: string) {
     setLoading(true);
 
     const performSearch = async () => {
-      const upperTerm = debouncedTerm.toUpperCase();
-      const tokens = toTokens(debouncedTerm);
-
       try {
+        // Step 1: Try to parse with AI
+        const nlqResult = await nlq({ query: debouncedTerm, context: 'global' });
+        
+        let residentsQuery = localDb.residents.limit(5);
+        let blotterQuery = localDb.blotters.limit(5);
+        let businessQuery = localDb.businesses.limit(5);
+
+        // Step 2: Apply AI-driven filters if available
+        if (nlqResult && nlqResult.filters.length > 0) {
+            nlqResult.filters.forEach(filter => {
+                if (filter.field === 'purok' && (nlqResult.targetModule === 'residents' || nlqResult.targetModule === 'unknown')) {
+                    residentsQuery = residentsQuery.filter(r => (r.householdNoUpper || '').includes(filter.value.toUpperCase()));
+                }
+                if (filter.field === 'status' && nlqResult.targetModule === 'blotter') {
+                    blotterQuery = blotterQuery.filter(b => b.status.toUpperCase() === filter.value.toUpperCase());
+                }
+                // ... more filter logic can be added here
+            });
+        }
+        
+        // Step 3: Apply keyword search as a fallback or refinement
+        const keywords = (nlqResult && nlqResult.keywords.length > 0) ? nlqResult.keywords : toTokens(debouncedTerm);
+        if (keywords.length > 0) {
+            residentsQuery = residentsQuery.filter(r => keywords.some(k => r.searchTokens.includes(k)));
+            blotterQuery = blotterQuery.filter(b => keywords.some(k => b.searchTokens.includes(k)));
+            businessQuery = businessQuery.filter(b => keywords.some(k => b.searchTokens.includes(k)));
+        }
+
         const [residentResults, blotterResults, businessResults] = await Promise.all([
-          localDb.residents
-            .where('fullNameUpper')
-            .startsWith(upperTerm)
-            .limit(5)
-            .toArray(),
-          localDb.blotters
-            .where('searchTokens')
-            .anyOf(tokens)
-            .limit(5)
-            .toArray(),
-          localDb.businesses
-            .where('businessName')
-            .startsWith(upperTerm)
-            .limit(5)
-            .toArray(),
+          residentsQuery.toArray(),
+          blotterQuery.toArray(),
+          businessQuery.toArray(),
         ]);
         
         setResults({
@@ -79,7 +93,7 @@ export function useSearch(term: string) {
         });
 
       } catch (error) {
-        console.error("Error searching local DB:", error);
+        console.error("Error searching local DB with NLQ:", error);
         setResults({ residents: [], blotter: [], permits: [] });
       } finally {
         setLoading(false);
