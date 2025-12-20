@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Filter, ArrowLeft, ArrowDownUp } from 'lucide-react';
+import { Plus, Filter, ArrowLeft, ArrowDownUp, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, ClinicQueueItem } from '@/lib/bosDb';
@@ -118,9 +118,29 @@ export default function QueuePage() {
                 </div>
             </Tabs>
         </main>
+        <footer className="flex md:hidden items-center justify-around p-2 border-t border-slate-700 sticky bottom-0 bg-slate-900/80 backdrop-blur-lg z-10">
+            <Link href="/city-health" passHref>
+                <Button variant="ghost" className="flex flex-col h-auto">
+                    <Users className="h-6 w-6"/>
+                    <span className="text-xs">Dashboard</span>
+                </Button>
+            </Link>
+            <Link href="/city-health/queue" passHref>
+                <Button variant="ghost" className="flex flex-col h-auto text-blue-400">
+                    <Users className="h-6 w-6"/>
+                    <span className="text-xs">Queue</span>
+                </Button>
+            </Link>
+            <Link href="/city-health/patients" passHref>
+                <Button variant="ghost" className="flex flex-col h-auto">
+                    <Users className="h-6 w-6"/>
+                    <span className="text-xs">Patients</span>
+                </Button>
+            </Link>
+        </footer>
 
         <Link href="/city-health/queue/add" passHref legacyBehavior>
-            <a className="fixed bottom-6 right-6 z-20">
+            <a className="fixed bottom-24 right-6 z-20 md:bottom-6">
                 <Button className="rounded-full w-16 h-16 shadow-lg">
                     <Plus className="h-8 w-8" />
                 </Button>
