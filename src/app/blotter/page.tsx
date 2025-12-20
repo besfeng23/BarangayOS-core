@@ -240,4 +240,5 @@ export default function BlotterPage() {
         )}
 
       </div>
-  )
+  );
+}
