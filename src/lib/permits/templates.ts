@@ -1,4 +1,5 @@
 
+
 import { PermitIssuanceLocal } from "@/lib/bosDb";
 import { getSettingsSnapshot, BarangaySettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
 
