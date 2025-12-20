@@ -1,6 +1,16 @@
+
 'use server';
 /**
  * @fileOverview AI-powered drafting assistant flow.
+ *
+ * This file defines the `draft` function, which uses an AI model to refine
+ * or rewrite text based on a user's instructions. It ensures that any
+ * personally identifiable information (PII) is redacted from the context
+ * before it's sent to the AI model.
+ *
+ * - draft: The main function to call for drafting assistance.
+ * - DraftInput: The Zod schema for the input object.
+ * - DraftOutput: The Zod schema for the output object.
  */
 
 import { ai } from '@/ai/genkit';
