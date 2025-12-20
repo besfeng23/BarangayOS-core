@@ -14,6 +14,7 @@ import {
   Briefcase,
   Building,
   Shield,
+  HeartPulse,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -145,7 +146,7 @@ export default function Home() {
           <ModuleCard
             title="Health"
             description="City Health EMR Integration"
-            icon={FileText}
+            icon={HeartPulse}
             href="/city-health"
           />
         </PartnerTileGuard>
