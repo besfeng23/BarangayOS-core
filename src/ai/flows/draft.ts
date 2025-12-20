@@ -16,10 +16,8 @@
 import { ai } from '@/ai/genkit';
 import { DraftInputSchema, DraftOutputSchema, type DraftInput } from '@/ai/schemas';
 import { redactPII } from '@/lib/ai/redact';
-import {defineFlow} from 'genkit';
 
-
-export const draftingPrompt = defineFlow({
+export const draftingPrompt = ai.defineFlow({
   name: 'draftingPrompt',
   inputSchema: DraftInputSchema,
   outputSchema: DraftOutputSchema,
