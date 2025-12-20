@@ -46,15 +46,15 @@ export default function BusinessPermitsPage() {
                 + New Business
               </button>
               <div className="mt-3 text-xs text-zinc-400">
-                {ws.loading ? "Loading…" : `${ws.items.length} business(es)`}
+                {ws.loading ? "Loading…" : `${ws.items?.length || 0} business(es)`}
               </div>
             </div>
 
             <div className="mt-4 space-y-2">
-              {ws.items.length === 0 && !ws.loading ? (
+              {ws.items && ws.items.length === 0 && !ws.loading ? (
                 <div className="text-zinc-400 text-sm">No businesses found.</div>
               ) : (
-                ws.items.map((b) => (
+                ws.items?.map((b) => (
                   <button
                     key={b.id}
                     className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-left hover:bg-zinc-900/60"
