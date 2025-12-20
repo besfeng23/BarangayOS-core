@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input as ShadInput } from "@/components/ui/input";
+import { exportAllData } from "@/lib/bos/export/exportService";
 
 // Mock data for user management UI
 const mockUsers = [
@@ -61,7 +63,7 @@ const EditUserModal = ({ user, isOpen, onClose }: { user: MockUser | null, isOpe
           </div>
           <div>
             <Label htmlFor="pin-reset">Reset PIN</Label>
-            <Input id="pin-reset" type="password" placeholder="Enter new 4-digit PIN" value={pin} onChange={(e) => setPin(e.target.value)} className="h-12 text-lg" />
+            <ShadInput id="pin-reset" type="password" placeholder="Enter new 4-digit PIN" value={pin} onChange={(e) => setPin(e.target.value)} className="h-12 text-lg" />
             <p className="text-xs text-zinc-400 mt-1">Leave blank to keep current PIN.</p>
           </div>
         </div>
@@ -199,6 +201,52 @@ const UsersAndRolesTab = () => {
   );
 };
 
+const SystemTab = () => {
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+
+  const handleExport = async () => {
+    if (!window.confirm("This will download all local data as CSV files in a zip archive. Continue?")) {
+      return;
+    }
+    setIsExporting(true);
+    try {
+      await exportAllData();
+      toast({
+        title: "Export Complete",
+        description: "Your data has been exported and should begin downloading shortly.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Export Failed",
+        description: error.message || "An unexpected error occurred during export.",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+        <h3 className="font-semibold">System Status</h3>
+        <p className="text-sm text-zinc-400">View detailed logs, sync status, and module health.</p>
+        <Link href="/status" passHref>
+          <Button variant="outline" className="mt-3">View System Status Page</Button>
+        </Link>
+      </div>
+      <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+        <h3 className="font-semibold">Data Export</h3>
+        <p className="text-sm text-zinc-400">Export all local data (residents, blotter, etc.) to a CSV zip file.</p>
+        <Button onClick={handleExport} disabled={isExporting} className="mt-3">
+          {isExporting ? "Exporting..." : "Export All Data"}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 
 export default function SettingsPage() { 
   return (
@@ -220,9 +268,7 @@ export default function SettingsPage() {
                <UsersAndRolesTab />
             </TabsContent>
              <TabsContent value="system" className="mt-6">
-                <Link href="/status" className="text-sm text-zinc-400 hover:text-zinc-100 underline">
-                  View System Status & Logs
-                </Link>
+                <SystemTab />
              </TabsContent>
           </Tabs>
         </div>
