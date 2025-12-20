@@ -95,14 +95,9 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
      )
   }
 
-  const pick = (resident: Resident) => {
-    handleSelect(resident);
-    setOpen(false);
-  };
-
   return (
-    <div data-resident-picker className="pointer-events-auto">
-      <Popover open={open} onOpenChange={setOpen} modal={false}>
+    <div data-resident-picker>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -115,14 +110,13 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-            className="w-[400px] p-0 z-50 pointer-events-auto"
-            align="start"
-            onInteractOutside={(e) => {
-              const target = e.target as HTMLElement;
-              if (target.closest('[data-resident-picker]')) {
-                e.preventDefault();
-              }
-            }}
+          className="w-[400px] p-0 z-50" 
+          align="start"
+          onMouseDown={(e) => {
+            // Prevent the popover from closing when clicking inside,
+            // which would trigger the onBlur on the input.
+            e.preventDefault();
+          }}
         >
           <Command shouldFilter={false}>
             <CommandInput
@@ -139,24 +133,15 @@ export const ResidentPicker = ({ onSelectResident, selectedResident, isResponden
                     <CommandItem
                       key={resident.id}
                       value={resident.displayName}
-                      className="p-0"
+                      onSelect={() => handleSelect(resident)}
                     >
-                      <button
-                        type="button"
-                        className="w-full text-left px-3 py-2 cursor-pointer pointer-events-auto flex items-center"
-                        onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
-                        onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
-                        onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); pick(resident); }}
-                      >
-                         <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              displayName === resident.displayName ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {resident.displayName}
-                      </button>
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          displayName === resident.displayName ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {resident.displayName}
                     </CommandItem>
                   ))}
                 </CommandGroup>
