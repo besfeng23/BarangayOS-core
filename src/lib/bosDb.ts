@@ -3,7 +3,7 @@ import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 14;
+export const DB_VERSION = 15;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -241,6 +241,23 @@ export type ClinicQueueItem = {
     synced: 0 | 1;
 }
 
+// AI Module
+export type AICache = {
+  key: string; // hash of the prompt/request
+  value: any; // cached response
+  createdAt: number; // timestamp for TTL
+};
+
+export type AISettings = {
+  key: "settings";
+  value: {
+    enableAI: boolean;
+    allowPII: boolean;
+    demoMode: boolean;
+    storeLogs: boolean;
+  };
+};
+
 
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
@@ -259,6 +276,8 @@ class BOSDexie extends Dexie {
   meta!: Table<MetaRow, string>;
   sync_queue!: Table<SyncQueueItem, number>;
   audit_queue!: Table<AuditRow, number>;
+  ai_cache!: Table<AICache, string>;
+  ai_settings!: Table<AISettings, string>;
 
   constructor() {
     super(DB_NAME);
@@ -321,6 +340,11 @@ class BOSDexie extends Dexie {
 
     this.version(14).stores({
         clinic_queue: "id, status, createdAtISO, *searchTokens"
+    });
+
+    this.version(15).stores({
+        ai_cache: "key, createdAt",
+        ai_settings: "key",
     });
   }
 }
