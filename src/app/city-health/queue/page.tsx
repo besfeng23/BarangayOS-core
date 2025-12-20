@@ -8,31 +8,65 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Filter, ArrowLeft, ArrowDownUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/bosDb';
+import { db, ClinicQueueItem } from '@/lib/bosDb';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
 
-const QueueCard = ({ name, age, sex, status, tags, vitals }: { name: string, age: number, sex: string, status: 'waiting' | 'in-consult' | 'done', tags: string[], vitals?: string }) => (
-    <Card className="bg-slate-800/50 border-slate-700 mb-4">
-        <CardContent className="p-4 flex flex-col md:flex-row md:items-center gap-4">
-            <div className="flex-1">
-                <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-bold">{name}</h3>
-                    <Badge variant={status === 'waiting' ? 'default' : status === 'in-consult' ? 'secondary' : 'outline'}>
-                        {status.toUpperCase()}
-                    </Badge>
+const QueueCard = ({ item }: { item: ClinicQueueItem }) => {
+    const router = useRouter();
+    const { toast } = useToast();
+
+    const getAge = (birthdate?: string): number | string => {
+        if (!birthdate) return 'N/A';
+        return Math.floor((new Date().getTime() - new Date(birthdate).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    }
+
+    const patientName = item.patient.mode === 'resident' ? item.patient.residentNameSnapshot : item.patient.manualName;
+    const age = item.patient.mode === 'resident' ? 'N/A' : getAge(); // Simplified for now
+    const sex = item.patient.mode === 'resident' ? 'N/A' : 'N/A'; // Simplified for now
+
+    const handleStartConsult = async () => {
+        try {
+            await db.clinic_queue.update(item.id, { status: 'CONSULT' });
+            toast({
+                title: 'Consultation Started',
+                description: `${patientName} has been moved to the "In Consult" queue.`,
+            });
+            router.push(`/city-health/consultations/${item.id}`);
+        } catch (error) {
+            console.error("Failed to start consultation:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not update the patient status.',
+            });
+        }
+    };
+    
+    return (
+        <Card className="bg-slate-800/50 border-slate-700 mb-4">
+            <CardContent className="p-4 flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                        <h3 className="text-lg font-bold">{patientName}</h3>
+                        <Badge variant={item.status === 'WAITING' ? 'default' : item.status === 'CONSULT' ? 'secondary' : 'outline'}>
+                            {item.status}
+                        </Badge>
+                    </div>
+                    <p className="text-sm text-slate-400">{age}yo • {sex}</p>
+                    <div className="flex gap-2 mt-2">
+                        {item.tags.map(tag => <Badge key={tag} variant="destructive" className="text-xs">{tag}</Badge>)}
+                    </div>
+                    {/* {vitals && <p className="text-xs text-green-400 mt-2 font-mono">{vitals}</p>} */}
                 </div>
-                <p className="text-sm text-slate-400">{age}yo • {sex}</p>
-                <div className="flex gap-2 mt-2">
-                    {tags.map(tag => <Badge key={tag} variant="destructive" className="text-xs">{tag}</Badge>)}
+                <div className="flex gap-2 self-end md:self-center">
+                    <Button variant="outline" size="sm">Record Vitals</Button>
+                    {item.status === 'WAITING' && <Button size="sm" onClick={handleStartConsult}>Start Consult</Button>}
                 </div>
-                {vitals && <p className="text-xs text-green-400 mt-2 font-mono">{vitals}</p>}
-            </div>
-            <div className="flex gap-2 self-end md:self-center">
-                <Button variant="outline" size="sm">Record Vitals</Button>
-                <Button size="sm">Start Consult</Button>
-            </div>
-        </CardContent>
-    </Card>
-);
+            </CardContent>
+        </Card>
+    );
+};
 
 export default function QueuePage() {
     const queue = useLiveQuery(() => db.clinic_queue.orderBy('createdAtISO').toArray(), []);
@@ -66,19 +100,19 @@ export default function QueuePage() {
                     <TabsContent value="waiting">
                         {waiting.length === 0 && <p className="text-muted-foreground text-center py-8">No patients waiting.</p>}
                         {waiting.map(p => (
-                            <QueueCard key={p.id} name={p.patientName} age={30} sex="M" status="waiting" tags={p.tags} />
+                            <QueueCard key={p.id} item={p} />
                         ))}
                     </TabsContent>
                     <TabsContent value="in-consult">
                         {inConsult.length === 0 && <p className="text-muted-foreground text-center py-8">No patients in consultation.</p>}
                         {inConsult.map(p => (
-                             <QueueCard key={p.id} name={p.patientName} age={45} sex="M" status="in-consult" tags={p.tags} vitals="Temp: 38.1°C" />
+                             <QueueCard key={p.id} item={p} />
                         ))}
                     </TabsContent>
                     <TabsContent value="done">
                          {done.length === 0 && <p className="text-muted-foreground text-center py-8">No patients have finished consultation.</p>}
                          {done.map(p => (
-                            <QueueCard key={p.id} name={p.patientName} age={25} sex="F" status="done" tags={p.tags} vitals="Weight: 12kg" />
+                            <QueueCard key={p.id} item={p} />
                          ))}
                     </TabsContent>
                 </div>
