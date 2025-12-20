@@ -110,14 +110,7 @@ export default function BusinessPermitsPage() {
                     onChange={(e) => ws.setBizDraft((d) => ({ ...d, addressText: e.target.value }))}
                   />
                 </div>
-
-                <button
-                  className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-semibold"
-                  onClick={() => {}} // no-op; keep UI light (no optional toggle in v1)
-                >
-                  More details (optional) — use Notes below
-                </button>
-
+                
                 <div>
                   <label className="block text-zinc-400 text-xs mb-1">Category</label>
                   <input
@@ -253,3 +246,5 @@ export default function BusinessPermitsPage() {
       </div>
   );
 }
+
+    

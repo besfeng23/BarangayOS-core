@@ -9,6 +9,7 @@ import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
+import { useLiveQuery } from "dexie-react-hooks";
 
 type Mode = "list" | "businessForm" | "renewForm";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -49,8 +50,6 @@ export function useBusinessPermitsWorkstation() {
 
   const [mode, setMode] = useState<Mode>("list");
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<BusinessLocal[]>([]);
-  const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [banner, setBanner] = useState<Banner>(null);
 
@@ -74,7 +73,7 @@ export function useBusinessPermitsWorkstation() {
   });
 
   const [printHTML, setPrintHTML] = useState<string | null>(null);
-
+  
   const canSaveBusiness = useMemo(() => {
     if (!bizDraft.businessName.trim()) return false;
     if (!getOwnerName(bizDraft.owner)) return false;
@@ -89,37 +88,32 @@ export function useBusinessPermitsWorkstation() {
     if (!isFinite(fee) || fee < 0) return false;
     return true;
   }, [renewDraft]);
-
-  const computeStatus = useCallback((latestYear:number, suspended?: boolean) => {
-    if (suspended) return "Suspended" as const;
-    return latestYear >= currentYear() ? "Active" as const : "Expired" as const;
-  }, []);
-
-  const fetchList = useCallback(async (qRaw: string) => {
-    setLoading(true);
-    try {
-      const q = upper(qRaw);
-      if (!q) {
-        const list = await db.businesses.orderBy("updatedAtISO").reverse().limit(150).toArray();
-        setItems(list);
-        return;
+  
+  const { items, loading } = useLiveQuery(async () => {
+      setLoading(true);
+      try {
+        const q = upper(query);
+        if (!q) {
+            return await db.businesses.orderBy("updatedAtISO").reverse().limit(150).toArray();
+        }
+        const first = q.split(/\s+/)[0];
+        const hits = await db.businesses.where("searchTokens").equals(first).toArray();
+        const refined = hits.filter((b) => {
+            const hay = [upper(b.businessName), upper(b.ownerName), upper(b.addressText), upper(b.category ?? ""), b.id, b.status].join(" ");
+            return hay.includes(q);
+        });
+        refined.sort((a, b) => (a.updatedAtISO > b.updatedAtISO ? -1 : 1));
+        return refined;
+      } finally {
+        setLoading(false);
       }
-      const first = q.split(/\s+/)[0];
-      const hits = await db.businesses.where("searchTokens").equals(first).toArray();
-      const refined = hits.filter((b) => {
-        const hay = [upper(b.businessName), upper(b.ownerName), upper(b.addressText), upper(b.category ?? ""), b.id, b.status].join(" ");
-        return hay.includes(q);
-      });
-      refined.sort((a, b) => (a.updatedAtISO > b.updatedAtISO ? -1 : 1));
-      setItems(refined);
-    } finally {
-      setLoading(false);
-    }
+  }, [query], { items: [], loading: true });
+
+
+  const reload = useCallback(() => {
+    // This is now handled automatically by useLiveQuery
+    // but we can keep the function as a no-op if needed
   }, []);
-
-  useEffect(() => { fetchList(query); }, [query, fetchList]);
-
-  const reload = useCallback(() => fetchList(query), [fetchList, query]);
 
   const newBusiness = useCallback(() => {
     setSelectedBusinessId(null);
@@ -164,8 +158,8 @@ export function useBusinessPermitsWorkstation() {
       const id = bizDraft.id || uuid();
       const existing = await db.businesses.get(id);
 
-      const latestYear = existing?.latestYear ?? currentYear() - 1; // new business starts as expired until renewed (safe)
-      const status = computeStatus(latestYear);
+      const latestYear = existing?.latestYear ?? currentYear() - 1; 
+      const status = "Active";
       const ownerName = getOwnerName(bizDraft.owner);
 
       const rec: BusinessLocal = {
@@ -215,7 +209,7 @@ export function useBusinessPermitsWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [bizDraft, validateBiz, computeStatus, reload]);
+  }, [bizDraft, validateBiz, reload]);
 
   const startRenew = useCallback(async (id: string) => {
     const b = await db.businesses.get(id);
@@ -256,25 +250,22 @@ export function useBusinessPermitsWorkstation() {
         issuedAtISO: nowISO,
         issuedByName: settings.secretaryName,
         barangayName: settings.barangayName,
-        municipalityCity: settings.barangayAddress, // Assuming address is municipality, province
-        province: "", // This should be a separate field in settings
+        municipalityCity: settings.barangayAddress,
+        province: "",
         searchTokens: toTokens([b.businessName, b.ownerName, b.id, String(year), String(feeAmount), renewDraft.orNo, issuanceId].join(" ")),
       };
 
-      // 1) local issuance
       await db.permit_issuances.put(issuance);
 
-      // 2) update business latestYear + status
       const updated: BusinessLocal = {
         ...b,
         latestYear: year,
-        status: b.status === "Suspended" ? "Suspended" : (year >= currentYear() ? "Active" : "Expired"),
+        status: "Active",
         updatedAtISO: nowISO,
-        searchTokens: b.searchTokens, // keep
+        searchTokens: b.searchTokens,
       };
       await db.businesses.put(updated);
 
-      // 3) audit + print log
       await writeActivity({
         type: "BUSINESS_RENEWED",
         entityType: "permit_issuance",
@@ -286,11 +277,9 @@ export function useBusinessPermitsWorkstation() {
       });
 
 
-      // 4) enqueue sync
       await enqueue({ type: "BUSINESS_UPSERT", payload: updated });
       await enqueue({ type: "PERMIT_ISSUANCE_UPSERT", payload: issuance });
       
-      // 5) print
       const html = buildBusinessPermitHTML(issuance, settings);
       const printJobId = await enqueuePrintJob({
         entityType: "permit_issuance",
@@ -341,3 +330,5 @@ export function useBusinessPermitsWorkstation() {
     reload,
   };
 }
+
+    
