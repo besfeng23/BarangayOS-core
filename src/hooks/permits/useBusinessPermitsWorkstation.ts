@@ -1,4 +1,5 @@
 
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db, BusinessLocal, PermitIssuanceLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
@@ -340,5 +341,3 @@ export function useBusinessPermitsWorkstation() {
     reload,
   };
 }
-
-    

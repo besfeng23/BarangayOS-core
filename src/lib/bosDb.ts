@@ -287,5 +287,3 @@ export async function resetLocalDatabase() {
   // Reload the page to re-initialize the database and app state
   window.location.reload();
 }
-
-    
