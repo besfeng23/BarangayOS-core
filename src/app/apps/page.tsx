@@ -88,7 +88,8 @@ const modules: Module[] = [
     name: 'Add-ons & Procurement',
     description: 'Tingnan at mag-request ng mga hardware add-ons.',
     icon: Briefcase,
-    status: 'AVAILABLE',
+    status: 'INSTALLED',
+    href: '/addons',
   },
 ];
 
