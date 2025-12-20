@@ -52,6 +52,8 @@ function getPartyName(party: ResidentPickerValue | undefined) {
   if (party.mode === 'resident' && party.residentNameSnapshot) {
     return party.residentNameSnapshot;
   }
+  // For blotter, we now forbid manual entry for submission, but the type allows it.
+  // This will return "" if manual mode is somehow selected without a name.
   return party.manualName || "";
 }
 
@@ -87,6 +89,8 @@ export function useBlotterWorkstation() {
   const canSave = useMemo(() => {
     if (!draft.incidentDateISO) return false;
     if (!draft.locationText.trim()) return false;
+    if (draft.complainant.mode !== 'resident' || !draft.complainant.residentId) return false;
+    if (draft.respondent.mode !== 'resident' || !draft.respondent.residentId) return false;
     if (!getPartyName(draft.complainant)) return false;
     if (!getPartyName(draft.respondent)) return false;
     if (!draft.narrative.trim()) return false;
@@ -171,11 +175,13 @@ export function useBlotterWorkstation() {
   }, []);
 
   const validate = useCallback((d: Draft) => {
-    if (!d.incidentDateISO) throw new Error("Incident date is required.");
-    if (!d.locationText.trim()) throw new Error("Location is required.");
-    if (!getPartyName(d.complainant)) throw new Error("Complainant is required.");
-    if (!getPartyName(d.respondent)) throw new Error("Respondent is required.");
-    if (!d.narrative.trim()) throw new Error("Narrative is required.");
+    if (!d.incidentDateISO) throw new Error("Kailangan ang petsa ng insidente.");
+    if (!d.locationText.trim()) throw new Error("Kailangan ang lugar ng insidente.");
+    if (d.complainant.mode !== 'resident' || !d.complainant.residentId) throw new Error("Kailangan pumili ng valid na residente para sa nagrereklamo.");
+    if (d.respondent.mode !== 'resident' || !d.respondent.residentId) throw new Error("Kailangan pumili ng valid na residente para sa inirereklamo.");
+    if (!getPartyName(d.complainant)) throw new Error("Kailangan ang pangalan ng nagrereklamo.");
+    if (!getPartyName(d.respondent)) throw new Error("Kailangan ang pangalan ng inirereklamo.");
+    if (!d.narrative.trim()) throw new Error("Kailangan ang salaysay (narrative).");
   }, []);
 
   const save = useCallback(async (enqueue: (job: { type: string; payload: any }) => Promise<void>) => {
@@ -224,7 +230,7 @@ export function useBlotterWorkstation() {
         entityType: "blotter",
         entityId: rec.id,
         status: "ok",
-        title: draft.id ? "Blotter updated" : "Blotter created",
+        title: draft.id ? "Blotter na-update" : "Blotter na-create",
         subtitle: `${rec.complainantName} vs ${rec.respondentName} • ${rec.locationText} • ${rec.status}`,
       });
 
@@ -233,7 +239,7 @@ export function useBlotterWorkstation() {
       await enqueue({ type: "BLOTTER_UPSERT", payload: rec });
 
       clearDraft(DRAFT_KEY);
-      setBanner({ kind: "ok", msg: "Saved & queued ✅" });
+      setBanner({ kind: "ok", msg: "Nai-save at naka-queue para sa sync ✅" });
       setMode("list");
       reload();
       return { ok: true as const, id: rec.id };
@@ -263,14 +269,14 @@ export function useBlotterWorkstation() {
         entityType: "blotter",
         entityId: updated.id,
         status: "ok",
-        title: "Blotter resolved",
+        title: "Blotter na-resolve",
         subtitle: `${updated.complainantName} vs ${updated.respondentName} • ${updated.locationText}`,
       });
 
       await enqueue({ type: "BLOTTER_UPSERT", payload: updated });
 
       setDraft((d) => ({ ...d, status: "Resolved" }));
-      setBanner({ kind: "ok", msg: "Marked as Resolved ✅" });
+      setBanner({ kind: "ok", msg: "Minarkahan bilang Resolved ✅" });
       setMode("list");
       reload();
       return { ok: true as const };
@@ -305,7 +311,7 @@ export function useBlotterWorkstation() {
         entityType: "blotter",
         entityId: b.id,
         status: "ok",
-        title: "Blotter printed",
+        title: "Blotter na-print",
         subtitle: `${b.complainantName} vs ${b.respondentName} • ${b.locationText}`,
     });
 

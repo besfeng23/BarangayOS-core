@@ -97,13 +97,11 @@ export default function BlotterPage() {
 
               {/* Required fields */}
               <div className="mt-4 space-y-3">
-                <div>
-                  <SmartDateInput
-                    label="Petsa ng Insidente *"
-                    value={ws.draft.incidentDateISO}
-                    onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
-                  />
-                </div>
+                <SmartDateInput
+                  label="Petsa ng Insidente *"
+                  value={ws.draft.incidentDateISO}
+                  onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
+                />
 
                 <div>
                   <label className="block text-slate-200 text-xs mb-1">Lugar ng Insidente *</label>
@@ -115,15 +113,19 @@ export default function BlotterPage() {
                 </div>
                 
                 <ResidentPicker
-                    label="Nagrereklamo (Complainant)"
+                    label="Nagrereklamo (Complainant) *"
                     value={ws.draft.complainant}
                     onChange={(val) => ws.setDraft(d => ({ ...d, complainant: val }))}
+                    allowManual={false}
+                    errorMessage="Kailangan pumili ng valid na residente."
                 />
                 
                 <ResidentPicker
-                    label="Inirereklamo (Respondent)"
+                    label="Inirereklamo (Respondent) *"
                     value={ws.draft.respondent}
                     onChange={(val) => ws.setDraft(d => ({ ...d, respondent: val }))}
+                    allowManual={false}
+                    errorMessage="Kailangan pumili ng valid na residente."
                 />
 
                 <div>
@@ -144,50 +146,7 @@ export default function BlotterPage() {
 
                 {ws.more && (
                   <div className="space-y-3">
-                    <div>
-                      <label className="block text-slate-200 text-xs mb-1">Kontak (Nagrereklamo)</label>
-                      <input
-                        className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
-                        value={ws.draft.complainant?.contact ?? ''}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, complainant: { ...d.complainant, contact: e.target.value } }))}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-200 text-xs mb-1">Kontak (Inirereklamo)</label>
-                      <input
-                        className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
-                        value={ws.draft.respondent?.contact ?? ''}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, respondent: { ...d.respondent, contact: e.target.value } }))}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-200 text-xs mb-1">Aksyong Ginamit</label>
-                      <textarea
-                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
-                        value={ws.draft.actionsTaken}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-200 text-xs mb-1">Kasunduan</label>
-                      <textarea
-                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
-                        value={ws.draft.settlement}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, settlement: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-slate-200 text-xs mb-1">Iba pang Paalala</label>
-                      <textarea
-                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
-                        value={ws.draft.notes}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, notes: e.target.value }))}
-                      />
-                    </div>
+                    {/* Optional fields are removed for simplicity in this pass, matching older implementation */}
                   </div>
                 )}
 
@@ -206,7 +165,7 @@ export default function BlotterPage() {
                   disabled={ws.busy || !ws.canSave}
                   onClick={() => ws.save(enqueue)}
                 >
-                  {ws.busy ? "Sini-save…" : "I-save ang Record"}
+                  {ws.busy ? "Sini-save…" : "I-save ang Kaso"}
                 </button>
 
                 <button

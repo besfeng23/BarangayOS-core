@@ -1,5 +1,4 @@
 
-
 import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
@@ -70,8 +69,8 @@ export type BlotterLocal = {
   respondentName: string;
 
   // Structured for data integrity
-  complainant?: ResidentPickerValue;
-  respondent?: ResidentPickerValue;
+  complainant: ResidentPickerValue;
+  respondent: ResidentPickerValue;
 
   // optional
   complainantContact?: string;
@@ -90,7 +89,7 @@ export type BusinessLocal = {
   updatedAtISO: string;
   businessName: string;
   ownerName: string;
-  owner?: ResidentPickerValue; // <-- ADDED FOR STRUCTURED LINK
+  owner: ResidentPickerValue;
   addressText: string;
   category?: string;
   contact?: string;
