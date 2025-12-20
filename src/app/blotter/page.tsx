@@ -24,8 +24,8 @@ export default function BlotterPage() {
         {ws.mode === "list" && (
           <>
             <div className="mb-4">
-              <h1 className="text-zinc-100 text-xl font-semibold">Blotter</h1>
-              <p className="text-zinc-400 text-sm mt-1">Simple incident logbook.</p>
+              <h1 className="text-white text-xl font-semibold">Blotter</h1>
+              <p className="text-slate-200 text-sm mt-1">Logbook para sa mga insidente.</p>
             </div>
 
             {ws.banner && (
@@ -33,17 +33,17 @@ export default function BlotterPage() {
                 "mb-4 rounded-2xl border p-4",
                 ws.banner.kind === "error" ? "border-red-900/50 bg-red-950/30" : "border-emerald-900/40 bg-emerald-950/20"
               ].join(" ")}>
-                <div className="text-zinc-100 text-sm font-semibold">
-                  {ws.banner.kind === "error" ? "Fix this" : "Status"}
+                <div className="text-white text-sm font-semibold">
+                  {ws.banner.kind === "error" ? "Ayusin ito" : "Status"}
                 </div>
-                <div className="text-zinc-300 text-sm mt-1">{ws.banner.msg}</div>
+                <div className="text-slate-200 text-sm mt-1">{ws.banner.msg}</div>
               </div>
             )}
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
               <input
-                className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
-                placeholder="Search name, location, keyword…"
+                className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
+                placeholder="Hanapin ang pangalan, lugar, o keyword…"
                 value={ws.query}
                 onChange={(e) => ws.setQuery(e.target.value)}
               />
@@ -51,27 +51,27 @@ export default function BlotterPage() {
                 className="mt-3 h-12 w-full rounded-xl bg-zinc-100 text-zinc-950 font-semibold"
                 onClick={ws.newBlotter}
               >
-                + New Blotter
+                + Mag-file ng Blotter
               </button>
-              <div className="mt-3 text-xs text-zinc-400">
-                {ws.loading ? "Loading…" : `${ws.items.length} record(s)`}
+              <div className="mt-3 text-xs text-slate-200">
+                {ws.loading ? "Nagloload…" : `${ws.items.length} na record(s)`}
               </div>
             </div>
 
             <div className="mt-4 space-y-2">
               {ws.items.length === 0 && !ws.loading ? (
-                <div className="text-zinc-400 text-sm">No records yet.</div>
+                <div className="text-slate-200 text-sm p-4 text-center border-2 border-dashed border-zinc-800 rounded-2xl">Walang laman. Pindutin ang 'Mag-file' para magsimula.</div>
               ) : (
                 ws.items.map((b) => (
                   <button
                     key={b.id}
-                    className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-left hover:bg-zinc-900/60"
+                    className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-left hover:bg-zinc-900/60 h-auto"
                     onClick={() => ws.editBlotter(b.id)}
                   >
-                    <div className="text-zinc-100 text-sm font-semibold">
+                    <div className="text-white text-sm font-semibold">
                       {b.complainantName} vs {b.respondentName}
                     </div>
-                    <div className="text-zinc-400 text-xs mt-1">
+                    <div className="text-slate-200 text-xs mt-1">
                       {new Date(b.incidentDateISO).toLocaleDateString()} • {b.locationText} • {b.status}
                     </div>
                   </button>
@@ -84,106 +84,106 @@ export default function BlotterPage() {
         {ws.mode === "form" && (
           <>
             <button
-              className="mb-3 h-12 rounded-xl bg-zinc-900/40 border border-zinc-800 text-zinc-100 px-4 font-semibold"
+              className="mb-3 h-12 rounded-xl bg-zinc-900/40 border border-zinc-800 text-white px-4 font-semibold"
               onClick={ws.backToList}
             >
-              ← Back
+              ← Bumalik
             </button>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
-              <div className="text-zinc-100 text-sm font-semibold">
-                {ws.draft.id ? "Edit Blotter Record" : "New Blotter Record"}
+              <div className="text-white text-sm font-semibold">
+                {ws.draft.id ? "I-edit ang Blotter" : "Bagong Blotter Record"}
               </div>
 
               {/* Required fields */}
               <div className="mt-4 space-y-3">
                 <div>
                   <SmartDateInput
-                    label="Incident Date *"
+                    label="Petsa ng Insidente *"
                     value={ws.draft.incidentDateISO}
                     onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-400 text-xs mb-1">Location *</label>
+                  <label className="block text-slate-200 text-xs mb-1">Lugar ng Insidente *</label>
                   <input
-                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
                     value={ws.draft.locationText}
                     onChange={(e) => ws.setDraft((d) => ({ ...d, locationText: e.target.value }))}
                   />
                 </div>
                 
                 <ResidentPicker
-                    label="Complainant"
+                    label="Nagrereklamo (Complainant)"
                     value={ws.draft.complainant}
                     onChange={(val) => ws.setDraft(d => ({ ...d, complainant: val }))}
                 />
                 
                 <ResidentPicker
-                    label="Respondent"
+                    label="Inirereklamo (Respondent)"
                     value={ws.draft.respondent}
                     onChange={(val) => ws.setDraft(d => ({ ...d, respondent: val }))}
                 />
 
                 <div>
-                  <label className="block text-zinc-400 text-xs mb-1">Narrative *</label>
+                  <label className="block text-slate-200 text-xs mb-1">Salaysay (Narrative) *</label>
                   <textarea
-                    className="min-h-[120px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3 py-2"
+                    className="min-h-[120px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
                     value={ws.draft.narrative}
                     onChange={(e) => ws.setDraft((d) => ({ ...d, narrative: e.target.value }))}
                   />
                 </div>
 
                 <button
-                  className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-semibold"
+                  className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white font-semibold"
                   onClick={() => ws.setMore(!ws.more)}
                 >
-                  {ws.more ? "Hide more details" : "More details (optional)"}
+                  {ws.more ? "Itago ang iba pang detalye" : "Iba pang detalye (optional)"}
                 </button>
 
                 {ws.more && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-zinc-400 text-xs mb-1">Complainant Contact</label>
+                      <label className="block text-slate-200 text-xs mb-1">Kontak (Nagrereklamo)</label>
                       <input
-                        className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+                        className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
                         value={ws.draft.actionsTaken}
                         onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-zinc-400 text-xs mb-1">Respondent Contact</label>
+                      <label className="block text-slate-200 text-xs mb-1">Kontak (Inirereklamo)</label>
                       <input
-                        className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3"
+                        className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
                         value={ws.draft.actionsTaken}
                         onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-zinc-400 text-xs mb-1">Actions Taken</label>
+                      <label className="block text-slate-200 text-xs mb-1">Aksyong Ginamit</label>
                       <textarea
-                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3 py-2"
+                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
                         value={ws.draft.actionsTaken}
                         onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-zinc-400 text-xs mb-1">Settlement</label>
+                      <label className="block text-slate-200 text-xs mb-1">Kasunduan</label>
                       <textarea
-                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3 py-2"
+                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
                         value={ws.draft.settlement}
                         onChange={(e) => ws.setDraft((d) => ({ ...d, settlement: e.target.value }))}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-zinc-400 text-xs mb-1">Notes</label>
+                      <label className="block text-slate-200 text-xs mb-1">Iba pang Paalala</label>
                       <textarea
-                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 px-3 py-2"
+                        className="min-h-[90px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
                         value={ws.draft.notes}
                         onChange={(e) => ws.setDraft((d) => ({ ...d, notes: e.target.value }))}
                       />
@@ -193,46 +193,46 @@ export default function BlotterPage() {
 
                 {ws.banner && ws.banner.kind === "error" && (
                   <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-3">
-                    <div className="text-zinc-100 text-sm font-semibold">Fix this</div>
-                    <div className="text-zinc-300 text-sm mt-1">{ws.banner.msg}</div>
+                    <div className="text-white text-sm font-semibold">Ayusin ito</div>
+                    <div className="text-slate-200 text-sm mt-1">{ws.banner.msg}</div>
                   </div>
                 )}
 
                 <button
                   className={[
                     "h-12 w-full rounded-xl font-semibold",
-                    ws.busy || !ws.canSave ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
+                    ws.busy || !ws.canSave ? "bg-zinc-800 text-slate-200 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
                   ].join(" ")}
                   disabled={ws.busy || !ws.canSave}
                   onClick={() => ws.save(enqueue)}
                 >
-                  {ws.busy ? "Saving…" : "Save Record"}
+                  {ws.busy ? "Sini-save…" : "I-save ang Record"}
                 </button>
 
                 <button
                   className={[
                     "h-12 w-full rounded-xl font-semibold border border-zinc-800",
-                    ws.busy || !ws.draft.id ? "bg-zinc-900/40 text-zinc-400 cursor-not-allowed" : "bg-zinc-950 text-zinc-100"
+                    ws.busy || !ws.draft.id ? "bg-zinc-900/40 text-slate-200 cursor-not-allowed" : "bg-zinc-950 text-white"
                   ].join(" ")}
                   disabled={ws.busy || !ws.draft.id}
                   onClick={() => ws.resolve(enqueue)}
                 >
-                  Mark as Resolved
+                  Markahan bilang 'Resolved'
                 </button>
 
                 <button
                   className={[
                     "h-12 w-full rounded-xl font-semibold border border-zinc-800",
-                    !ws.draft.id ? "bg-zinc-900/40 text-zinc-400 cursor-not-allowed" : "bg-zinc-950 text-zinc-100"
+                    !ws.draft.id ? "bg-zinc-900/40 text-slate-200 cursor-not-allowed" : "bg-zinc-950 text-white"
                   ].join(" ")}
                   disabled={!ws.draft.id}
                   onClick={onPrint}
                 >
-                  Print Record
+                  I-print ang Record
                 </button>
 
-                <div className="text-xs text-zinc-400">
-                  Works offline: saved locally first, queued for sync automatically.
+                <div className="text-xs text-slate-200">
+                  Gumagana offline: naka-save muna sa device, tapos naka-sync.
                 </div>
               </div>
             </div>
@@ -240,5 +240,4 @@ export default function BlotterPage() {
         )}
 
       </div>
-  );
-}
+  )
