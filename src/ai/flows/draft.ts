@@ -16,28 +16,39 @@
 import { ai } from '@/ai/genkit';
 import { DraftInputSchema, DraftOutputSchema, type DraftInput } from '@/ai/schemas';
 import { redactPII } from '@/lib/ai/redact';
+import {defineFlow} from 'genkit';
 
-const draftingPrompt = ai.definePrompt({
+
+export const draftingPrompt = defineFlow({
   name: 'draftingPrompt',
-  input: { schema: DraftInputSchema },
-  output: { schema: DraftOutputSchema },
-  prompt: `You are an expert administrative assistant for a local government unit.
+  inputSchema: DraftInputSchema,
+  outputSchema: DraftOutputSchema,
+}, async (input) => {
+    const llm = ai.getGenerator('googleai/gemini-1.5-flash');
+    const result = await llm.generate({
+        prompt: `You are an expert administrative assistant for a local government unit.
 Your task is to help the user draft or refine text based on their instructions.
-The user's instruction is: {{instruction}}
+The user's instruction is: ${input.instruction}
 
 The text to be refined is:
 '''
-{{context}}
+${input.context}
 '''
 
 Provide the redrafted text in the 'draft' output field.
 `,
+        output: {
+            schema: DraftOutputSchema,
+        },
+    });
+
+    return result.output!;
 });
 
 export async function draft(input: DraftInput) {
   const redactedContext = redactPII(input.context);
 
-  const { output } = await draftingPrompt({
+  const output = await draftingPrompt({
     ...input,
     context: redactedContext,
   });
