@@ -1,6 +1,8 @@
+
 import { db, ActivityLogLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
 import { ensureDbOpen } from "../dexie/openDb";
+import { cleanForStorage } from "../dbUtils";
 
 function uuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -24,18 +26,19 @@ export async function writeActivity(args: Omit<ActivityLogLocal, "id" | "occurre
     status: args.status,
     title: args.title,
     subtitle: args.subtitle,
-    details: args.details,
+    details: args.details || null,
     searchTokens: toTokens([args.title, args.subtitle, args.type, args.entityType, args.entityId, occurredAtISO].join(" ")),
     synced: 0,
   };
 
-  await db.activity_log.put(row);
+  const cleanedRow = cleanForStorage(row);
+  await db.activity_log.put(cleanedRow);
 
   try {
     // enqueue for cloud sync (do not block)
     await db.sync_queue.add({
       jobType: "ACTIVITY_UPSERT",
-      payload: row,
+      payload: cleanedRow,
       occurredAtISO,
       synced: 0,
       status: 'pending',

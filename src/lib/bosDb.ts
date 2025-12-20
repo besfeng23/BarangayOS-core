@@ -177,7 +177,7 @@ export type ActivityLogLocal = {
 
   title: string; // short human line e.g. "Certificate issued"
   subtitle: string; // second line e.g. "Mark • Barangay Clearance • Control 2025..."
-  details?: any; // optional for future drilldown
+  details: any | null; // optional for future drilldown
 
   searchTokens: string[];
   synced: 0 | 1;
