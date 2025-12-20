@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -18,8 +19,8 @@ export default function CollectPage() {
   const [resident, setResident] = useState<ResidentPickerValue | undefined>(undefined);
   const [showQRModal, setShowQRModal] = useState(false);
 
-  const canGenerate = resident && amount && parseFloat(amount) > 0 && service;
   const payerName = resident?.mode === 'resident' ? resident.residentNameSnapshot : resident?.manualName;
+  const canGenerate = payerName && amount && parseFloat(amount) > 0 && service;
 
   const handleGenerateQR = () => {
     if (canGenerate) {
@@ -55,15 +56,12 @@ export default function CollectPage() {
             <CardDescription>Enter the details for this collection.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="resident" className="text-lg">Payer</Label>
-              <ResidentPicker 
-                label="Payer (Resident)"
-                value={resident}
-                onChange={setResident}
-                placeholder="Search for resident..."
-              />
-            </div>
+            <ResidentPicker 
+              label="Payer"
+              value={resident}
+              onChange={setResident}
+              placeholder="Search for resident or enter name"
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="service" className="text-lg">Service / Fee</Label>
