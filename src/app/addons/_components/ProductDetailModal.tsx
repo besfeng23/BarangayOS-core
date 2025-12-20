@@ -1,0 +1,66 @@
+'use client';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import type { Product } from '@/app/addons/_data/products';
+
+interface ProductDetailModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  product: Product | null;
+}
+
+export default function ProductDetailModal({ isOpen, onClose, product }: ProductDetailModalProps) {
+  if (!product) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{product.name}</DialogTitle>
+          <DialogDescription>{product.description}</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-6 py-4">
+            <div className="relative aspect-video rounded-lg overflow-hidden">
+                <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={product.imageHint}
+                />
+            </div>
+          <div className="space-y-2">
+            <p className="text-3xl font-bold">
+              {product.price.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'PHP',
+              })}
+            </p>
+            <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
+          </div>
+          <div className="prose prose-sm prose-invert max-w-none">
+            <h4>Features:</h4>
+            <ul>
+              {product.features.map((feature, index) => (
+                <li key={index}>{feature}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <DialogFooter>
+            <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button type="submit">Request Quotation</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
