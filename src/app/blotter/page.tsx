@@ -148,8 +148,8 @@ export default function BlotterPage() {
                       <label className="block text-slate-200 text-xs mb-1">Kontak (Nagrereklamo)</label>
                       <input
                         className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
-                        value={ws.draft.actionsTaken}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
+                        value={ws.draft.complainant?.contact ?? ''}
+                        onChange={(e) => ws.setDraft((d) => ({ ...d, complainant: { ...d.complainant, contact: e.target.value } }))}
                       />
                     </div>
 
@@ -157,8 +157,8 @@ export default function BlotterPage() {
                       <label className="block text-slate-200 text-xs mb-1">Kontak (Inirereklamo)</label>
                       <input
                         className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
-                        value={ws.draft.actionsTaken}
-                        onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
+                        value={ws.draft.respondent?.contact ?? ''}
+                        onChange={(e) => ws.setDraft((d) => ({ ...d, respondent: { ...d.respondent, contact: e.target.value } }))}
                       />
                     </div>
 
