@@ -90,7 +90,6 @@ export function useBusinessPermitsWorkstation() {
   }, [renewDraft]);
   
   const { items, loading } = useLiveQuery(async () => {
-      setLoading(true);
       try {
         const q = upper(query);
         if (!q) {
@@ -105,7 +104,7 @@ export function useBusinessPermitsWorkstation() {
         refined.sort((a, b) => (a.updatedAtISO > b.updatedAtISO ? -1 : 1));
         return refined;
       } finally {
-        setLoading(false);
+        // setLoading is handled by useLiveQuery
       }
   }, [query], { items: [], loading: true });
 
@@ -330,5 +329,3 @@ export function useBusinessPermitsWorkstation() {
     reload,
   };
 }
-
-    
