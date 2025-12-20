@@ -36,8 +36,6 @@ export default function Home() {
   const pendingBlotterWrites = useQueueCount('blotter_cases');
   const pendingPermitWrites = useQueueCount('business_permits');
   
-  const trialBannerVisible = !settings.trialEnabled;
-
   useEffect(() => {
     // Listener for active blotter cases
     const blotterQuery = query(
@@ -118,8 +116,7 @@ export default function Home() {
         />
       </div>
 
-      <TrialBanner visible={trialBannerVisible} message="Activation required to unlock partner integrations" />
+      <TrialBanner visible={settings.trialEnabled} message="Activation required to unlock partner integrations" />
     </div>
   );
 }
-

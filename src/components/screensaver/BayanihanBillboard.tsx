@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   Carousel,
@@ -9,8 +9,8 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
 
 const billboardSlides = [
   {
@@ -45,13 +45,29 @@ const billboardSlides = [
   },
 ];
 
-export default function BayanihanBillboard() {
+const DigitalClock = () => {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timerId = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timerId);
+    }, []);
+
+    return (
+        <div className="absolute top-8 right-8 bg-black/50 p-4 rounded-xl text-center">
+            <p className="text-5xl font-mono font-bold tracking-wider">{format(time, 'hh:mm:ss a')}</p>
+            <p className="text-xl font-semibold">{format(time, 'EEEE, MMMM d, yyyy')}</p>
+        </div>
+    )
+}
+
+export default function BayanihanBillboard({ onWakeUp }: { onWakeUp: () => void }) {
   const router = useRouter();
   const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
 
   const handleWakeUp = () => {
-    // Navigate to the login screen to force re-authentication
-    router.push('/login');
+    onWakeUp();
+    router.push('/');
   };
 
   return (
@@ -59,6 +75,7 @@ export default function BayanihanBillboard() {
       className="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center cursor-pointer"
       onClick={handleWakeUp}
     >
+        <DigitalClock />
       <Carousel
         plugins={[plugin.current]}
         className="w-full h-full"
