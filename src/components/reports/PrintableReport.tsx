@@ -4,7 +4,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import type { ReportData } from '@/types/reports';
-import { useSettings } from '@/context/SettingsContext';
+import { useSettings } from '@/hooks/useSettings';
 
 interface PrintableReportProps {
   reportData: ReportData;
@@ -24,7 +24,7 @@ const PrintableReport = React.forwardRef<HTMLDivElement, PrintableReportProps>((
     return <div ref={ref}>Loading settings...</div>;
   }
   
-  const { barangayName, municipality, province, punongBarangay } = settings;
+  const { barangayName, barangayAddress, punongBarangay } = settings;
 
 
   return (
@@ -32,8 +32,7 @@ const PrintableReport = React.forwardRef<HTMLDivElement, PrintableReportProps>((
       {/* Header */}
       <div className="text-center mb-12">
         <p className="text-sm">Republic of the Philippines</p>
-        <p className="text-sm">Province of {province}</p>
-        <p className="text-sm">City of {municipality}</p>
+        <p className="text-sm">{barangayAddress}</p>
         <p className="font-bold text-lg mt-2">BARANGAY {barangayName?.toUpperCase()}</p>
         <p className="font-bold uppercase mt-1">OFFICE OF THE PUNONG BARANGAY</p>
       </div>

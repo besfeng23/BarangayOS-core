@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -9,8 +10,13 @@ export type BarangaySettings = {
   barangayAddress: string;
   punongBarangay: string;
   secretaryName: string;
+
   trialEnabled: boolean;
   trialDaysRemaining: number;
+
+  controlPrefix: string;
+  readOnlyMode: boolean;
+
   updatedAtISO: string;
 };
 
@@ -23,6 +29,8 @@ const DEFAULTS: BarangaySettings = {
   secretaryName: "Maria Clara",
   trialEnabled: true,
   trialDaysRemaining: 5,
+  controlPrefix: "BRGY",
+  readOnlyMode: false,
   updatedAtISO: new Date().toISOString(),
 };
 
@@ -36,6 +44,7 @@ function uuid() {
 
 export function useSettings() {
   const [saving, setSaving] = useState(false);
+
   const settingsData = useLiveQuery(
     () => db.settings.get(KEY),
     [],
@@ -48,10 +57,13 @@ export function useSettings() {
   const save = useCallback(async (next: Omit<BarangaySettings, "updatedAtISO">) => {
     setSaving(true);
     try {
-      const payload: BarangaySettings = { ...next, updatedAtISO: new Date().toISOString() };
+      const payload: BarangaySettings = {
+        ...next,
+        updatedAtISO: new Date().toISOString()
+      };
+      
       await db.settings.put({ key: KEY, value: payload });
 
-      // enqueue sync
       await db.sync_queue.add({
         id: uuid() as any,
         jobType: "SETTINGS_UPSERT",
@@ -61,11 +73,25 @@ export function useSettings() {
         status: "pending",
       } as any);
 
+      await writeActivity({
+        type: "SETTINGS_UPDATED",
+        entityType: "system",
+        entityId: "settings",
+        status: "ok",
+        title: "Settings updated",
+        subtitle: `${payload.barangayName} • ${payload.barangayAddress}`,
+      });
+
     } finally {
       setSaving(false);
     }
   }, []);
 
-
   return { settings, loading, saving, save };
+}
+
+export function isReadOnly(s: BarangaySettings) {
+  if (s.readOnlyMode) return true;
+  if (s.trialEnabled && s.trialDaysRemaining <= 0) return true;
+  return false;
 }
