@@ -1,8 +1,10 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { db as localDb } from '@/lib/bosDb';
 import { useDebounce } from './useDebounce';
+import { toTokens } from '@/lib/bos/searchTokens';
 
 export interface SearchResult {
   id: string;
@@ -10,6 +12,9 @@ export interface SearchResult {
   subtitle: string;
   href: string;
 }
+
+function upper(s: string) { return (s ?? "").trim().toUpperCase(); }
+
 
 export function useSearch(term: string) {
   const [results, setResults] = useState<{ [key: string]: SearchResult[] }>({
@@ -31,6 +36,8 @@ export function useSearch(term: string) {
 
     const performSearch = async () => {
       const upperTerm = debouncedTerm.toUpperCase();
+      const tokens = toTokens(debouncedTerm);
+
       try {
         const [residentResults, blotterResults, businessResults] = await Promise.all([
           localDb.residents
@@ -39,11 +46,8 @@ export function useSearch(term: string) {
             .limit(5)
             .toArray(),
           localDb.blotters
-            .filter(b => 
-                upper(b.complainantName).includes(upperTerm) || 
-                upper(b.respondentName).includes(upperTerm) ||
-                (b.caseNumber || '').includes(upperTerm)
-            )
+            .where('searchTokens')
+            .anyOf(tokens)
             .limit(5)
             .toArray(),
           localDb.businesses
