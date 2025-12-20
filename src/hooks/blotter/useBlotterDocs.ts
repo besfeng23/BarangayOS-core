@@ -38,7 +38,7 @@ export function useBlotterDocs() {
     const logId = uuid();
 
     const barangayLine = `${settings.barangayName}, ${settings.barangayAddress}`;
-    const signerName = settings.punongBarangay || "Hon. Barangay Captain";
+    const signerName = settings.punongBarangay;
     const signerTitle = "Punong Barangay";
 
     // 1) Audit to local printLogs + sync_queue (atomic)
