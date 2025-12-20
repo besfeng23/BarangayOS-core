@@ -16,6 +16,7 @@ import {
   Shield,
   HeartPulse,
   Wallet,
+  AppWindow,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +26,7 @@ import ModuleCard from '@/components/app-hub/ModuleCard';
 import { PartnerTileGuard } from "@/components/dashboard/PartnerTileGuard";
 import { TrialBanner } from "@/components/system/TrialBanner";
 import { useSettings } from '@/lib/bos/settings/useSettings';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const [activeBlotterCount, setActiveBlotterCount] = useState(0);
@@ -81,74 +83,43 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-4 pb-24">
+    <div className="space-y-4 p-4">
       <DraftBanner />
+      
+       <header className="mb-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <p className="text-slate-200">
+          At-a-glance overview of barangay operations.
+        </p>
+      </header>
 
-      <main className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 px-3 py-4">
-        <ModuleCard
-          title="Residents"
-          description="View, add, or manage resident records"
-          icon={Users}
-          href="/residents"
-        />
-        <ModuleCard
-          title="Certificates"
-          description="Issue official barangay documents"
-          icon={FileText}
-          href="/certificates?action=focus"
-        />
-        <ModuleCard
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+         <ModuleCard
           title="Blotter"
-          description="Log and manage community disputes"
+          description="Active Cases"
           icon={Scale}
           href="/blotter"
           badgeCount={totalBlotterBadge}
-          badgeLabel="Active"
           badgeColor="amber"
         />
-        <ModuleCard
+         <ModuleCard
           title="Business Permits"
-          description="Register or renew business permits"
+          description="For Renewal"
           icon={Building}
-          href="/permits?action=new"
+          href="/permits"
           badgeCount={totalPermitBadge}
-          badgeLabel="Renewals"
           badgeColor="red"
         />
-         <ModuleCard
-          title="Security"
-          description="Manage security devices and incidents"
-          icon={Shield}
-          href="/security"
-        />
-         <ModuleCard
-          title="Health"
-          description="City Health EMR Integration"
-          icon={HeartPulse}
-          href="/city-health"
-        />
         <ModuleCard
-          title="Add-ons & Procurement"
-          description="View and request hardware add-ons"
-          icon={Briefcase}
-          href="/addons"
+            title="All Apps"
+            description="View all installed & available modules"
+            icon={AppWindow}
+            href="/apps"
         />
-
-        <PartnerTileGuard
-          label="Request Activation"
-          onBlocked={() => toast({title: "This module requires activation."})}
-        >
-          <ModuleCard
-            title="Digital Payments"
-            description="eMango Wallet Integration"
-            icon={Wallet}
-            href="/emango"
-          />
-        </PartnerTileGuard>
-        
-      </main>
+      </div>
 
       <TrialBanner visible={trialBannerVisible} message="Activation required to unlock partner integrations" />
     </div>
   );
 }
+

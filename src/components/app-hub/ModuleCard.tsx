@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -32,7 +33,7 @@ export default function ModuleCard({
   return (
     <Link
       href={href}
-      className="group relative flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/40 p-3 cursor-pointer hover:bg-zinc-900/60 hover:shadow-lg active:scale-[0.99] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+      className="group relative flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 cursor-pointer hover:bg-zinc-900/60 hover:shadow-lg active:scale-[0.99] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
     >
       {badgeCount > 0 && badgeLabel && (
         <Badge
@@ -47,9 +48,9 @@ export default function ModuleCard({
 
       <div className="flex items-center gap-4">
         <Icon className="w-8 h-8 text-zinc-400 group-hover:text-amber-400 transition-colors" />
-        <h3 className="text-base font-semibold text-zinc-100">{title}</h3>
+        <h3 className="text-lg font-semibold text-zinc-100">{title}</h3>
       </div>
-      <p className="text-xs text-zinc-300 mt-2 flex-grow">{description}</p>
+      <p className="text-sm text-zinc-300 mt-2 flex-grow">{description}</p>
       <div className="mt-3 w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 py-2 text-center text-xs font-bold tracking-widest text-zinc-100">
         OPEN
       </div>
