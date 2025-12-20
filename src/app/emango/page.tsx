@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Banknote, Users, QrCode, Send, History, BarChart3, Settings, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { Banknote, Users, QrCode, Send, History, BarChart3, Settings, ShieldAlert, ArrowLeft, BookLock } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) => (
     <Card className="bg-zinc-800/50">
@@ -18,7 +18,7 @@ const StatCard = ({ title, value, icon: Icon }: { title: string, value: string, 
 
 const ActionButton = ({ href, icon: Icon, title, description }: { href: string, icon: React.ElementType, title: string, description: string }) => (
     <Link href={href} passHref>
-        <div className="p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer flex items-center gap-4">
+        <div className="p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer flex items-center gap-4 h-full">
             <div className="p-3 bg-zinc-700/50 rounded-md">
                 <Icon className="h-6 w-6 text-blue-400" />
             </div>
@@ -62,8 +62,8 @@ export default function EmangoHomePage() {
        <div className="grid gap-6 lg:grid-cols-2">
             <Card>
                 <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                    <CardDescription>Start a new transaction.</CardDescription>
+                    <CardTitle>Core Actions</CardTitle>
+                    <CardDescription>Perform a new transaction.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-2">
                    <ActionButton 
@@ -75,15 +75,15 @@ export default function EmangoHomePage() {
                    <ActionButton 
                         href="/emango/send" 
                         icon={Send} 
-                        title="Disburse Aid / Payroll" 
-                        description="Send funds to residents."
+                        title="Disburse Funds" 
+                        description="Send aid or payroll to residents."
                    />
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Logs & Ledgers</CardTitle>
-                    <CardDescription>View history and generate reports.</CardDescription>
+                    <CardTitle>Ledgers & Admin</CardTitle>
+                    <CardDescription>View history, reports, and settings.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-2">
                     <ActionButton 
@@ -95,8 +95,20 @@ export default function EmangoHomePage() {
                    <ActionButton 
                         href="/emango/reports" 
                         icon={BarChart3} 
-                        title="Reports & Reconciliation" 
+                        title="Reports" 
                         description="View summaries and export data."
+                   />
+                    <ActionButton 
+                        href="/emango/audit" 
+                        icon={BookLock} 
+                        title="Audit Logs" 
+                        description="Review detailed activity logs."
+                   />
+                   <ActionButton 
+                        href="/emango/settings" 
+                        icon={Settings} 
+                        title="Settings" 
+                        description="Configure fees, roles, and limits."
                    />
                 </CardContent>
             </Card>

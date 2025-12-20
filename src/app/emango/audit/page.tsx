@@ -17,6 +17,11 @@ export default function AuditPage() {
              <p className="text-muted-foreground">A detailed, filterable audit log for all wallet activities will be here.</p>
           </div>
         </div>
+        
+        <div className="text-center py-16 border-2 border-dashed border-zinc-800 rounded-lg">
+            <h3 className="text-lg font-semibold">Coming Soon</h3>
+            <p className="text-muted-foreground mt-1">This section will provide a detailed, immutable log of all wallet actions.</p>
+        </div>
     </div>
   );
 }

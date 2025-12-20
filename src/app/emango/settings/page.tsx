@@ -17,6 +17,11 @@ export default function SettingsPage() {
              <p className="text-muted-foreground">Settings for fees, roles, and limits will be here.</p>
           </div>
         </div>
+
+        <div className="text-center py-16 border-2 border-dashed border-zinc-800 rounded-lg">
+            <h3 className="text-lg font-semibold">Coming Soon</h3>
+            <p className="text-muted-foreground mt-1">This section will allow configuration of wallet-specific rules.</p>
+        </div>
     </div>
   );
 }

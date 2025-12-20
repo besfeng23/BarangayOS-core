@@ -18,6 +18,11 @@ export default function ReportsPage() {
             <p className="text-muted-foreground">Daily summaries, exports, and reconciliation tools will be here.</p>
           </div>
         </div>
+
+        <div className="text-center py-16 border-2 border-dashed border-zinc-800 rounded-lg">
+            <h3 className="text-lg font-semibold">Coming Soon</h3>
+            <p className="text-muted-foreground mt-1">This section will provide daily/monthly reports and export options.</p>
+        </div>
     </div>
   );
 }
