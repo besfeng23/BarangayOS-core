@@ -73,6 +73,7 @@ export default function AppClientLayout({
 
   const isLoginPage = pathname === '/login';
   const isLandingPage = pathname.startsWith('/landing');
+  const isStatusPage = pathname === '/status';
 
   if (isLoginPage || isLandingPage) {
     return <>{children}</>;
@@ -85,6 +86,15 @@ export default function AppClientLayout({
   if (bootState === 'loading') {
     // You can keep the skeleton loader from AuthProvider or put a specific one here
     return null;
+  }
+  
+  if(isStatusPage) {
+      return (
+        <>
+         <IdleScreensaver />
+         {children}
+        </>
+      )
   }
 
   return (
