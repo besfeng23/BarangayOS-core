@@ -2,13 +2,14 @@
 "use client";
 
 import React, { useEffect } from "react";
-import TerminalShell from "@/components/shell/TerminalShell";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useResidents } from "@/hooks/useResidents";
 import { useResidentWorkstation } from "@/hooks/residents/useResidentWorkstation";
 import { FolderOpen } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ResidentsPage() {
+  const router = useRouter();
   const { enqueue } = useSyncQueue();
   const list = useResidents();
   const ws = useResidentWorkstation();
@@ -19,7 +20,6 @@ export default function ResidentsPage() {
   }, [ws.mode, list]);
 
   return (
-    <TerminalShell>
       <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
         {/* LIST VIEW */}
         {ws.mode === "list" && (
@@ -54,7 +54,7 @@ export default function ResidentsPage() {
               />
               <button
                 className="mt-3 h-12 w-full rounded-xl bg-zinc-100 text-zinc-950 font-semibold"
-                onClick={ws.newResident}
+                onClick={() => router.push('/residents/new')}
               >
                 + Mag-add ng Residente
               </button>
@@ -167,6 +167,5 @@ export default function ResidentsPage() {
           </>
         )}
       </div>
-    </TerminalShell>
   );
 }

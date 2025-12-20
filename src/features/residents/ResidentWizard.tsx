@@ -88,10 +88,10 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
   };
 
   const handleBack = () => {
-    if (mode === 'create') {
-        router.back();
-    } else {
+    if (step > 1) {
         setStep(prev => prev - 1);
+    } else {
+        router.back();
     }
   };
 
@@ -181,8 +181,8 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
             </WorkflowShell>
 
             <StickyActionBar>
-                <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={step === 1 && mode !== 'create' || saving}>
-                    {mode === 'create' && step === 1 ? 'Cancel' : 'Back'}
+                <Button variant="outline" className="h-12 text-lg" onClick={handleBack} disabled={saving}>
+                    {step === 1 ? 'Cancel' : 'Back'}
                 </Button>
                 {step < 3 ? (
                     <Button className="h-12 text-lg" onClick={handleNext}>Next</Button>

@@ -1,6 +1,6 @@
 
 "use client";
-import { useCallback, useState } from "react";
+import React, { createContext, useContext, ReactNode, useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
@@ -10,13 +10,10 @@ export type BarangaySettings = {
   barangayAddress: string;
   punongBarangay: string;
   secretaryName: string;
-
   trialEnabled: boolean;
   trialDaysRemaining: number;
-
   controlPrefix: string;
   readOnlyMode: boolean;
-
   updatedAtISO: string;
 };
 
@@ -42,26 +39,32 @@ function uuid() {
   });
 }
 
-export function useSettings() {
+interface SettingsContextType {
+  settings: BarangaySettings;
+  loading: boolean;
+  saving: boolean;
+  save: (next: Partial<BarangaySettings>) => Promise<void>;
+}
+
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+
+export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [saving, setSaving] = useState(false);
 
-  const settingsData = useLiveQuery(
-    () => db.settings.get(KEY),
-    [],
-    null
-  );
-  
+  const settingsData = useLiveQuery(() => db.settings.get(KEY), [], null);
   const settings = settingsData?.value as BarangaySettings ?? DEFAULTS;
   const loading = settingsData === null;
 
-  const save = useCallback(async (next: Omit<BarangaySettings, "updatedAtISO">) => {
+  const save = useCallback(async (updates: Partial<BarangaySettings>) => {
     setSaving(true);
     try {
+      const currentSettings = (await db.settings.get(KEY))?.value || DEFAULTS;
       const payload: BarangaySettings = {
-        ...next,
-        updatedAtISO: new Date().toISOString()
+        ...currentSettings,
+        ...updates,
+        updatedAtISO: new Date().toISOString(),
       };
-      
+
       await db.settings.put({ key: KEY, value: payload });
 
       await db.sync_queue.add({
@@ -81,14 +84,28 @@ export function useSettings() {
         title: "Settings updated",
         subtitle: `${payload.barangayName} • ${payload.barangayAddress}`,
       });
-
     } finally {
       setSaving(false);
     }
   }, []);
+  
+  const value = { settings, loading, saving, save };
 
-  return { settings, loading, saving, save };
-}
+  return (
+    <SettingsContext.Provider value={value}>
+      {children}
+    </SettingsContext.Provider>
+  );
+};
+
+
+export function useSettings() {
+  const context = useContext(SettingsContext);
+  if (context === undefined) {
+    throw new Error('useSettings must be used within a SettingsProvider');
+  }
+  return context;
+};
 
 export function isReadOnly(s: BarangaySettings) {
   if (s.readOnlyMode) return true;

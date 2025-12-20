@@ -2,7 +2,7 @@
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/firebase/auth-provider';
-import { SettingsProvider } from '@/context/SettingsContext';
+import { SettingsProvider } from '@/hooks/useSettings';
 import { SyncProvider } from '@/context/SyncContext';
 import AppClientLayout from './AppClientLayout';
 
@@ -51,5 +51,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
