@@ -19,14 +19,22 @@ const processQueueItem = async (item: SyncQueueItem): Promise<boolean> => {
 
   try {
     const { jobType, payload, entityId } = item;
+    
+    // Normalize ID retrieval
     const id = entityId || payload.id;
-    if (!id) throw new Error(`Missing entityId or payload.id for jobType ${jobType}`);
+    if (!id) {
+        // Special case for settings which has a fixed key
+        if(jobType !== 'SETTINGS_UPSERT') {
+          throw new Error(`Missing entityId or payload.id for jobType ${jobType}`);
+        }
+    }
+
 
     // This is a simplified mapping. In a real app, you might have a more robust system.
     const collectionMap: { [key: string]: string } = {
         'SETTINGS_UPSERT': "settings",
         'ACTIVITY_UPSERT': "activity_log",
-        'BLOTTER_UPSERT': "blotters",
+        'BLOTTER_UPSERT': "blotter_cases",
         'BUSINESS_UPSERT': "businesses",
         'PERMIT_ISSUANCE_UPSERT': "permit_issuances",
         'CERT_ISSUANCE_UPSERT': "certificate_issuances",
@@ -34,6 +42,7 @@ const processQueueItem = async (item: SyncQueueItem): Promise<boolean> => {
         'PRINTLOG_ADD': 'printLogs',
         'RESIDENT_CREATE': "residents",
         'RESIDENT_UPDATE': "residents",
+        'RESIDENT_UPSERT': 'residents', // Add this alias
     };
 
     const collectionName = collectionMap[jobType];
@@ -42,7 +51,7 @@ const processQueueItem = async (item: SyncQueueItem): Promise<boolean> => {
     }
 
     const docRef = collectionName === 'settings' 
-        ? doc(firestoreDb, "settings", "barangaySettings")
+        ? doc(firestoreDb, "settings", "barangaySettings") // Settings has a fixed doc ID
         : doc(firestoreDb, collectionName, id);
 
     const { html, ...payloadWithoutHtml } = payload;
