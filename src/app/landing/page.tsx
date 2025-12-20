@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import LandingChatWidget from '@/components/ai/LandingChatWidget';
 
 export const metadata = {
   title: "BarangayOS — Digital Governance Terminal",
@@ -209,6 +210,7 @@ export default function LandingPage() {
             </div>
         </div>
       </footer>
+      <LandingChatWidget />
     </div>
   );
 }

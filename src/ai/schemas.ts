@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 
 export const DraftInputSchema = z.object({
@@ -30,7 +29,7 @@ export const NLQOutputSchema = z.object({
 export type NLQOutput = z.infer<typeof NLQOutputSchema>;
 
 
-// New schemas for the Help Assistant
+// Schemas for the Help Assistant
 export const HelpInputSchema = z.object({
   query: z.string().describe("The user's question for the help assistant."),
   context: z.string().describe("The current page or module the user is on."),
@@ -42,3 +41,18 @@ export const HelpOutputSchema = z.object({
   response: z.string().describe("The AI assistant's helpful response."),
 });
 export type HelpOutput = z.infer<typeof HelpOutputSchema>;
+
+// Schemas for the public Chat Assistant
+export const ChatInputSchema = z.object({
+  query: z.string().describe("The user's question for the chat assistant."),
+  history: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    content: z.string(),
+  })).optional().describe("The conversation history."),
+});
+export type ChatInput = z.infer<typeof ChatInputSchema>;
+
+export const ChatOutputSchema = z.object({
+  response: z.string().describe("The AI assistant's helpful response."),
+});
+export type ChatOutput = z.infer<typeof ChatOutputSchema>;
