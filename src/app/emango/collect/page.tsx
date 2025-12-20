@@ -12,12 +12,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ArrowLeft, QrCode } from 'lucide-react';
 import Image from 'next/image';
 import { ResidentPicker, ResidentPickerValue } from '@/components/shared/ResidentPicker';
+import { writeActivity } from '@/lib/bos/activity/writeActivity';
+import { useToast } from '@/components/ui/toast';
+import { useRouter } from 'next/navigation';
 
 export default function CollectPage() {
   const [amount, setAmount] = useState('');
   const [service, setService] = useState('');
   const [resident, setResident] = useState<ResidentPickerValue | undefined>(undefined);
   const [showQRModal, setShowQRModal] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
 
   const payerName = resident?.mode === 'resident' ? resident.residentNameSnapshot : resident?.manualName;
   const canGenerate = payerName && amount && parseFloat(amount) > 0 && service;
@@ -26,6 +32,26 @@ export default function CollectPage() {
     if (canGenerate) {
       setShowQRModal(true);
     }
+  };
+
+  const handleTransactionComplete = async () => {
+    if (!canGenerate) return;
+
+    await writeActivity({
+        type: 'PAYMENT_COLLECTED',
+        entityType: 'emango',
+        entityId: `collect-${Date.now()}`,
+        status: 'ok',
+        title: 'Payment Collected',
+        subtitle: `₱${parseFloat(amount).toFixed(2)} for ${service} from ${payerName}`,
+    } as any);
+    
+    toast({
+        title: "Payment Logged",
+        description: `Collection of ₱${parseFloat(amount).toFixed(2)} for ${service} has been recorded.`
+    });
+    
+    resetForm();
   };
 
   const resetForm = () => {
@@ -104,7 +130,7 @@ export default function CollectPage() {
           <DialogHeader>
             <DialogTitle className="text-center text-2xl">Scan to Pay</DialogTitle>
             <DialogDescription className="text-center">
-              Please have {payerName || 'the resident'} scan this QR code with their e-wallet app.
+              Have {payerName || 'the resident'} scan this QR code. Once paid, tap "Done" to log the transaction.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center p-6 space-y-4">
@@ -123,7 +149,7 @@ export default function CollectPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowQRModal(false)}>Cancel</Button>
-            <Button onClick={resetForm}>Done (New Transaction)</Button>
+            <Button onClick={handleTransactionComplete}>Done (Log Transaction)</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
