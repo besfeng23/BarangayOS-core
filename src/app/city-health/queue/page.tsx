@@ -1,8 +1,9 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, Filter, ArrowLeft, ArrowDownUp } from 'lucide-react';
+import { Plus, Filter, ArrowLeft, ArrowDownUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const QueueCard = ({ name, age, sex, status, tags, vitals }: { name: string, age: number, sex: string, status: 'waiting' | 'in-consult' | 'done', tags: string[], vitals?: string }) => (

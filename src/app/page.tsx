@@ -15,6 +15,7 @@ import {
   Building,
   Shield,
   HeartPulse,
+  Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -120,6 +121,12 @@ export default function Home() {
           icon={Shield}
           href="/security"
         />
+         <ModuleCard
+          title="Health"
+          description="City Health EMR Integration"
+          icon={HeartPulse}
+          href="/city-health"
+        />
         <ModuleCard
           title="Add-ons & Procurement"
           description="View and request hardware add-ons"
@@ -134,22 +141,11 @@ export default function Home() {
           <ModuleCard
             title="Digital Payments"
             description="eMango Wallet Integration"
-            icon={Briefcase}
+            icon={Wallet}
             href="/emango"
           />
         </PartnerTileGuard>
         
-        <PartnerTileGuard
-          label="Request Activation"
-          onBlocked={() => toast({title: "This module requires activation."})}
-        >
-          <ModuleCard
-            title="Health"
-            description="City Health EMR Integration"
-            icon={HeartPulse}
-            href="/city-health"
-          />
-        </PartnerTileGuard>
       </main>
 
       <TrialBanner visible={trialBannerVisible} message="Activation required to unlock partner integrations" />
