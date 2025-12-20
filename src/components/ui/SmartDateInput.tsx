@@ -3,7 +3,8 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { getManilaDate, getManilaYesterday } from '@/lib/date';
+
 
 interface SmartDateInputProps {
   value: string; // Expects "YYYY-MM-DD"
@@ -28,11 +29,11 @@ const QuickActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>>
 export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange, label, className }) => {
 
   const handleQuickAction = (action: 'today' | 'yesterday') => {
-    const now = new Date();
-    if (action === 'yesterday') {
-      now.setDate(now.getDate() - 1);
+    if (action === 'today') {
+      onChange(getManilaDate());
+    } else {
+      onChange(getManilaYesterday());
     }
-    onChange(format(now, 'yyyy-MM-dd'));
   };
 
   return (

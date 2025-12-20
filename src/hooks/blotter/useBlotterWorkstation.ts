@@ -1,4 +1,5 @@
 
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { db, BlotterLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
@@ -8,6 +9,7 @@ import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
+import { getManilaDate } from "@/lib/date";
 
 type Mode = "list" | "form";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -33,12 +35,6 @@ function uuid() {
     const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
-}
-
-function todayISO() {
-  const d = new Date();
-  const pad = (n:number)=>String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 }
 
 const defaultPickerValue: ResidentPickerValue = { mode: "resident", residentId: null, residentNameSnapshot: "", manualName: "" };
@@ -72,7 +68,7 @@ export function useBlotterWorkstation() {
     const saved = loadDraft<Draft>(DRAFT_KEY);
     if (saved) return saved;
     return {
-      incidentDateISO: todayISO(),
+      incidentDateISO: getManilaDate(),
       locationText: "",
       complainant: defaultPickerValue,
       respondent: defaultPickerValue,
@@ -135,7 +131,7 @@ export function useBlotterWorkstation() {
     setMore(false);
     setBanner(null);
     setDraft({
-      incidentDateISO: todayISO(),
+      incidentDateISO: getManilaDate(),
       locationText: "",
       complainant: defaultPickerValue,
       respondent: defaultPickerValue,
