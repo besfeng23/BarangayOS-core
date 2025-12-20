@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useResidentSearch } from "@/hooks/useResidentSearch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

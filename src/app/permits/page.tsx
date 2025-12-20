@@ -46,7 +46,7 @@ export default function BusinessPermitsPage() {
                 + New Business
               </button>
               <div className="mt-3 text-xs text-zinc-400">
-                {ws.loading ? "Loading…" : `${ws.items?.length || 0} business(es)`}
+                {ws.loading ? "Loading…" : `${ws.items.length} business(es)`}
               </div>
             </div>
 
@@ -246,5 +246,3 @@ export default function BusinessPermitsPage() {
       </div>
   );
 }
-
-    

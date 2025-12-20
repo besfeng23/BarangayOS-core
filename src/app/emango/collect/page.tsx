@@ -87,6 +87,7 @@ export default function CollectPage() {
               value={resident}
               onChange={setResident}
               placeholder="Search for resident or enter name"
+              allowManual={true}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">

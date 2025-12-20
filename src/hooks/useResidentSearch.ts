@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useDebounce } from "./useDebounce";
 import { db, ResidentLocal } from "@/lib/bosDb";
