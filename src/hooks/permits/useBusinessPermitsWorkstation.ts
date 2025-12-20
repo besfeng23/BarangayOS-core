@@ -36,12 +36,12 @@ function upper(s: string) { return (s ?? "").trim().toUpperCase(); }
 
 function currentYear() { return new Date().getFullYear(); }
 
-function makeControlNo() {
+function makeControlNo(prefix: string) {
   const d = new Date();
   const pad = (n:number)=>String(n).padStart(2,"0");
   const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
   const rand = Math.random().toString(16).slice(2, 6).toUpperCase();
-  return `${stamp}-${rand}`;
+  return `${prefix}-${stamp}-${rand}`;
 }
 
 export function useBusinessPermitsWorkstation() {
@@ -252,7 +252,7 @@ export function useBusinessPermitsWorkstation() {
         feeAmount,
         orNo: renewDraft.orNo.trim() || undefined,
         remarks: renewDraft.remarks.trim() || undefined,
-        controlNo: makeControlNo(),
+        controlNo: makeControlNo(settings.controlPrefix || "BRGY"),
         issuedAtISO: nowISO,
         issuedByName: settings.secretaryName,
         barangayName: settings.barangayName,
@@ -291,7 +291,7 @@ export function useBusinessPermitsWorkstation() {
       await enqueue({ type: "PERMIT_ISSUANCE_UPSERT", payload: issuance });
       
       // 5) print
-      const html = buildBusinessPermitHTML(issuance);
+      const html = buildBusinessPermitHTML(issuance, settings);
       const printJobId = await enqueuePrintJob({
         entityType: "permit_issuance",
         entityId: issuance.id,

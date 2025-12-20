@@ -1,3 +1,4 @@
+
 import { PermitIssuanceLocal } from "@/lib/bosDb";
 import { getSettingsSnapshot, BarangaySettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
 
@@ -6,8 +7,7 @@ function esc(s: string) {
   return (s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-export async function buildBusinessPermitHTML(p: PermitIssuanceLocal) {
-  const settings = await getSettingsSnapshot();
+export function buildBusinessPermitHTML(p: PermitIssuanceLocal, settings: BarangaySettingsSnapshot) {
   const issuedAt = new Date(p.issuedAtISO).toLocaleString();
   const fee = isFinite(p.feeAmount) ? p.feeAmount.toFixed(2) : "0.00";
 

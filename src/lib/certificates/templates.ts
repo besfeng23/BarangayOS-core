@@ -1,11 +1,12 @@
+
 import { CertificateIssuanceLocal } from "@/lib/bosDb";
-import type { BarangaySettings } from "@/lib/bos/settings/useSettings";
+import type { BarangaySettingsSnapshot } from "@/lib/bos/print/getSettingsSnapshot";
 
 function esc(s: string) {
   return (s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-export async function buildCertificateHTML(issuance: CertificateIssuanceLocal, settings: BarangaySettings) {
+export async function buildCertificateHTML(issuance: CertificateIssuanceLocal, settings: BarangaySettingsSnapshot) {
   const title = issuance.certType;
   const purposeLine = issuance.purpose?.trim() ? `<div style="margin-top:12px;"><b>Purpose:</b> ${esc(issuance.purpose)}</div>` : "";
   const issuedAt = new Date(issuance.issuedAtISO).toLocaleString();
