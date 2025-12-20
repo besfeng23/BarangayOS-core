@@ -69,11 +69,12 @@ export function ResidentPicker({
       residentNameSnapshot: "",
       manualName: "",
     });
+    setSearchQuery("");
     setIsEditing(true);
     setShowResults(false);
   };
 
-  const isInvalidManual = !allowManual && safeValue.mode === 'manual';
+  const isInvalid = !allowManual && safeValue.mode !== 'resident';
   const displayName = safeValue.mode === 'resident' ? safeValue.residentNameSnapshot : safeValue.manualName;
 
   if (!isEditing) {
@@ -100,7 +101,7 @@ export function ResidentPicker({
             placeholder="Enter full name for non-resident"
             value={safeValue.manualName || ""}
             onChange={(e) => onChange({ ...safeValue, manualName: e.target.value })}
-            className={`h-14 text-lg bg-zinc-950 border-zinc-700 ${isInvalidManual ? 'border-red-500' : ''}`}
+            className={`h-14 text-lg bg-zinc-950 border-zinc-700 ${isInvalid ? 'border-red-500' : ''}`}
           />
            <Button variant="ghost" onClick={() => onChange({ ...safeValue, mode: "resident", manualName: "" })}>
                 Cancel
@@ -147,7 +148,7 @@ export function ResidentPicker({
           )}
         </div>
       )}
-       {isInvalidManual && errorMessage && (
+       {isInvalid && errorMessage && (
             <p className="text-sm text-red-400 mt-1">{errorMessage}</p>
         )}
     </div>
