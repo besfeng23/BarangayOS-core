@@ -11,6 +11,9 @@ import {
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import type { Product } from '@/app/addons/_data/products';
+import { useToast } from '@/components/ui/toast';
+import { writeActivity } from '@/lib/bos/activity/writeActivity';
+import { useRouter } from 'next/navigation';
 
 interface ProductDetailModalProps {
   isOpen: boolean;
@@ -19,7 +22,29 @@ interface ProductDetailModalProps {
 }
 
 export default function ProductDetailModal({ isOpen, onClose, product }: ProductDetailModalProps) {
+  const { toast } = useToast();
+  const router = useRouter();
+
   if (!product) return null;
+
+  const handleRequestQuotation = async () => {
+    await writeActivity({
+        type: 'QUOTATION_REQUESTED',
+        entityType: 'procurement',
+        entityId: product.id,
+        status: 'ok',
+        title: 'Quotation Requested',
+        subtitle: product.name,
+    } as any);
+
+    toast({
+        title: 'Quotation Requested',
+        description: `Your request for ${product.name} has been submitted.`,
+    });
+    
+    onClose();
+    router.push('/addons/requests');
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -58,7 +83,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
         </div>
         <DialogFooter>
             <Button variant="outline" onClick={onClose}>Close</Button>
-          <Button type="submit">Request Quotation</Button>
+          <Button onClick={handleRequestQuotation}>Request Quotation</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
