@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -18,7 +19,7 @@ export default function AddonRequestsPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold">My Procurement Requests</h1>
-      <p className="text-muted-foreground">A list of all hardware and service requests will be here.</p>
+      <p className="text-muted-foreground">A list of all hardware and service requests you've made.</p>
        <div className="mt-8 space-y-4">
           {requests && requests.length > 0 ? (
             requests.map(req => (
