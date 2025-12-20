@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -56,7 +57,7 @@ const mockModuleData = {
   name: "Dispatcher",
   tagline: "Receive incidents, assign responders, track ETA.",
   description: "A real-time incident management system designed for barangay-level emergency response. Log events, dispatch tanods or medical teams, and monitor the situation as it unfolds. Built for speed and reliability, even in low-network conditions.",
-  icon: "Radio",
+  icon: Radio,
   version: "1.2.0",
   newVersion: "1.3.0",
   sizeMb: 18,
@@ -79,9 +80,9 @@ const mockModuleData = {
     { name: "Team Chat", icon: MessageSquare },
   ],
   screenshots: [
-    "https://picsum.photos/seed/disp1/600/400",
-    "https://picsum.photos/seed/disp2/600/400",
-    "https://picsum.photos/seed/disp3/600/400",
+    { src: "https://picsum.photos/seed/disp1/600/400", hint: "map interface" },
+    { src: "https://picsum.photos/seed/disp2/600/400", hint: "incident list" },
+    { src: "https://picsum.photos/seed/disp3/600/400", hint: "responder status" },
   ],
   whatsNew: [
     "Added team chat feature for coordinated response.",
@@ -211,15 +212,6 @@ export default function DispatcherModulePage() {
       </header>
 
       <main className="container mx-auto p-4 space-y-8 pb-24">
-        {/* Greeting Header */}
-        <div className="flex justify-between items-center">
-            <div>
-                <h2 className="text-3xl font-bold">Good Afternoon</h2>
-                <p className="text-slate-400">Welcome to the BarangayOS App Hub</p>
-            </div>
-            <Badge variant="outline">{mockUserData.deviceId}</Badge>
-        </div>
-
         {/* Module Hero Card */}
         <Card className="bg-slate-900/50 border-slate-700 overflow-hidden text-center">
           <CardContent className="p-8 space-y-6">
@@ -279,9 +271,9 @@ export default function DispatcherModulePage() {
         <InfoCard title="Screenshots">
            <Carousel className="w-full">
               <CarouselContent>
-                {mockModuleData.screenshots.map((src, index) => (
+                {mockModuleData.screenshots.map((shot, index) => (
                   <CarouselItem key={index}>
-                    <Image src={src} alt={`Screenshot ${index + 1}`} width={600} height={400} className="rounded-lg w-full aspect-video object-cover"/>
+                    <Image src={shot.src} alt={`Screenshot ${index + 1}`} width={600} height={400} className="rounded-lg w-full aspect-video object-cover" data-ai-hint={shot.hint} />
                   </CarouselItem>
                 ))}
               </CarouselContent>
