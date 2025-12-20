@@ -74,6 +74,16 @@ export function ResidentPicker({
     setShowResults(false);
   };
 
+  const handleManualBlur = () => {
+    // This function will be called when the manual input field loses focus.
+    // The name is already being updated via onChange, so we just need to
+    // potentially signal that editing is 'done' if the name is valid.
+    if(safeValue.mode === 'manual' && safeValue.manualName?.trim()) {
+      setIsEditing(false);
+    }
+  }
+
+
   const isInvalid = !allowManual && safeValue.mode !== 'resident';
   const displayName = safeValue.mode === 'resident' ? safeValue.residentNameSnapshot : safeValue.manualName;
 
@@ -101,6 +111,7 @@ export function ResidentPicker({
             placeholder="Enter full name for non-resident"
             value={safeValue.manualName || ""}
             onChange={(e) => onChange({ ...safeValue, manualName: e.target.value })}
+            onBlur={handleManualBlur}
             className={`h-14 text-lg bg-zinc-950 border-zinc-700 ${isInvalid ? 'border-red-500' : ''}`}
           />
            <Button variant="ghost" onClick={() => onChange({ ...safeValue, mode: "resident", manualName: "" })}>
@@ -141,7 +152,7 @@ export function ResidentPicker({
                   onMouseDown={handleSetManual}
                   className="w-full text-left p-3 text-blue-400 hover:bg-zinc-800"
                 >
-                  Or, enter name manually for non-resident
+                  Or, enter name manually
                 </button>
               )}
             </div>
