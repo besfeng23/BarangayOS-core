@@ -3,7 +3,7 @@ import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 12;
+export const DB_VERSION = 13;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -204,6 +204,23 @@ export type PrintJobLocal = {
   synced: 0 | 1;
 };
 
+// Security Module
+export type DeviceType = "CCTV" | "NVR" | "BODY_CAM" | "DASH_CAM" | "PANIC_BUTTON" | "SIREN" | "LED_DISPLAY" | "PA_SYSTEM";
+export type DeviceStatus = "ACTIVE" | "MAINTENANCE" | "INACTIVE";
+
+export type SecurityDeviceLocal = {
+  id: string;
+  type: DeviceType;
+  name: string;
+  location: string;
+  ipAddress?: string;
+  status: DeviceStatus;
+  createdAtISO: string;
+  updatedAtISO: string;
+  searchTokens: string[];
+  synced: 0 | 1;
+}
+
 
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
@@ -216,6 +233,7 @@ class BOSDexie extends Dexie {
   print_logs!: Table<PrintLogLocal, number>;
   print_jobs!: Table<PrintJobLocal, string>;
   activity_log!: Table<ActivityLogLocal, string>;
+  devices!: Table<SecurityDeviceLocal, string>;
   settings!: Table<SettingsRow, string>;
   meta!: Table<MetaRow, string>;
   sync_queue!: Table<SyncQueueItem, number>;
@@ -275,6 +293,10 @@ class BOSDexie extends Dexie {
         // No schema changes needed for adding optional 'complainant' and 'respondent'
         // fields to blotters table. We increment for data model clarity.
     });
+
+    this.version(13).stores({
+        devices: "id, type, status, updatedAtISO, *searchTokens",
+    })
   }
 }
 
