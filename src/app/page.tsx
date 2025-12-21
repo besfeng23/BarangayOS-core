@@ -84,14 +84,7 @@ export default function Home() {
     <div className="space-y-8 p-4">
       <DraftBanner />
       
-       <header>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-slate-200">
-          At-a-glance overview of barangay operations.
-        </p>
-      </header>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
          <ModuleCard
           title="Blotter"
           description="Active Cases"
@@ -120,3 +113,4 @@ export default function Home() {
     </div>
   );
 }
+
