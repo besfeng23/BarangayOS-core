@@ -183,13 +183,9 @@ export type ActivityLogLocal = {
     | "ERROR"
     | "SETTINGS_UPDATED"
     | "QUOTATION_REQUESTED"
-    | "JOB_APPLICATION_SUBMITTED"
-    | "PAYMENT_COLLECTED"
-    | "PAYMENT_DISBURSED"
-    | "DEVICE_CREATED"
-    | "DEVICE_UPDATED";
+    | "JOB_APPLICATION_SUBMITTED";
 
-  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system" | "procurement" | "emango" | "jobs";
+  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system" | "procurement" | "jobs";
   entityId: string; // id of record or "sync"
   status: "ok" | "warn" | "error"; // for UI color/badge (lightweight)
 

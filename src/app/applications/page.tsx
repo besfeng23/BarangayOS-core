@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/bosDb';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { FileCheck2, ArrowLeft } from 'lucide-react';
 
 export default function MyApplicationsPage() {

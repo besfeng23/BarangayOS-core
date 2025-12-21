@@ -110,7 +110,11 @@ export default function AppClientLayout({
       <>
         <IdleScreensaver />
         {isStatusPage || isJobsPortal ? (
-            children
+            <div className="bg-slate-900 text-white min-h-screen">
+                <div className="container mx-auto px-4 py-8">
+                    {children}
+                </div>
+            </div>
         ) : (
           <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
             {children}
