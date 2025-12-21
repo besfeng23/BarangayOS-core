@@ -12,9 +12,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { draft } from '@/ai/flows/draft';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '../ui/toast';
+import type { DraftInput, DraftOutput } from '@/ai/schemas';
+
 
 interface AIDrawerProps {
   isOpen: boolean;
@@ -35,7 +36,21 @@ export default function AIDrawer({ isOpen, onClose, originalText, onDraft }: AID
     }
     setIsDrafting(true);
     try {
-      const result = await draft({ context: originalText, instruction });
+      const requestBody: DraftInput = { context: originalText, instruction };
+
+      const response = await fetch('/api/ai/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'The AI service returned an error.');
+      }
+
+      const result: DraftOutput = await response.json();
+      
       if (result?.draft) {
         onDraft(result.draft);
         onClose();
