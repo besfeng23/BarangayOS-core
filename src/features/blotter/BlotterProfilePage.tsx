@@ -5,7 +5,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
 import { useToast } from "@/components/ui/toast";
 import { useBlotterData } from "@/hooks/useBlotterData";
-import { PrintFrame } from "@/components/print/PrintFrame";
+import PrintFrame from "@/components/print/PrintFrame";
 import { useBlotterDocs } from "@/hooks/useBlotterDocs";
 import { SummonsTemplate } from "@/features/blotter/print/SummonsTemplate";
 import { AmicableTemplate } from "@/features/blotter/print/AmicableTemplate";
