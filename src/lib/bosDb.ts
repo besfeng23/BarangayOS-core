@@ -285,7 +285,7 @@ class BOSDexie extends Dexie {
     this.version(15).stores({
       meta: "key",
       settings: "key",
-      residents: "id, fullNameUpper, householdNoUpper, updatedAtISO, *searchTokens",
+      residents: "id, fullNameUpper, householdNoUpper, status, updatedAtISO, *searchTokens",
       cases: "id, residentId, status, updatedAtISO",
       blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
       businesses: "id, status, latestYear, updatedAtISO, *searchTokens",
