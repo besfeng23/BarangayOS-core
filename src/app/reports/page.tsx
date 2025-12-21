@@ -5,39 +5,65 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Printer } from 'lucide-react';
+import { Printer, Loader2 } from 'lucide-react';
 import PrintPreviewModal from '@/components/reports/PrintPreviewModal';
 import type { ReportData } from '@/types/reports';
-
-// Mock data that would come from a pre-calculated `reports_summary` collection
-const mockReportData: ReportData = {
-    id: 'summary-weekly-2024-07-22',
-    period: {
-        type: 'weekly',
-        start: new Date('2024-07-22T00:00:00Z'),
-        end: new Date('2024-07-28T23:59:59Z')
-    },
-    metrics: {
-        certificatesIssued: { value: 42, trend: 0.1 }, // 10% up from last week
-        newResidents: { value: 5, trend: -0.2 }, // 20% down
-        blotterCasesFiled: { value: 3, trend: 0 },
-        blotterCasesSettled: { value: 2, trend: 1 }, // 100% up
-        permitsNew: { value: 1, trend: 0 },
-        permitsRenewed: { value: 7, trend: 0.15 }
-    },
-    generatedAt: new Date()
-};
-
+import { db } from '@/lib/bosDb';
+import { useToast } from '@/components/ui/toast';
 
 export default function ReportsPage() {
     const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState<ReportData | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const { toast } = useToast();
 
-    const handleGenerate = () => {
-        // In a real app, this would query Firestore for the selected period.
-        // For this v1 implementation, we'll use the mock data directly.
-        setSelectedReport(mockReportData);
-        setIsPrintModalOpen(true);
+    const handleGenerate = async () => {
+        setIsGenerating(true);
+        try {
+            const now = new Date();
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+            // Query all relevant tables for records created in the last 7 days
+            const certs = await db.certificate_issuances.where('issuedAtISO').above(sevenDaysAgo).count();
+            const newResidents = await db.residents.where('createdAtISO').above(sevenDaysAgo).count();
+            const blotterCases = await db.blotters.where('createdAtISO').above(sevenDaysAgo).toArray();
+            const newBusinesses = await db.businesses.where('createdAtISO').above(sevenDaysAgo).count();
+            const renewedPermits = await db.permit_issuances.where('issuedAtISO').above(sevenDaysAgo).count();
+
+            const blotterFiled = blotterCases.length;
+            const blotterSettled = blotterCases.filter(b => b.status === 'Resolved').length;
+
+            const reportData: ReportData = {
+                id: `summary-weekly-${now.toISOString().slice(0, 10)}`,
+                period: {
+                    type: 'weekly',
+                    start: new Date(sevenDaysAgo),
+                    end: now
+                },
+                metrics: {
+                    certificatesIssued: { value: certs, trend: 0 },
+                    newResidents: { value: newResidents, trend: 0 },
+                    blotterCasesFiled: { value: blotterFiled, trend: 0 },
+                    blotterCasesSettled: { value: blotterSettled, trend: 0 },
+                    permitsNew: { value: newBusinesses, trend: 0 },
+                    permitsRenewed: { value: renewedPermits, trend: 0 }
+                },
+                generatedAt: now
+            };
+
+            setSelectedReport(reportData);
+            setIsPrintModalOpen(true);
+
+        } catch (error) {
+            console.error("Failed to generate report:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Report Generation Failed',
+                description: 'Could not fetch data from the local database. Please try again.',
+            });
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     return (
@@ -76,9 +102,10 @@ export default function ReportsPage() {
                       <Button 
                           className="bg-blue-600 hover:bg-blue-700 h-12 text-lg w-full sm:w-auto"
                           onClick={handleGenerate}
+                          disabled={isGenerating}
                       >
-                          <Printer className="mr-2 h-5 w-5" />
-                          Generate & Print
+                          {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Printer className="mr-2 h-5 w-5" />}
+                          {isGenerating ? 'Generating...' : 'Generate & Print'}
                       </Button>
                   </CardContent>
               </Card>
