@@ -25,7 +25,7 @@ import DraftBanner from '@/components/app-hub/DraftBanner';
 import ModuleCard from '@/components/app-hub/ModuleCard';
 import { PartnerTileGuard } from "@/components/dashboard/PartnerTileGuard";
 import { TrialBanner } from "@/components/system/TrialBanner";
-import { useSettings } from '@/lib/bos/settings/useSettings';
+import { useSettings } from '@/hooks/useSettings';
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
@@ -82,9 +82,14 @@ export default function Home() {
 
   return (
     <div className="space-y-8 p-4">
+      <header className="mb-4">
+        <h1 className="text-white text-xl font-semibold">Home</h1>
+        <p className="text-slate-200 text-sm mt-1">Select a module to begin.</p>
+      </header>
+      
       <DraftBanner />
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
          <ModuleCard
           title="Blotter"
           description="Active Cases"
@@ -115,7 +120,7 @@ export default function Home() {
         visible={settings.trialEnabled} 
         message="This is a trial account. Some features may be limited." 
         ctaText="Activate Now"
-        onCtaClick={() => alert('Activation requires contacting your system administrator.')}
+        onCtaClick={() => alert('To activate your BarangayOS terminal, please contact your PLDT Enterprise Account Manager or email us at deploy@barangayos.com.')}
        />
     </div>
   );

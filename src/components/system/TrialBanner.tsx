@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 
 export function TrialBanner({
   visible,
-  message = "TRIAL MODE • Limited access until activation",
+  message = "This is a trial account. Some features may be limited.",
   ctaText,
   onCtaClick
 }: {

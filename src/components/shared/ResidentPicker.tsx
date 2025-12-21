@@ -28,7 +28,7 @@ export function ResidentPicker({
   label,
   value,
   onChange,
-  placeholder = "Hanapin ang pangalan...",
+  placeholder = "Search for a resident...",
   allowManual = true,
   errorMessage,
 }: ResidentPickerProps) {
@@ -75,9 +75,6 @@ export function ResidentPicker({
   };
 
   const handleManualBlur = () => {
-    // This function will be called when the manual input field loses focus.
-    // The name is already being updated via onChange, so we just need to
-    // potentially signal that editing is 'done' if the name is valid.
     if(safeValue.mode === 'manual' && safeValue.manualName?.trim()) {
       setIsEditing(false);
     }

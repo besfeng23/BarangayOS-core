@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -25,7 +26,7 @@ interface AIDrawerProps {
 }
 
 export default function AIDrawer({ isOpen, onClose, originalText, onDraft }: AIDrawerProps) {
-  const [instruction, setInstruction] = useState('Make this more formal and objective for a police report.');
+  const [instruction, setInstruction] = useState('Make this more formal and objective for an official report.');
   const [isDrafting, setIsDrafting] = useState(false);
   const { toast } = useToast();
 
