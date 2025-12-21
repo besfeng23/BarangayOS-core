@@ -10,6 +10,7 @@ import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 import { getManilaDate } from "@/lib/date";
+import { useLiveQuery } from "dexie-react-hooks";
 
 type Mode = "list" | "form";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -54,14 +55,34 @@ function getPartyName(party: ResidentPickerValue | undefined) {
 export function useBlotterWorkstation() {
   const [mode, setMode] = useState<Mode>("list");
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<BlotterLocal[]>([]);
-  const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [banner, setBanner] = useState<Banner>(null);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+
+  const { data: items = [], loading } = useLiveQuery(async () => {
+    const q = upper(query);
+    if (!q) {
+      return await db.blotters.orderBy("updatedAtISO").reverse().limit(100).toArray();
+    }
+    const first = q.split(/\s+/)[0];
+    const hits = await db.blotters.where("searchTokens").equals(first).toArray();
+    const refined = hits.filter((b) => {
+      const hay = [
+        upper(b.complainantName),
+        upper(b.respondentName),
+        upper(b.locationText),
+        upper(b.narrative),
+        b.id,
+        b.status
+      ].join(" ");
+      return hay.includes(q);
+    });
+    refined.sort((a, b) => (a.updatedAtISO > b.updatedAtISO ? -1 : 1));
+    return refined;
+  }, [query], { data: [], loading: true });
 
   const [draft, setDraft] = useState<Draft>(() => {
     const saved = loadDraft<Draft>(DRAFT_KEY);
@@ -91,39 +112,6 @@ export function useBlotterWorkstation() {
     if (!draft.narrative.trim()) return false;
     return true;
   }, [draft]);
-
-  const fetchList = useCallback(async (qRaw: string) => {
-    setLoading(true);
-    try {
-      const q = upper(qRaw);
-      if (!q) {
-        const list = await db.blotters.orderBy("updatedAtISO").reverse().limit(100).toArray();
-        setItems(list);
-        return;
-      }
-      const first = q.split(/\s+/)[0];
-      const hits = await db.blotters.where("searchTokens").equals(first).toArray();
-      const refined = hits.filter((b) => {
-        const hay = [
-          upper(b.complainantName),
-          upper(b.respondentName),
-          upper(b.locationText),
-          upper(b.narrative),
-          b.id,
-          b.status
-        ].join(" ");
-        return hay.includes(q);
-      });
-      refined.sort((a, b) => (a.updatedAtISO > b.updatedAtISO ? -1 : 1));
-      setItems(refined);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchList(query); }, [query, fetchList]);
-
-  const reload = useCallback(() => fetchList(query), [fetchList, query]);
 
   const newBlotter = useCallback(() => {
     setSelectedId(null);
@@ -225,7 +213,7 @@ export function useBlotterWorkstation() {
         status: "ok",
         title: draft.id ? "Blotter Updated" : "Blotter Created",
         subtitle: `${rec.complainantName} vs ${rec.respondentName} • ${rec.locationText} • ${rec.status}`,
-      });
+      } as any);
 
 
       // sync
@@ -234,7 +222,6 @@ export function useBlotterWorkstation() {
       clearDraft(DRAFT_KEY);
       setBanner({ kind: "ok", msg: "Saved and queued for sync ✅" });
       setMode("list");
-      reload();
       return { ok: true as const, id: rec.id };
     } catch (e: any) {
       const msg = e?.message ?? String(e);
@@ -243,7 +230,7 @@ export function useBlotterWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [draft, validate, reload]);
+  }, [draft, validate]);
 
   const resolve = useCallback(async (enqueue: (job: { type: string; payload: any }) => Promise<void>) => {
     if (!draft.id) return;
@@ -264,14 +251,13 @@ export function useBlotterWorkstation() {
         status: "ok",
         title: "Blotter Resolved",
         subtitle: `${updated.complainantName} vs ${updated.respondentName} • ${updated.locationText}`,
-      });
+      } as any);
 
       await enqueue({ type: "BLOTTER_UPSERT", payload: updated });
 
       setDraft((d) => ({ ...d, status: "Resolved" }));
       setBanner({ kind: "ok", msg: "Marked as Resolved ✅" });
       setMode("list");
-      reload();
       return { ok: true as const };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
@@ -279,7 +265,7 @@ export function useBlotterWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [draft.id, reload]);
+  }, [draft.id]);
 
   const buildAndPrint = useCallback(async () => {
     if (!draft.id) throw new Error("Save the record first before printing.");
@@ -306,7 +292,7 @@ export function useBlotterWorkstation() {
         status: "ok",
         title: "Blotter Printed",
         subtitle: `${b.complainantName} vs ${b.respondentName} • ${b.locationText}`,
-    });
+    } as any);
 
   }, [draft.id]);
 
@@ -325,7 +311,6 @@ export function useBlotterWorkstation() {
     canSave,
     selectedId,
     draft, setDraft,
-    reload,
     newBlotter,
     editBlotter,
     backToList,

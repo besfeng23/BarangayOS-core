@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -22,7 +23,7 @@ export function useSecurity() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<SecurityDeviceLocal | null>(null);
 
-  const { items, loading } = useLiveQuery(async () => {
+  const { data: devices, loading } = useLiveQuery(async () => {
     const q = query.trim().toUpperCase();
     if (!q) {
       return await db.devices.orderBy('updatedAtISO').reverse().toArray();
@@ -33,7 +34,7 @@ export function useSecurity() {
         const hay = [device.name, device.type, device.location, device.ipAddress].join(' ').toUpperCase();
         return tokens.every(token => hay.includes(token));
     });
-  }, [query], { items: [], loading: true });
+  }, [query], { data: [], loading: true });
 
   const openModal = useCallback((device: SecurityDeviceLocal | null = null) => {
     setEditingDevice(device);
@@ -87,7 +88,7 @@ export function useSecurity() {
   }, [closeModal]);
 
   return {
-    devices: items || [],
+    devices: devices || [],
     loading,
     query,
     setQuery,

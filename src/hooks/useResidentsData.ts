@@ -58,9 +58,9 @@ export function useResidentsData() {
             form.addressLine1,
           ].join(" ")
         ),
-    };
+    } as any;
 
-    await db.residents.put(rec);
+    await db.residents.put(rec as any);
     return rec;
   }, []);
 

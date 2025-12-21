@@ -1,4 +1,3 @@
-import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
 
@@ -14,7 +13,7 @@ export async function updateBlotterStatus(blotterId: string, status: "SETTLED" |
         updatedAtISO: nowISO, 
     };
 
-    await db.blotters.put(updatedRecord);
+    await db.blotters.put(updatedRecord as any);
   
     await writeActivity({
         type: "BLOTTER_UPDATED",
@@ -23,7 +22,7 @@ export async function updateBlotterStatus(blotterId: string, status: "SETTLED" |
         status: "ok",
         title: `Blotter Status Changed: ${status}`,
         subtitle: `${blotter.complainantName} vs ${blotter.respondentName}`,
-    });
+    } as any);
     
     // Enqueue sync
     await db.sync_queue.add({

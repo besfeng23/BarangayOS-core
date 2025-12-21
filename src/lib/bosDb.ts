@@ -4,7 +4,7 @@ import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 17;
+export const DB_VERSION = 18;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -47,6 +47,8 @@ export type ResidentLocal = {
   householdNoUpper?: string;
   addressText?: string;
   contact?: string;
+  lastName?: string;
+  firstName?: string;
   // ISO strings only (local-first)
   createdAtISO: string;
   updatedAtISO: string;
@@ -283,10 +285,10 @@ class BOSDexie extends Dexie {
 
   constructor() {
     super(DB_NAME);
-    this.version(17).stores({
+    this.version(18).stores({
       meta: "key",
       settings: "key",
-      residents: "id, fullNameUpper, householdNoUpper, status, updatedAtISO, *searchTokens",
+      residents: "id, fullNameUpper, householdNoUpper, status, updatedAtISO, *searchTokens,lastNameNorm,firstNameNorm,birthdate",
       cases: "id, residentId, status, updatedAtISO",
       blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
       businesses: "id, status, latestYear, updatedAtISO, *searchTokens",
@@ -295,7 +297,7 @@ class BOSDexie extends Dexie {
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
       print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
-      sync_queue: "++id, occurredAtISO, synced, status, jobType", 
+      sync_queue: "++id, occurredAtISO, synced, status, jobType, [entityType+entityId]", 
       audit_queue: "++id, eventType, occurredAtISO, synced",
       devices: "id, type, status, updatedAtISO, *searchTokens",
       clinic_queue: "id, status, createdAtISO, *searchTokens",

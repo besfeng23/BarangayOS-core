@@ -1,30 +1,23 @@
 
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db, ResidentLocal, resetLocalDatabase, DB_VERSION } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
+import { useLiveQuery } from "dexie-react-hooks";
 
 export function useResidents() {
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<ResidentLocal[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const { data: items = [], loading } = useLiveQuery(async () => {
     try {
       const q = query.trim().toUpperCase();
-
       if (!q) {
-        const list = await db.residents.orderBy("fullNameUpper").limit(200).toArray();
-        setItems(list);
-        return;
+        return await db.residents.orderBy("fullNameUpper").limit(200).toArray();
       }
-
       const first = q.split(/\s+/)[0];
       const hits = await db.residents.where("searchTokens").equals(first).toArray();
-
-      const refined = hits.filter((r) => {
+      const refined = hits.filter((r: any) => {
         const hay = [
           r.fullNameUpper,
           r.householdNoUpper ?? "",
@@ -32,19 +25,13 @@ export function useResidents() {
         ].join(" ");
         return hay.includes(q);
       });
-
-      refined.sort((a, b) => (a.fullNameUpper > b.fullNameUpper ? 1 : -1));
-      setItems(refined);
+      refined.sort((a: any, b: any) => (a.fullNameUpper > b.fullNameUpper ? 1 : -1));
+      return refined;
     } catch (e: any) {
       setError(e?.message ?? String(e));
-      setItems([]);
-      console.error("Residents reload failed:", e);
-    } finally {
-      setLoading(false);
+      return [];
     }
-  }, [query]);
-
-  useEffect(() => { reload(); }, [reload]);
+  }, [query], { data: [], loading: true });
 
   const tools = useMemo(() => {
     return {
@@ -53,5 +40,5 @@ export function useResidents() {
     };
   }, []);
 
-  return { query, setQuery, items, loading, error, reload, tools };
+  return { query, setQuery, items, loading, error, tools };
 }
