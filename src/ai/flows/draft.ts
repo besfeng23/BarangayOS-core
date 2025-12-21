@@ -6,7 +6,7 @@
  * This file defines the `draft` function, which uses an AI model to refine
  * or rewrite text based on a user's instructions. It ensures that any
  * personally identifiable information (PII) is redacted from the context
- * before it's sent to the AI model.
+ * before it's sent to the AI model if the user settings require it.
  *
  * - draft: The main function to call for drafting assistance.
  * - DraftInput: The Zod schema for the input object.
@@ -16,6 +16,8 @@
 import { ai } from '@/ai/genkit';
 import { DraftInputSchema, DraftOutputSchema, type DraftInput } from '@/ai/schemas';
 import { redactPII } from '@/lib/ai/redact';
+import { getSettingsSnapshot } from '@/lib/bos/print/getSettingsSnapshot';
+
 
 export const draftingPrompt = ai.defineFlow({
   name: 'draftingPrompt',
@@ -24,7 +26,7 @@ export const draftingPrompt = ai.defineFlow({
 }, async (input) => {
     const llm = ai.getGenerator('googleai/gemini-1.5-flash');
     const result = await llm.generate({
-        prompt: `You are an expert administrative assistant for a local government unit.
+        prompt: `You are an expert administrative assistant for a local government unit in the Philippines.
 Your task is to help the user draft or refine text based on their instructions.
 The user's instruction is: ${input.instruction}
 
@@ -33,7 +35,7 @@ The text to be refined is:
 ${input.context}
 '''
 
-Provide the redrafted text in the 'draft' output field.
+Provide the redrafted text in the 'draft' output field. Your response must be print-ready and structured if requested.
 `,
         output: {
             schema: DraftOutputSchema,
@@ -44,7 +46,10 @@ Provide the redrafted text in the 'draft' output field.
 });
 
 export async function draft(input: DraftInput) {
-  const redactedContext = redactPII(input.context);
+  const settings = await getSettingsSnapshot();
+  const allowPII = settings.ai?.allowPII ?? false;
+
+  const redactedContext = allowPII ? input.context : redactPII(input.context);
 
   const output = await draftingPrompt({
     ...input,

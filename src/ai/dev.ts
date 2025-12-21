@@ -4,3 +4,5 @@ import './flows/draft';
 import './flows/nlq';
 import './flows/help';
 import './flows/chat';
+import './flows/intake';
+import './flows/moderate';

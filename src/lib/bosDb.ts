@@ -2,6 +2,7 @@
 
 import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
+import type { AISettings as AISettingsValue } from '@/hooks/useAISettings';
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
 export const DB_VERSION = 15;
@@ -214,7 +215,7 @@ export type PrintJobLocal = {
 };
 
 // Security Module
-export type DeviceType = "CCTV" | "NVR" | "BODY_CAM" | "DASH_CAM" | "PANIC_BUTTON" | "SIREN" | "LED_DISPLAY" | "PA_SYSTEM";
+export type DeviceType = "CCTV" | "NVR" | "BODY_CAM" | "DASH_CAM" | "PANIC_BUTTON" | "SIREN" | "LED_DISPLAY" | "PA_SYSTEM" | string;
 export type DeviceStatus = "ACTIVE" | "MAINTENANCE" | "INACTIVE";
 
 export type SecurityDeviceLocal = {
@@ -254,13 +255,8 @@ export type AICache = {
 };
 
 export type AISettings = {
-  key: "settings";
-  value: {
-    enableAI: boolean;
-    allowPII: boolean;
-    demoMode: boolean;
-    storeLogs: boolean;
-  };
+  key: "aiSettings";
+  value: AISettingsValue;
 };
 
 
@@ -286,7 +282,7 @@ class BOSDexie extends Dexie {
 
   constructor() {
     super(DB_NAME);
-    this.version(8).stores({
+    this.version(15).stores({
       meta: "key",
       settings: "key",
       residents: "id, fullNameUpper, householdNoUpper, updatedAtISO, *searchTokens",
@@ -298,58 +294,12 @@ class BOSDexie extends Dexie {
       print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
       print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
-      sync_queue: "++id, occurredAtISO, synced, jobType", // STATUS INDEX MISSING IN v8
+      sync_queue: "++id, occurredAtISO, synced, status, jobType", 
       audit_queue: "++id, eventType, occurredAtISO, synced",
-    });
-
-    this.version(9).stores({
-        sync_queue: "++id, occurredAtISO, synced, status, jobType" // Add status to index
-    }).upgrade(async (tx) => {
-        await tx.table("sync_queue").toCollection().modify((item: any) => {
-            if (!item.status) {
-                item.status = "pending";
-            }
-        });
-    });
-
-    this.version(10).stores({
-      // This version is purely for correcting past primary key change errors.
-      // We will re-declare the final intended schema here.
-    }).upgrade(async (tx) => {
-      // This is a safety net migration. If a user is on a very old version
-      // and jumps straight to v10, this will try to ensure their sync_queue is usable.
-      return tx.table('sync_queue').toCollection().modify((item) => {
-        if (!item.status) {
-          item.status = 'pending';
-        }
-        if (typeof item.tryCount !== 'number') {
-          item.tryCount = 0;
-        }
-      });
-    });
-    
-    this.version(11).stores({
-        // No schema changes needed for adding an optional 'owner' field to businesses
-        // Dexie allows adding optional properties without a schema bump, but we increment
-        // for clarity and to ensure the app logic aligns with the new data shape.
-    });
-
-    this.version(12).stores({
-        // No schema changes needed for adding optional 'complainant' and 'respondent'
-        // fields to blotters table. We increment for data model clarity.
-    });
-
-    this.version(13).stores({
-        devices: "id, type, status, updatedAtISO, *searchTokens",
-    });
-
-    this.version(14).stores({
-        clinic_queue: "id, status, createdAtISO, *searchTokens"
-    });
-
-    this.version(15).stores({
-        ai_cache: "key, createdAt",
-        ai_settings: "key",
+      devices: "id, type, status, updatedAtISO, *searchTokens",
+      clinic_queue: "id, status, createdAtISO, *searchTokens",
+      ai_cache: "key, createdAt",
+      ai_settings: "key",
     });
   }
 }

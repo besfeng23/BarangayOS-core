@@ -17,6 +17,7 @@ import { help } from '@/ai/flows/help';
 import { Loader2, Sparkles, User, Bot } from 'lucide-react';
 import { useToast } from '../ui/toast';
 import { usePathname } from 'next/navigation';
+import { getRecentErrors } from '@/lib/bos/errors/errorBus';
 
 interface HelpDrawerProps {
   isOpen: boolean;
@@ -38,7 +39,11 @@ export default function HelpDrawer({ isOpen, onClose }: HelpDrawerProps) {
     setIsAsking(true);
     setResponse('');
     try {
-      const result = await help({ query, context: pathname });
+      const recentErrors = getRecentErrors();
+      const errorContext = recentErrors.length > 0 ? `Recent error: ${recentErrors[0].message}` : undefined;
+      
+      const result = await help({ query, context: pathname, errorContext });
+
       if (result?.response) {
         setResponse(result.response);
       } else {
@@ -51,6 +56,7 @@ export default function HelpDrawer({ isOpen, onClose }: HelpDrawerProps) {
         title: 'AI Assistant Failed',
         description: error.message || 'The AI assistant could not complete the request.',
       });
+      setResponse("I'm sorry, I encountered an error and couldn't process your request. Please check the system status or try again later.");
     } finally {
       setIsAsking(false);
     }
@@ -62,7 +68,7 @@ export default function HelpDrawer({ isOpen, onClose }: HelpDrawerProps) {
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-2xl">
             <Sparkles className="h-6 w-6 text-amber-400" />
-            Ask BOS
+            Ask BarangAI
           </SheetTitle>
           <SheetDescription>
             Your AI assistant for BarangayOS. Ask me anything about the app.
@@ -77,8 +83,14 @@ export default function HelpDrawer({ isOpen, onClose }: HelpDrawerProps) {
               id="question"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g., Paano mag-print ng blotter?"
+              placeholder="e.g., How do I print a blotter report?"
               className="mt-2 text-base bg-zinc-950 border-zinc-700 min-h-[100px]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAsk();
+                }
+              }}
             />
           </div>
           <Button onClick={handleAsk} disabled={isAsking || !query} className="w-full h-12 text-lg">

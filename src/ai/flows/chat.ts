@@ -12,6 +12,8 @@ import { ai } from '@/ai/genkit';
 import { ChatInputSchema, ChatOutputSchema, type ChatInput } from '@/ai/schemas';
 import { redactPII } from '@/lib/ai/redact';
 
+const chatSystemPrompt = `You are BarangAI, the official AI assistant of BarangayOS (BOS). Help users understand BOS features and workflows. Be professional, calm, and lola-proof. Default English. Switch to Tagalog only if user uses Tagalog first. Never request or store personal data; if present, it is already redacted. Do not provide legal advice. Give step-by-step guidance.`;
+
 export const chatFlow = ai.defineFlow({
   name: 'chatFlow',
   inputSchema: ChatInputSchema,
@@ -20,23 +22,16 @@ export const chatFlow = ai.defineFlow({
   const llm = ai.getGenerator('googleai/gemini-1.5-flash');
 
   const result = await llm.generate({
-    prompt: `You are the "BOS Assistant", a friendly and professional AI assistant for BarangayOS, a digital governance platform for local government units in the Philippines.
-Your goal is to answer questions from potential customers visiting the website.
+    prompt: `
+      ${chatSystemPrompt}
 
-- Keep answers concise and helpful (2-4 sentences).
-- If asked about pricing, state that BarangayOS is deployed via partners like PLDT and to contact sales for a quote.
-- If asked about technical specs, highlight key features: offline-first, print-ready, secure, and compliant with Philippine laws (RA 11032, PD 1508).
-- Do not make up features. Stick to what's in the product documentation.
-- Politely decline to answer questions not related to BarangayOS.
-- NEVER ask for or store personally identifiable information (PII). All user input is automatically redacted.
+      Current conversation history:
+      ${input.history?.map(h => `${h.role}: ${h.content}`).join('\n') || 'No history.'}
 
-Current conversation history:
-${input.history?.map(h => `${h.role}: ${h.content}`).join('\n') || 'No history.'}
+      User's latest question: "${input.query}"
 
-User's latest question: "${input.query}"
-
-Provide your helpful and professional answer in the 'response' output field.
-`,
+      Provide your helpful and professional answer in the 'response' output field.
+    `,
     output: {
       schema: ChatOutputSchema,
     },

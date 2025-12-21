@@ -10,6 +10,9 @@
 
 import { ai } from '@/ai/genkit';
 import { NLQInputSchema, NLQOutputSchema, type NLQInput } from '@/ai/schemas';
+import { redactPII } from '@/lib/ai/redact';
+import { getSettingsSnapshot } from '@/lib/bos/print/getSettingsSnapshot';
+
 
 export const nlqFlow = ai.defineFlow({
   name: 'nlqFlow',
@@ -48,6 +51,10 @@ Provide the result as a structured JSON object.
 });
 
 export async function nlq(input: NLQInput) {
-  const output = await nlqFlow(input);
+  const settings = await getSettingsSnapshot();
+  const allowPII = settings.ai?.allowPII ?? false;
+  const redactedQuery = allowPII ? input.query : redactPII(input.query);
+
+  const output = await nlqFlow({ ...input, query: redactedQuery });
   return output;
 }
