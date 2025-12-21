@@ -48,7 +48,7 @@ export default function BusinessPermitsPage() {
                 + New Business
               </button>
               <div className="mt-3 text-xs text-zinc-400">
-                {ws.loading ? "Loading…" : `${ws.items.length} business(es)`}
+                {ws.loading ? "Loading…" : `${(ws.items || []).length} business(es)`}
               </div>
             </div>
 
@@ -64,7 +64,7 @@ export default function BusinessPermitsPage() {
                     />
                 </div>
               ) : (
-                ws.items?.map((b) => (
+                (ws.items || []).map((b) => (
                   <button
                     key={b.id}
                     className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4 text-left hover:bg-zinc-900/60"
