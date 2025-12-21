@@ -49,7 +49,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl bg-zinc-900 border-zinc-800 text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl">{product.name}</DialogTitle>
           <DialogDescription>{product.description}</DialogDescription>
@@ -65,7 +65,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 />
             </div>
           <div className="space-y-2">
-            <p className="text-3xl font-bold">
+            <p className="text-3xl font-bold text-emerald-400">
               {product.price.toLocaleString('en-US', {
                 style: 'currency',
                 currency: 'PHP',
@@ -73,7 +73,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
             </p>
             <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
           </div>
-          <div className="prose prose-sm prose-invert max-w-none">
+          <div className="prose prose-sm prose-invert max-w-none text-zinc-300">
             <h4>Features:</h4>
             <ul>
               {product.features.map((feature, index) => (

@@ -1,3 +1,5 @@
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
 export type ProductCategory =
   | 'field-gear'
   | 'monitoring'
@@ -25,8 +27,8 @@ const allProducts: Product[] = [
     description: 'Rugged, reliable body camera for patrol and evidence capture.',
     category: 'field-gear',
     price: 35000,
-    imageUrl: 'https://picsum.photos/seed/bodycam/600/400',
-    imageHint: 'body camera',
+    imageUrl: PlaceHolderImages.find(p => p.id === 'prod_001')?.imageUrl || 'https://picsum.photos/seed/bodycam/600/400',
+    imageHint: PlaceHolderImages.find(p => p.id === 'prod_001')?.imageHint || 'body camera',
     features: ['1080p HD Video', '12-hour battery life', 'GPS Tagging', 'Night Vision'],
   },
   {
@@ -36,8 +38,8 @@ const allProducts: Product[] = [
     description: 'Long-range communication for team coordination.',
     category: 'field-gear',
     price: 12500,
-    imageUrl: 'https://picsum.photos/seed/radio/600/400',
-    imageHint: 'handheld radio',
+    imageUrl: PlaceHolderImages.find(p => p.id === 'prod_002')?.imageUrl || 'https://picsum.photos/seed/radio/600/400',
+    imageHint: PlaceHolderImages.find(p => p.id === 'prod_002')?.imageHint || 'handheld radio',
     features: ['5km Range', 'Water-resistant (IP67)', '18-hour battery', 'Emergency Button'],
   },
   {
@@ -47,8 +49,8 @@ const allProducts: Product[] = [
     description: 'Comprehensive surveillance for barangay hall and key areas.',
     category: 'monitoring',
     price: 45000,
-    imageUrl: 'https://picsum.photos/seed/cctv/600/400',
-    imageHint: 'security cameras',
+    imageUrl: PlaceHolderImages.find(p => p.id === 'prod_003')?.imageUrl || 'https://picsum.photos/seed/cctv/600/400',
+    imageHint: PlaceHolderImages.find(p => p.id === 'prod_003')?.imageHint || 'security cameras',
     features: ['8 x 5MP Bullet Cameras', '1TB NVR Included', 'Mobile App Access', 'Motion Detection'],
   },
   {
@@ -58,8 +60,8 @@ const allProducts: Product[] = [
     description: 'Real-time location tracking for barangay vehicles.',
     category: 'vehicle',
     price: 8000,
-    imageUrl: 'https://picsum.photos/seed/gpstracker/600/400',
-    imageHint: 'gps tracker',
+    imageUrl: PlaceHolderImages.find(p => p.id === 'prod_004')?.imageUrl || 'https://picsum.photos/seed/gpstracker/600/400',
+    imageHint: PlaceHolderImages.find(p => p.id === 'prod_004')?.imageHint || 'gps tracker',
     features: ['4G Connectivity', 'Geo-fencing alerts', '60-day history log', 'Mobile App'],
   },
   {
@@ -69,8 +71,8 @@ const allProducts: Product[] = [
     description: 'Loud, wide-area siren for disaster and emergency alerts.',
     category: 'emergency',
     price: 28000,
-    imageUrl: 'https://picsum.photos/seed/siren/600/400',
-    imageHint: 'emergency siren',
+    imageUrl: PlaceHolderImages.find(p => p.id === 'prod_005')?.imageUrl || 'https://picsum.photos/seed/siren/600/400',
+    imageHint: PlaceHolderImages.find(p => p.id === 'prod_005')?.imageHint || 'emergency siren',
     features: ['125 dB Output', '3km Audible Range', 'Weatherproof', 'Remote Activation'],
   },
   {
@@ -80,8 +82,8 @@ const allProducts: Product[] = [
     description: 'Display announcements and alerts to the public.',
     category: 'info-systems',
     price: 75000,
-    imageUrl: 'https://picsum.photos/seed/ledsign/600/400',
-    imageHint: 'led sign',
+    imageUrl: PlaceHolderImages.find(p => p.id === 'prod_006')?.imageUrl || 'https://picsum.photos/seed/ledsign/600/400',
+    imageHint: PlaceHolderImages.find(p => p.id === 'prod_006')?.imageHint || 'led sign',
     features: ['P10 Full-Color LED', 'Weatherproof Enclosure', 'Wi-Fi Content Management', '3m x 1m Size'],
   },
 ];

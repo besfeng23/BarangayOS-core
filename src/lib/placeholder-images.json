@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "prod_001",
+      "description": "Axon Body 5 Body-Worn Camera",
+      "imageUrl": "https://images.unsplash.com/photo-1758506127287-6c114e3cc8ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxib2R5JTIwY2FtZXJhfGVufDB8fHx8MTc2NjM0MDg5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "body camera"
+    },
+    {
+      "id": "prod_002",
+      "description": "Motorola Handheld Radio (2-pack)",
+      "imageUrl": "https://images.unsplash.com/photo-1645391986480-7c13dde82793?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxoYW5kaGVsZCUyMHJhZGlvfGVufDB8fHx8MTc2NjM0MDg5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "handheld radio"
+    },
+    {
+      "id": "prod_003",
+      "description": "Hikvision 8-Channel CCTV System",
+      "imageUrl": "https://images.unsplash.com/photo-1528312635006-8ea0bc49ec63?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzZWN1cml0eSUyMGNhbWVyYXN8ZW58MHx8fHwxNzY2MzQwODk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "security cameras"
+    },
+    {
+      "id": "prod_004",
+      "description": "GPS Tracker for Patrol Vehicle",
+      "imageUrl": "https://images.unsplash.com/photo-1628655207872-76a915ecc5e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxncHMlMjB0cmFja2VyfGVufDB8fHx8MTc2NjM0MDg5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "gps tracker"
+    },
+    {
+      "id": "prod_005",
+      "description": "Outdoor Emergency Siren",
+      "imageUrl": "https://images.unsplash.com/photo-1764427982578-3c9882131430?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxlbWVyZ2VuY3klMjBzaXJlbnxlbnwwfHx8fDE3NjYzNDA4OTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "emergency siren"
+    },
+    {
+      "id": "prod_006",
+      "description": "Outdoor LED Information Display",
+      "imageUrl": "https://images.unsplash.com/photo-1700855151602-e3ce5c3b0836?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxsZWQlMjBzaWdufGVufDB8fHx8MTc2NjM0MDg5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "led sign"
+    }
+  ]
 }
