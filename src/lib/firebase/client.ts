@@ -9,11 +9,11 @@ const firebaseConfig = {
   apiKey: "AIzaSyAgNyILqGlsW1YV8OF63ubJljSZoEByMcA",
   authDomain: "studio-603796794-a3dad.firebaseapp.com",
   projectId: "studio-603796794-a3dad",
-  storageBucket: "studio-603796794-a3dad.appspot.com",
+  storageBucket: "studio-603796794-a3dad.firebasestorage.app",
   messagingSenderId: "1057904202072",
   appId: "1:1057904202072:web:0156b6def50c6badb0952d",
+  measurementId: "G-5HPJBLXZPM",
   databaseURL: "https://studio-603796794-a3dad-default-rtdb.firebaseio.com",
-  measurementId: "G-5HPJBLXZPM"
 };
 
 // Initialize Firebase (Singleton Pattern)
