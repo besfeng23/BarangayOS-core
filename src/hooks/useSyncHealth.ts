@@ -1,9 +1,13 @@
+
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
+import { useNetworkStatus } from "./useNetworkStatus";
 
 export function useSyncHealth() {
+  const { isOnline } = useNetworkStatus();
+
   const pendingCount = useLiveQuery(async () => {
     try {
       return await db.sync_queue.where("status").anyOf(["pending", "syncing"]).count();
@@ -30,8 +34,7 @@ export function useSyncHealth() {
   }, [], null);
 
   const state: "synced" | "syncing" | "failed" | "offline" = (() => {
-    // This part does not need navigator.onLine as useNetworkStatus handles it better.
-    // Assuming online status is handled by a provider or another hook.
+    if (!isOnline) return "offline";
     if (errorCount && errorCount > 0) return "failed";
     if (pendingCount && pendingCount > 0) return "syncing";
     return "synced";

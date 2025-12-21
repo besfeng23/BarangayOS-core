@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useCallback } from "react";
@@ -67,5 +68,10 @@ export function useResidentsData() {
       await writeActivity(args);
   }, []);
 
-  return { createResident, checkDuplicateLocal, logActivity };
+  const isResidentQueued = useCallback(async (id: string): Promise<boolean> => {
+      const count = await db.sync_queue.where({ entityId: id, status: 'pending' }).count();
+      return count > 0;
+  }, []);
+
+  return { createResident, checkDuplicateLocal, logActivity, isResidentQueued };
 }

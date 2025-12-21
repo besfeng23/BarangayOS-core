@@ -1,3 +1,5 @@
+
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { db, BlotterLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
@@ -7,6 +9,7 @@ import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
+import { getManilaDate } from "@/lib/date";
 
 type Mode = "list" | "form";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -34,23 +37,18 @@ function uuid() {
   });
 }
 
-function todayISO() {
-  const d = new Date();
-  const pad = (n:number)=>String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-}
-
 const defaultPickerValue: ResidentPickerValue = { mode: "resident", residentId: null, residentNameSnapshot: "", manualName: "" };
 
 function upper(s: string) {
   return (s ?? "").trim().toUpperCase();
 }
 
-function getPartyName(party: ResidentPickerValue) {
+function getPartyName(party: ResidentPickerValue | undefined) {
+  if (!party) return "";
   if (party.mode === 'resident' && party.residentNameSnapshot) {
     return party.residentNameSnapshot;
   }
-  return party.manualName || "Unknown";
+  return party.manualName || "";
 }
 
 export function useBlotterWorkstation() {
@@ -62,13 +60,14 @@ export function useBlotterWorkstation() {
   const [banner, setBanner] = useState<Banner>(null);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [more, setMore] = useState(false);
+
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
 
   const [draft, setDraft] = useState<Draft>(() => {
     const saved = loadDraft<Draft>(DRAFT_KEY);
     if (saved) return saved;
     return {
-      incidentDateISO: todayISO(),
+      incidentDateISO: getManilaDate(),
       locationText: "",
       complainant: defaultPickerValue,
       respondent: defaultPickerValue,
@@ -81,6 +80,17 @@ export function useBlotterWorkstation() {
   });
 
   useEffect(() => { saveDraft(DRAFT_KEY, draft); }, [draft]);
+
+  const canSave = useMemo(() => {
+    if (!draft.incidentDateISO) return false;
+    if (!draft.locationText.trim()) return false;
+    if (draft.complainant.mode !== 'resident' || !draft.complainant.residentId) return false;
+    if (draft.respondent.mode !== 'resident' || !draft.respondent.residentId) return false;
+    if (!getPartyName(draft.complainant)) return false;
+    if (!getPartyName(draft.respondent)) return false;
+    if (!draft.narrative.trim()) return false;
+    return true;
+  }, [draft]);
 
   const fetchList = useCallback(async (qRaw: string) => {
     setLoading(true);
@@ -117,10 +127,9 @@ export function useBlotterWorkstation() {
 
   const newBlotter = useCallback(() => {
     setSelectedId(null);
-    setMore(false);
     setBanner(null);
     setDraft({
-      incidentDateISO: todayISO(),
+      incidentDateISO: getManilaDate(),
       locationText: "",
       complainant: defaultPickerValue,
       respondent: defaultPickerValue,
@@ -137,7 +146,6 @@ export function useBlotterWorkstation() {
     const b = await db.blotters.get(id);
     if (!b) return;
     setSelectedId(id);
-    setMore(false);
     setBanner(null);
     setDraft({
       id: b.id,
@@ -161,9 +169,11 @@ export function useBlotterWorkstation() {
 
   const validate = useCallback((d: Draft) => {
     if (!d.incidentDateISO) throw new Error("Incident date is required.");
-    if (!d.locationText.trim()) throw new Error("Location is required.");
-    if (!getPartyName(d.complainant)) throw new Error("Complainant is required.");
-    if (!getPartyName(d.respondent)) throw new Error("Respondent is required.");
+    if (!d.locationText.trim()) throw new Error("Incident location is required.");
+    if (d.complainant.mode !== 'resident' || !d.complainant.residentId) throw new Error("A valid resident must be selected as complainant.");
+    if (d.respondent.mode !== 'resident' || !d.respondent.residentId) throw new Error("A valid resident must be selected as respondent.");
+    if (!getPartyName(d.complainant)) throw new Error("Complainant name is required.");
+    if (!getPartyName(d.respondent)) throw new Error("Respondent name is required.");
     if (!d.narrative.trim()) throw new Error("Narrative is required.");
   }, []);
 
@@ -213,7 +223,7 @@ export function useBlotterWorkstation() {
         entityType: "blotter",
         entityId: rec.id,
         status: "ok",
-        title: draft.id ? "Blotter updated" : "Blotter created",
+        title: draft.id ? "Blotter Updated" : "Blotter Created",
         subtitle: `${rec.complainantName} vs ${rec.respondentName} • ${rec.locationText} • ${rec.status}`,
       });
 
@@ -222,8 +232,9 @@ export function useBlotterWorkstation() {
       await enqueue({ type: "BLOTTER_UPSERT", payload: rec });
 
       clearDraft(DRAFT_KEY);
-      setBanner({ kind: "ok", msg: "Saved & queued ✅" });
+      setBanner({ kind: "ok", msg: "Saved and queued for sync ✅" });
       setMode("list");
+      reload();
       return { ok: true as const, id: rec.id };
     } catch (e: any) {
       const msg = e?.message ?? String(e);
@@ -232,7 +243,7 @@ export function useBlotterWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [draft, validate]);
+  }, [draft, validate, reload]);
 
   const resolve = useCallback(async (enqueue: (job: { type: string; payload: any }) => Promise<void>) => {
     if (!draft.id) return;
@@ -251,7 +262,7 @@ export function useBlotterWorkstation() {
         entityType: "blotter",
         entityId: updated.id,
         status: "ok",
-        title: "Blotter resolved",
+        title: "Blotter Resolved",
         subtitle: `${updated.complainantName} vs ${updated.respondentName} • ${updated.locationText}`,
       });
 
@@ -260,6 +271,7 @@ export function useBlotterWorkstation() {
       setDraft((d) => ({ ...d, status: "Resolved" }));
       setBanner({ kind: "ok", msg: "Marked as Resolved ✅" });
       setMode("list");
+      reload();
       return { ok: true as const };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
@@ -267,7 +279,7 @@ export function useBlotterWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [draft.id]);
+  }, [draft.id, reload]);
 
   const buildAndPrint = useCallback(async () => {
     if (!draft.id) throw new Error("Save the record first before printing.");
@@ -292,11 +304,17 @@ export function useBlotterWorkstation() {
         entityType: "blotter",
         entityId: b.id,
         status: "ok",
-        title: "Blotter printed",
+        title: "Blotter Printed",
         subtitle: `${b.complainantName} vs ${b.respondentName} • ${b.locationText}`,
     });
 
   }, [draft.id]);
+
+  const openAiDrawer = useCallback(() => setIsAiDrawerOpen(true), []);
+  const closeAiDrawer = useCallback(() => setIsAiDrawerOpen(false), []);
+  const handleAiDraft = useCallback((newText: string) => {
+    setDraft(d => ({ ...d, narrative: newText }));
+  }, []);
 
   return {
     mode, setMode,
@@ -304,9 +322,9 @@ export function useBlotterWorkstation() {
     items, loading,
     banner, setBanner,
     busy,
+    canSave,
     selectedId,
     draft, setDraft,
-    more, setMore,
     reload,
     newBlotter,
     editBlotter,
@@ -314,5 +332,9 @@ export function useBlotterWorkstation() {
     save,
     resolve,
     buildAndPrint,
+    isAiDrawerOpen,
+    openAiDrawer,
+    closeAiDrawer,
+    handleAiDraft,
   };
 }

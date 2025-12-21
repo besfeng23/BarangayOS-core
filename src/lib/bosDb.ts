@@ -2,10 +2,9 @@
 
 import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
-import type { AISettings as AISettingsValue } from '@/hooks/useAISettings';
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 16;
+export const DB_VERSION = 17;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -262,12 +261,6 @@ export type AICache = {
   createdAt: number; // timestamp for TTL
 };
 
-export type AISettings = {
-  key: "aiSettings";
-  value: AISettingsValue;
-};
-
-
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
   residents!: Table<ResidentLocal, string>;
@@ -286,12 +279,11 @@ class BOSDexie extends Dexie {
   sync_queue!: Table<SyncQueueItem, number>;
   audit_queue!: Table<AuditRow, number>;
   ai_cache!: Table<AICache, string>;
-  ai_settings!: Table<AISettings, string>;
   drafts!: Table<DraftRow, string>;
 
   constructor() {
     super(DB_NAME);
-    this.version(16).stores({
+    this.version(17).stores({
       meta: "key",
       settings: "key",
       residents: "id, fullNameUpper, householdNoUpper, status, updatedAtISO, *searchTokens",
@@ -308,7 +300,6 @@ class BOSDexie extends Dexie {
       devices: "id, type, status, updatedAtISO, *searchTokens",
       clinic_queue: "id, status, createdAtISO, *searchTokens",
       ai_cache: "key, createdAt",
-      ai_settings: "key",
       drafts: "id, &[module+key], updatedAt",
     });
   }
