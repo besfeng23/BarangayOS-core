@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input as ShadInput } from "@/components/ui/input";
 import { exportAllData } from "@/lib/bos/export/exportService";
 import AIProfileTab from "@/features/settings/AIProfileTab";
+import DeviceSettingsTab from "@/features/settings/DeviceSettingsTab";
 
 // Mock data for user management UI
 const mockUsers = [
@@ -257,9 +258,10 @@ export default function SettingsPage() {
           <p className="text-zinc-400 mt-1">Configure your BarangayOS terminal.</p>
           
           <Tabs defaultValue="profile" className="mt-6">
-            <TabsList className="grid w-full grid-cols-4 max-w-lg">
+            <TabsList className="grid w-full grid-cols-5 max-w-lg">
               <TabsTrigger value="profile">Barangay Profile</TabsTrigger>
               <TabsTrigger value="ai">AI Profile</TabsTrigger>
+              <TabsTrigger value="devices">Devices</TabsTrigger>
               <TabsTrigger value="users">Users & Roles</TabsTrigger>
               <TabsTrigger value="system">System</TabsTrigger>
             </TabsList>
@@ -268,6 +270,9 @@ export default function SettingsPage() {
             </TabsContent>
              <TabsContent value="ai" className="mt-6">
               <AIProfileTab />
+            </TabsContent>
+            <TabsContent value="devices" className="mt-6">
+              <DeviceSettingsTab />
             </TabsContent>
             <TabsContent value="users" className="mt-6">
                <UsersAndRolesTab />

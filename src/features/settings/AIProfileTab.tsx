@@ -6,16 +6,6 @@ import { useToast } from "@/components/ui/toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
-  return (
-    <div className="space-y-1">
-      <label className="text-xs text-zinc-500 uppercase font-semibold ml-1">{label}</label>
-      {hint && <p className="text-xs text-zinc-600 ml-1">{hint}</p>}
-      {children}
-    </div>
-  );
-}
-
 export default function AIProfileTab() {
   const { settings, save, saving, loading } = useAISettings();
   const { toast } = useToast();

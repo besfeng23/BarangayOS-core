@@ -23,7 +23,7 @@ import {
 import type { SecurityDeviceLocal, DeviceType, DeviceStatus } from '@/lib/bosDb';
 import type { SecurityDraft } from '@/hooks/useSecurity';
 import { useToast } from '@/components/ui/toast';
-import { useSyncQueue } from '@/hooks/bos/useSyncQueue';
+import { useSettings } from '@/hooks/useSettings';
 
 interface AddDeviceModalProps {
   isOpen: boolean;
@@ -32,21 +32,13 @@ interface AddDeviceModalProps {
   device?: SecurityDeviceLocal | null;
 }
 
-const deviceTypes: DeviceType[] = [
-  'CCTV',
-  'NVR',
-  'BODY_CAM',
-  'DASH_CAM',
-  'PANIC_BUTTON',
-  'SIREN',
-  'LED_DISPLAY',
-  'PA_SYSTEM',
-];
-
 const deviceStatuses: DeviceStatus[] = ['ACTIVE', 'INACTIVE', 'MAINTENANCE'];
 
 export default function AddDeviceModal({ isOpen, onClose, onSave, device }: AddDeviceModalProps) {
   const { toast } = useToast();
+  const { settings } = useSettings();
+  const deviceTypes = settings.securityDeviceTypes || [];
+
   const [draft, setDraft] = useState<SecurityDraft>({
     id: device?.id,
     name: device?.name || '',

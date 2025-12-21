@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
 import { writeActivity } from "../activity/writeActivity";
+import type { DeviceType } from "@/lib/bosDb";
 
 export type BarangaySettings = {
   barangayName: string;
@@ -17,6 +18,8 @@ export type BarangaySettings = {
 
   controlPrefix: string;
   readOnlyMode: boolean;
+  
+  securityDeviceTypes: DeviceType[];
 
   updatedAtISO: string;
 };
@@ -32,6 +35,16 @@ const DEFAULTS: BarangaySettings = {
   trialDaysRemaining: 5,
   controlPrefix: "BRGY",
   readOnlyMode: false,
+  securityDeviceTypes: [
+    'CCTV',
+    'NVR',
+    'BODY_CAM',
+    'DASH_CAM',
+    'PANIC_BUTTON',
+    'SIREN',
+    'LED_DISPLAY',
+    'PA_SYSTEM',
+  ],
   updatedAtISO: new Date().toISOString(),
 };
 
@@ -82,7 +95,6 @@ export function useSettings() {
         title: "Settings updated",
         subtitle: `${payload.barangayName} • ${payload.barangayAddress}`,
       });
-
     } finally {
       setSaving(false);
     }
