@@ -1,9 +1,4 @@
 
-
-/* Use a more professional, government-style serif font for printing */
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
-
-/* Hide all elements on the page by default when printing */
 @media print {
   body * {
     visibility: hidden;
@@ -39,8 +34,8 @@
     border: none;
   }
 
-  /* Hide the 'Print Now' button when the page is printed */
+  /* Hide elements that shouldn't be printed */
   .no-print {
-    display: none;
+    display: none !important;
   }
 }

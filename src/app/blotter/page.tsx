@@ -9,6 +9,8 @@ import { SmartDateInput } from "@/components/ui/SmartDateInput";
 import AIAssistButton from "@/components/ai/AIAssistButton";
 import AIDrawer from "@/components/ai/AIDrawer";
 import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function BlotterPage() {
   const { enqueue } = useSyncQueue();
@@ -45,14 +47,14 @@ export default function BlotterPage() {
             )}
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
-              <input
-                className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
+              <Input
+                className="h-14 text-lg"
                 placeholder="Search name, location, or keyword…"
                 value={ws.query}
                 onChange={(e) => ws.setQuery(e.target.value)}
               />
               <button
-                className="mt-3 h-12 w-full rounded-xl bg-zinc-100 text-zinc-950 font-semibold"
+                className="mt-3 h-14 w-full rounded-xl bg-zinc-100 text-zinc-950 font-semibold text-lg"
                 onClick={ws.newBlotter}
               >
                 + File New Blotter
@@ -95,26 +97,26 @@ export default function BlotterPage() {
             </button>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
-              <div className="text-white text-sm font-semibold">
+              <div className="text-white text-lg font-semibold mb-4">
                 {ws.draft.id ? "Edit Blotter Record" : "New Blotter Record"}
               </div>
 
               {/* Required fields */}
-              <div className="mt-4 space-y-4">
+              <div className="space-y-6">
                 <SmartDateInput
                   labelText="Date of Incident *"
-                  helperText="When did the incident happen?"
                   value={ws.draft.incidentDateISO}
                   onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
                 />
 
                 <div>
-                  <label className="block text-slate-200 text-xs mb-1">Location of Incident *</label>
-                  <input
-                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
+                  <label className="block text-slate-200 text-sm mb-1 font-medium">Location of Incident *</label>
+                  <Input
+                    className="h-14 text-lg"
                     value={ws.draft.locationText}
                     onChange={(e) => ws.setDraft((d) => ({ ...d, locationText: e.target.value }))}
                   />
+                  {!ws.draft.locationText.trim() && ws.banner && <p className="text-red-400 text-sm mt-1">{ws.banner.msg}</p>}
                 </div>
                 
                 <ResidentPicker
@@ -135,14 +137,14 @@ export default function BlotterPage() {
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="block text-slate-200 text-xs">Narrative *</label>
-                    <AIAssistButton onClick={ws.openAiDrawer} disabled={!ws.draft.narrative.trim()} />
+                    <label className="block text-slate-200 text-sm font-medium">Narrative *</label>
                   </div>
-                  <textarea
-                    className="min-h-[120px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
+                  <Textarea
+                    className="min-h-[150px] text-lg"
                     value={ws.draft.narrative}
                     onChange={(e) => ws.setDraft((d) => ({ ...d, narrative: e.target.value }))}
                   />
+                  {!ws.draft.narrative.trim() && ws.banner && <p className="text-red-400 text-sm mt-1">{ws.banner.msg}</p>}
                 </div>
 
                 {ws.banner && ws.banner.kind === "error" && (
@@ -154,7 +156,7 @@ export default function BlotterPage() {
 
                 <button
                   className={[
-                    "h-12 w-full rounded-xl font-semibold flex items-center justify-center",
+                    "h-14 w-full rounded-xl font-semibold text-lg flex items-center justify-center",
                     ws.busy || !ws.canSave ? "bg-zinc-800 text-slate-200 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
                   ].join(" ")}
                   disabled={ws.busy || !ws.canSave}
@@ -166,7 +168,7 @@ export default function BlotterPage() {
 
                 <button
                   className={[
-                    "h-12 w-full rounded-xl font-semibold border border-zinc-800",
+                    "h-14 w-full rounded-xl font-semibold border border-zinc-800 text-lg",
                     ws.busy || !ws.draft.id ? "bg-zinc-900/40 text-slate-200 cursor-not-allowed" : "bg-zinc-950 text-white"
                   ].join(" ")}
                   disabled={ws.busy || !ws.draft.id}
@@ -177,7 +179,7 @@ export default function BlotterPage() {
 
                 <button
                   className={[
-                    "h-12 w-full rounded-xl font-semibold border border-zinc-800",
+                    "h-14 w-full rounded-xl font-semibold border border-zinc-800 text-lg",
                     !ws.draft.id ? "bg-zinc-900/40 text-slate-200 cursor-not-allowed" : "bg-zinc-950 text-white"
                   ].join(" ")}
                   disabled={!ws.draft.id}

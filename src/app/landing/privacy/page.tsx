@@ -10,21 +10,21 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <LegalShell title="Data Privacy & Sovereignty Policy">
-        <section className="prose prose-invert max-w-none">
-            <p className="text-xs uppercase tracking-widest text-gray-500 mb-4">Effective Date: January 1, 2024</p>
+        <section className="prose prose-sm md:prose-base prose-invert max-w-none">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground/80 mb-4">Effective Date: January 1, 2024</p>
             
-            <div className="bg-gray-900 border border-white/10 p-6 rounded-xl mb-6">
+            <div className="bg-card border p-6 rounded-xl mb-6">
                 The Barangay/LGU is the Personal Information Controller (PIC). BarangayOS is the Personal Information Processor (PIP) acting only under the LGU’s instructions.
             </div>
 
-            <h3 className="text-white font-bold mt-6">1. Data Ownership (LGU Sovereignty)</h3>
-            <p className="text-gray-400 text-sm">
+            <h3 className="text-foreground font-bold mt-6">1. Data Ownership (LGU Sovereignty)</h3>
+            <p className="text-muted-foreground text-base">
                 BarangayOS acknowledges that all data encoded into this terminal is the <strong>sole property of the Local Government Unit (Barangay)</strong>. 
                 BarangayOS acts strictly as a Service Provider/Data Processor. We do not sell, aggregate, or mine constituent data for advertising.
             </p>
 
-            <h3 className="text-white font-bold mt-6">2. Compliance with R.A. 10173</h3>
-            <div className="text-gray-400 text-sm">
+            <h3 className="text-foreground font-bold mt-6">2. Compliance with R.A. 10173</h3>
+            <div className="text-muted-foreground text-base">
                 <p>
                     This system is designed to comply with the <strong>Data Privacy Act of 2012</strong>.
                 </p>
@@ -35,8 +35,8 @@ export default function PrivacyPage() {
                 </ul>
             </div>
 
-            <h3 className="text-white font-bold mt-6">3. Offline Storage</h3>
-            <p className="text-gray-400 text-sm">
+            <h3 className="text-foreground font-bold mt-6">3. Offline Storage</h3>
+            <p className="text-muted-foreground text-base">
                 During offline operation, data is encrypted locally on the terminal's hard drive. Syncing to the cloud occurs over an encrypted (TLS 1.2+) connection only when internet is available.
             </p>
         </section>
