@@ -127,21 +127,21 @@ export default function EmangoHomePage() {
                         description="Search all wallet activities."
                    />
                    <ActionButton 
-                        href="#" 
+                        href="/emango/reports" 
                         icon={BarChart3} 
                         title="Reports" 
                         description="View summaries and export data."
                         disabled={true}
                    />
                     <ActionButton 
-                        href="#" 
+                        href="/emango/audit" 
                         icon={BookLock} 
                         title="Audit Logs" 
                         description="Review detailed activity logs."
                         disabled={true}
                    />
                    <ActionButton 
-                        href="#" 
+                        href="/emango/settings" 
                         icon={Settings} 
                         title="Settings" 
                         description="Configure fees, roles, and limits."

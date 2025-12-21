@@ -11,7 +11,7 @@ export default function HistoryPage() {
   const transactions = useLiveQuery(() => 
     db.activity_log
       .where('type')
-      .equals('PAYMENT_COLLECTED')
+      .anyOf('PAYMENT_COLLECTED', 'PAYMENT_DISBURSED')
       .reverse()
       .sortBy('occurredAtISO'),
     []
