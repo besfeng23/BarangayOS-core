@@ -52,7 +52,9 @@ export default function EmangoHomePage() {
   }, [today], [{ collections: 0, transactions: 0 }, 0]);
 
   const { collections, transactions } = useMemo(() => {
-      if (!stats || !stats[0]) return { collections: 0, transactions: 0 };
+      if (!stats || !stats[0] || !Array.isArray(stats[0])) {
+          return { collections: 0, transactions: 0 };
+      }
       const collectionsToday = stats[0].reduce((sum, tx) => {
           const amountMatch = tx.subtitle.match(/₱([\d,.]+)/);
           if (amountMatch) {
@@ -63,7 +65,7 @@ export default function EmangoHomePage() {
       return { collections: collectionsToday, transactions: stats[0].length };
   }, [stats]);
   
-  const pendingDisbursements = stats ? stats[1] : 0;
+  const pendingDisbursements = stats ? (stats[1] || 0) : 0;
 
 
   return (
