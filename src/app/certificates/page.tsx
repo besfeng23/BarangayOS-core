@@ -1,49 +1,36 @@
 
 "use client";
 
-import React, { useMemo, useState } from "react";
-import PrintFrame from "@/components/print/PrintFrame";
-import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
-import { useResidents } from "@/hooks/useResidents";
-import { useIssueCertificate, CertType } from "@/hooks/certificates/useIssueCertificate";
+import React, { useState } from "react";
+import { useIssueCertificate } from "@/hooks/certificates/useIssueCertificate";
 import AIAssistButton from "@/components/ai/AIAssistButton";
 import AIDrawer from "@/components/ai/AIDrawer";
 import { Loader2 } from "lucide-react";
 import { ResidentPicker } from "@/components/shared/ResidentPicker";
-import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 
 
 export default function CertificatesPage() {
   const { enqueue } = useSyncQueue();
-  const { issueAndPreparePrint, busy: isIssuing, banner } = useIssueCertificate();
-
-  const [selectedResident, setSelectedResident] = useState<ResidentPickerValue | undefined>();
-  const [certType, setCertType] = useState<CertType>("Barangay Clearance");
-  const [purpose, setPurpose] = useState("");
+  const {
+    draft,
+    setDraft,
+    issueAndPreparePrint,
+    busy: isIssuing,
+    banner,
+    canIssue,
+  } = useIssueCertificate(enqueue);
 
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
 
-  const canIssue = useMemo(() => 
-    !!(selectedResident?.residentId && purpose.trim() && !isIssuing),
-    [selectedResident, purpose, isIssuing]
-  );
-
   const onIssue = async () => {
-    if (!selectedResident?.residentId || !selectedResident?.residentNameSnapshot) return;
-
-    await issueAndPreparePrint({
-      residentId: selectedResident.residentId,
-      residentName: selectedResident.residentNameSnapshot,
-      certType,
-      purpose,
-      enqueue,
-    });
+    await issueAndPreparePrint();
   };
   
   const handleAiDraft = (newText: string) => {
-    setPurpose(newText);
+    setDraft(d => ({...d, purpose: newText}));
   };
 
   return (
@@ -72,12 +59,12 @@ export default function CertificatesPage() {
           
           <ResidentPicker 
             label="1. Select a Resident"
-            value={selectedResident}
-            onChange={setSelectedResident}
+            value={draft.resident}
+            onChange={(val) => setDraft(d => ({...d, resident: val}))}
             allowManual={false}
             errorMessage="A valid resident must be selected."
           />
-          {!selectedResident?.residentId && (
+          {!draft.resident?.residentId && (
              <p className="text-sm text-yellow-400 -mt-2 ml-1">Select a resident to continue.</p>
           )}
 
@@ -85,7 +72,7 @@ export default function CertificatesPage() {
             <h2 className="text-white text-sm font-semibold">2. Certificate Details</h2>
             <div className="space-y-4 mt-2">
                <label className="block text-slate-200 text-xs mt-2 mb-1">Certificate Type</label>
-                <Select onValueChange={(e) => setCertType(e as any)} value={certType}>
+                <Select onValueChange={(e) => setDraft(d => ({...d, certType: e as any}))} value={draft.certType}>
                     <SelectTrigger className="h-12 text-lg bg-zinc-950 border-zinc-700">
                         <SelectValue placeholder="Select type..." />
                     </SelectTrigger>
@@ -99,15 +86,15 @@ export default function CertificatesPage() {
               <div>
                 <div className="flex justify-between items-center mt-3 mb-1">
                   <label className="block text-slate-200 text-xs">Purpose *</label>
-                  <AIAssistButton onClick={() => setIsAiDrawerOpen(true)} disabled={!purpose.trim()} />
+                  <AIAssistButton onClick={() => setIsAiDrawerOpen(true)} disabled={!draft.purpose.trim()} />
                 </div>
                 <Input
                   placeholder="e.g., For Local Employment"
-                  value={purpose}
-                  onChange={(e) => setPurpose(e.target.value)}
+                  value={draft.purpose}
+                  onChange={(e) => setDraft(d => ({...d, purpose: e.target.value}))}
                    className="h-12 text-lg bg-zinc-950 border-zinc-700"
                 />
-                 {!purpose.trim() && (
+                 {!draft.purpose.trim() && (
                     <p className="text-sm text-yellow-400 mt-2">Enter a purpose to continue.</p>
                  )}
               </div>
@@ -136,7 +123,7 @@ export default function CertificatesPage() {
       <AIDrawer
         isOpen={isAiDrawerOpen}
         onClose={() => setIsAiDrawerOpen(false)}
-        originalText={purpose}
+        originalText={draft.purpose}
         onDraft={handleAiDraft}
       />
     </>

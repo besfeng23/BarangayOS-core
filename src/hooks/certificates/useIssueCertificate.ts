@@ -1,4 +1,5 @@
 
+
 import { useCallback, useMemo, useState } from "react";
 import { db, CertificateIssuanceLocal } from "@/lib/bosDb";
 import { toTokens } from "@/lib/bos/searchTokens";
@@ -7,6 +8,7 @@ import { useSettings } from "@/lib/bos/settings/useSettings";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
+import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 
 function uuid() {
@@ -28,31 +30,41 @@ function makeControlNo(prefix: string) {
 
 export type CertType = "Barangay Clearance" | "Certificate of Residency" | "Indigency" | "Business Clearance";
 
-export function useIssueCertificate() {
+type Draft = {
+    resident?: ResidentPickerValue;
+    certType: CertType;
+    purpose: string;
+};
+
+export function useIssueCertificate(enqueue: (job: { type: string; payload: any; }) => Promise<void>) {
   const { settings } = useSettings();
 
-  const [printingHTML, setPrintingHTML] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [banner, setBanner] = useState<{ kind: "ok" | "error"; msg: string } | null>(null);
 
+  const [draft, setDraft] = useState<Draft>({
+      certType: "Barangay Clearance",
+      purpose: "",
+  });
+
+  const canIssue = useMemo(() => 
+    !!(draft.resident?.residentId && draft.purpose.trim() && !busy),
+    [draft.resident, draft.purpose, busy]
+  );
+
   const clearBanner = useCallback(() => setBanner(null), []);
 
-  const issueAndPreparePrint = useCallback(async (args: {
-    residentId: string;
-    residentName: string;
-    certType: CertType;
-    purpose: string;
-    enqueue: (job: { type: string; payload: any }) => Promise<void>;
-  }) => {
+  const issueAndPreparePrint = useCallback(async () => {
     setBusy(true);
     setBanner(null);
     let issuance: CertificateIssuanceLocal | null = null;
     try {
-      const { residentId, residentName, certType, purpose, enqueue } = args;
+      if (!draft.resident?.residentId || !draft.resident.residentNameSnapshot) throw new Error("Select a resident.");
+      if (!draft.certType) throw new Error("Select certificate type.");
+      if (!draft.purpose?.trim()) throw new Error("Purpose is required.");
 
-      if (!residentId) throw new Error("Select a resident.");
-      if (!certType) throw new Error("Select certificate type.");
-      if (!purpose?.trim()) throw new Error("Purpose is required.");
+      const { resident, certType, purpose } = draft;
+      const { residentId, residentNameSnapshot: residentName } = resident;
 
       const nowISO = new Date().toISOString();
       const issuanceId = uuid();
@@ -106,6 +118,9 @@ export function useIssueCertificate() {
 
       // 6) perform immediate print
       await performPrintJob(printJobId);
+      
+      // 7) Clear form on success
+      setDraft({ certType: "Barangay Clearance", purpose: "" });
 
       setBanner({ kind: "ok", msg: "Saved & queued ✅ Printing…" });
       return { ok: true as const, issuanceId };
@@ -116,18 +131,15 @@ export function useIssueCertificate() {
     } finally {
       setBusy(false);
     }
-  }, [settings]);
-
-  const afterPrint = useCallback(() => {
-    // This is now handled by performPrintJob
-  }, []);
+  }, [settings, draft, enqueue]);
 
   return useMemo(() => ({
     busy,
     banner,
-    printingHTML: null, // PrintFrame is no longer needed on this page
+    draft,
+    setDraft,
+    canIssue,
     issueAndPreparePrint,
-    afterPrint,
     clearBanner,
-  }), [busy, banner, issueAndPreparePrint, afterPrint, clearBanner]);
+  }), [busy, banner, draft, setDraft, canIssue, issueAndPreparePrint, clearBanner]);
 }
