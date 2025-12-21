@@ -1,4 +1,3 @@
-
 import React from 'react';
 import SystemRail from '@/components/shell/SystemRail';
 import BottomNav from './BottomNav';
