@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -6,6 +5,8 @@ import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBusinessPermitsWorkstation } from "@/hooks/permits/useBusinessPermitsWorkstation";
 import { ResidentPicker } from "@/components/shared/ResidentPicker";
 import { Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/button";
 
 export default function BusinessPermitsPage() {
   const { enqueue } = useSyncQueue();
@@ -53,7 +54,15 @@ export default function BusinessPermitsPage() {
 
             <div className="mt-4 space-y-2">
               {ws.items && ws.items.length === 0 && !ws.loading ? (
-                <div className="text-zinc-400 text-sm p-4 text-center border-2 border-dashed border-zinc-800 rounded-2xl">No businesses found.</div>
+                <div className="pt-8">
+                    <EmptyState
+                        type={ws.query ? 'no-results' : 'no-data'}
+                        title={ws.query ? 'No Matches Found' : 'No Businesses Registered'}
+                        body={ws.query ? 'Try a different search term.' : 'Register the first business to get started.'}
+                        actionText={ws.query ? 'Clear Search' : 'Register Business'}
+                        onAction={ws.query ? () => ws.setQuery('') : ws.newBusiness}
+                    />
+                </div>
               ) : (
                 ws.items?.map((b) => (
                   <button
@@ -147,25 +156,23 @@ export default function BusinessPermitsPage() {
                   </div>
                 )}
 
-                <button
-                  className={[
-                    "h-12 w-full rounded-xl font-semibold flex items-center justify-center",
-                    ws.busy || !ws.canSaveBusiness ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
-                  ].join(" ")}
+                <Button
+                  className="h-12 w-full font-semibold"
                   disabled={ws.busy || !ws.canSaveBusiness}
                   onClick={() => ws.saveBusiness(enqueue)}
                 >
                   {ws.busy ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
                   {ws.busy ? "Saving…" : "Save Business"}
-                </button>
+                </Button>
 
                 {ws.bizDraft.id && (
-                  <button
-                    className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100 font-semibold"
+                  <Button
+                    variant="secondary"
+                    className="h-12 w-full"
                     onClick={() => ws.startRenew(ws.bizDraft.id!)}
                   >
                     Renew Permit
-                  </button>
+                  </Button>
                 )}
 
                 <div className="text-xs text-zinc-400 text-center">
@@ -179,15 +186,20 @@ export default function BusinessPermitsPage() {
         {/* RENEW FORM */}
         {ws.mode === "renewForm" && (
           <>
-            <button
-              className="mb-3 h-12 rounded-xl bg-zinc-900/40 border border-zinc-800 text-zinc-100 px-4 font-semibold"
+            <Button
+              variant="outline"
+              className="mb-3 h-12"
               onClick={ws.backToList}
             >
               ← Back to List
-            </button>
+            </Button>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
               <div className="text-zinc-100 text-sm font-semibold">Renew Permit</div>
+              <p className="text-sm text-muted-foreground mt-1">
+                For business: <span className="font-bold">{ws.bizDraft.businessName}</span>
+              </p>
+
 
               <div className="mt-4 space-y-4">
                 <div>
@@ -228,17 +240,14 @@ export default function BusinessPermitsPage() {
                   />
                 </div>
 
-                <button
-                  className={[
-                    "h-12 w-full rounded-xl font-semibold flex items-center justify-center",
-                    ws.busy || !ws.canRenew ? "bg-zinc-800 text-zinc-400 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
-                  ].join(" ")}
+                <Button
+                  className="h-12 w-full font-semibold"
                   disabled={ws.busy || !ws.canRenew}
                   onClick={() => ws.renewAndPrint(enqueue)}
                 >
                   {ws.busy ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
                   {ws.busy ? "Renewing…" : "Renew & Print"}
-                </button>
+                </Button>
 
                 <div className="text-xs text-zinc-400 text-center">
                   Renewal is saved locally, queued for sync, and printed.

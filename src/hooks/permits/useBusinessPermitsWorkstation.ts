@@ -191,16 +191,15 @@ export function useBusinessPermitsWorkstation() {
         entityType: "business",
         entityId: rec.id,
         status: "ok",
-        title: existing ? "Business updated" : "Business created",
+        title: existing ? "Business Updated" : "Business Registered",
         subtitle: `${rec.businessName} • Owner: ${rec.ownerName}`,
       });
 
 
       await enqueue({ type: "BUSINESS_UPSERT", payload: rec });
 
-      setBanner({ kind: "ok", msg: "Saved & queued ✅" });
+      setBanner({ kind: "ok", msg: "Saved & queued for sync ✅" });
       setMode("list");
-      reload();
       return { ok: true as const, id: rec.id };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
@@ -208,7 +207,7 @@ export function useBusinessPermitsWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [bizDraft, validateBiz, reload]);
+  }, [bizDraft, validateBiz]);
 
   const startRenew = useCallback(async (id: string) => {
     const b = await db.businesses.get(id);
@@ -270,7 +269,7 @@ export function useBusinessPermitsWorkstation() {
         entityType: "permit_issuance",
         entityId: issuance.id,
         status: "ok",
-        title: "Business permit renewed",
+        title: "Business Permit Renewed",
         subtitle: `${issuance.businessName} • ${issuance.year} • ${issuance.controlNo}`,
         details: { businessId: issuance.businessId, year: issuance.year, controlNo: issuance.controlNo }
       });
@@ -291,9 +290,8 @@ export function useBusinessPermitsWorkstation() {
 
       await performPrintJob(printJobId);
 
-      setBanner({ kind: "ok", msg: "Renewed & queued ✅ Printing…" });
+      setBanner({ kind: "ok", msg: "Renewed & queued for sync ✅. Printing..." });
       setMode("list");
-      reload();
       return { ok: true as const, issuanceId, issuance: issuance };
     } catch (e: any) {
       setBanner({ kind: "error", msg: e?.message ?? String(e) });
@@ -301,7 +299,7 @@ export function useBusinessPermitsWorkstation() {
     } finally {
       setBusy(false);
     }
-  }, [selectedBusinessId, renewDraft, settings, reload]);
+  }, [selectedBusinessId, renewDraft, settings]);
 
   const afterPrint = useCallback(() => {
     setPrintHTML(null);
