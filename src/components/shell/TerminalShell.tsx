@@ -1,6 +1,6 @@
 
 import React from 'react';
-import SystemRail from '@/components/system/SystemRail';
+import SystemRail from '@/components/shell/SystemRail';
 import BottomNav from './BottomNav';
 
 export default function TerminalShell({ children, onHelpClick }: { children: React.ReactNode, onHelpClick?: () => void }) {
