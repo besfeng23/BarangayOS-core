@@ -71,6 +71,8 @@ export default function ResidentProfilePage() {
     return `${first}${last}`.toUpperCase() || 'N/A';
   }
 
+  const residentData = resident as any;
+
   return (
       <>
         <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
@@ -86,19 +88,19 @@ export default function ResidentProfilePage() {
 
               <div className="flex flex-col sm:flex-row gap-5 items-start">
                 <div className="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 font-bold text-xl">
-                  {getInitials((resident as any).firstName, (resident as any).lastName)}
+                  {getInitials(residentData.firstName, residentData.lastName)}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <h1 className="text-3xl font-bold text-zinc-100 truncate">
-                    {(resident as any).lastName.toUpperCase()}, {(resident as any).firstName}
+                    {(residentData.lastName || '').toUpperCase()}, {residentData.firstName || ''}
                   </h1>
-                  <SyncStatusBadge residentId={(resident as any).id} />
+                  <SyncStatusBadge residentId={residentData.id} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 text-zinc-400">
-                    <p><span className="text-zinc-100">ID:</span> <span className="font-mono text-zinc-400">{(resident as any).id}</span></p>
-                    <p><span className="text-zinc-100">Status:</span> {(resident as any).status}</p>
-                    <p><span className="text-zinc-100">Address:</span> {(resident as any).purok}, {(resident as any).addressLine1}</p>
-                    <p><span className="text-zinc-100">Demographics:</span> {calcAge((resident as any).birthdate)} y/o • {(resident as any).sex} • {(resident as any).civilStatus}</p>
+                    <p><span className="text-zinc-100">ID:</span> <span className="font-mono text-zinc-400">{residentData.id}</span></p>
+                    <p><span className="text-zinc-100">Status:</span> {residentData.status}</p>
+                    <p><span className="text-zinc-100">Address:</span> {residentData.purok}, {residentData.addressLine1}</p>
+                    <p><span className="text-zinc-100">Demographics:</span> {calcAge(residentData.birthdate)} y/o • {residentData.sex} • {residentData.civilStatus}</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
