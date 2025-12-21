@@ -1,17 +1,15 @@
 
 "use client";
-import React, { useEffect, useState } from "react";
-import { isReadOnly, useSettings } from "@/lib/bos/settings/useSettings";
-import { useToast } from "@/components/ui/toast";
+import React, { useState } from "react";
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input as ShadInput } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 import { exportAllData } from "@/lib/bos/export/exportService";
+import BarangayProfileTab from "@/features/settings/BarangayProfileTab";
 import AIProfileTab from "@/features/settings/AIProfileTab";
 import DeviceSettingsTab from "@/features/settings/DeviceSettingsTab";
 
@@ -49,7 +47,7 @@ const EditUserModal = ({ user, isOpen, onClose }: { user: MockUser | null, isOpe
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
-            <Label htmlFor="role-select">Role</Label>
+            <label htmlFor="role-select" className="text-sm font-medium">Role</label>
             <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
               <SelectTrigger id="role-select" className="h-12 text-lg">
                 <SelectValue placeholder="Select a role" />
@@ -64,8 +62,8 @@ const EditUserModal = ({ user, isOpen, onClose }: { user: MockUser | null, isOpe
             </Select>
           </div>
           <div>
-            <Label htmlFor="pin-reset">Reset PIN</Label>
-            <ShadInput id="pin-reset" type="password" placeholder="Enter new 4-digit PIN" value={pin} onChange={(e) => setPin(e.target.value)} className="h-12 text-lg" />
+            <label htmlFor="pin-reset" className="text-sm font-medium">Reset PIN</label>
+            <input id="pin-reset" type="password" placeholder="Enter new 4-digit PIN" value={pin} onChange={(e) => setPin(e.target.value)} className="w-full h-12 text-lg px-3 bg-zinc-950 border border-zinc-700 rounded-md" />
             <p className="text-xs text-zinc-400 mt-1">Leave blank to keep current PIN.</p>
           </div>
         </div>
@@ -78,99 +76,6 @@ const EditUserModal = ({ user, isOpen, onClose }: { user: MockUser | null, isOpe
   );
 };
 
-
-const BarangayProfileTab = () => {
-  const { settings, save, saving, loading } = useSettings();
-  const { toast } = useToast();
-  const [form, setForm] = useState(settings);
-
-  useEffect(() => {
-    if (!loading) {
-      setForm(settings);
-    }
-  }, [settings, loading]);
-
-  const readOnly = isReadOnly(settings);
-
-  const handleSave = async () => {
-    const trimmedForm = {
-      ...form,
-      barangayName: form.barangayName.trim(),
-      barangayAddress: form.barangayAddress.trim(),
-      punongBarangay: form.punongBarangay.trim(),
-      secretaryName: form.secretaryName.trim(),
-      trialDaysRemaining: Math.max(0, Math.min(365, form.trialDaysRemaining)),
-      controlPrefix: (form.controlPrefix || "BRGY").trim().toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 12)
-    };
-    
-    await save(trimmedForm);
-    toast({ title: "Settings saved (offline-safe)" });
-  };
-
-  if (loading) {
-    return <div className="p-6 text-center text-zinc-400">Loading settings...</div>;
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Barangay Name">
-          <Input value={form.barangayName} onChange={(v: string) => setForm((p) => ({ ...p, barangayName: v }))} />
-        </Field>
-        <Field label="Barangay Address">
-          <Input value={form.barangayAddress} onChange={(v: string) => setForm((p) => ({ ...p, barangayAddress: v }))} />
-        </Field>
-        <Field label="Punong Barangay">
-          <Input value={form.punongBarangay} onChange={(v: string) => setForm((p) => ({ ...p, punongBarangay: v }))} />
-        </Field>
-        <Field label="Secretary Name">
-          <Input value={form.secretaryName} onChange={(v: string) => setForm((p) => ({ ...p, secretaryName: v }))} />
-        </Field>
-        <Field label="Control Prefix" hint="For document IDs">
-          <Input value={form.controlPrefix} onChange={(v: string) => setForm((p) => ({ ...p, controlPrefix: v }))} />
-        </Field>
-        <Field label="System Mode">
-          <select
-            className={baseInput}
-            value={String(form.readOnlyMode)}
-            onChange={(e) => setForm((p) => ({ ...p, readOnlyMode: e.target.value === "true" }))}
-          >
-            <option value="false">Full Access</option>
-            <option value="true">Read-Only</option>
-          </select>
-        </Field>
-        <Field label="Trial Account">
-          <select
-            className={baseInput}
-            value={String(form.trialEnabled)}
-            onChange={(e) => setForm((p) => ({ ...p, trialEnabled: e.target.value === "true" }))}
-          >
-            <option value="true">Enabled</option>
-            <option value="false">Disabled</option>
-          </select>
-        </Field>
-        <Field label="Days Remaining">
-          <Input
-            type="number"
-            value={String(form.trialDaysRemaining)}
-            onChange={(v: string) => setForm((p) => ({ ...p, trialDaysRemaining: Number(v || 0) }))}
-            disabled={!form.trialEnabled}
-          />
-        </Field>
-      </div>
-
-      <button
-        onClick={handleSave}
-        disabled={saving || readOnly}
-        className="w-full mt-6 py-4 rounded-2xl bg-zinc-100 text-zinc-950 font-extrabold text-lg min-h-[48px] disabled:opacity-50
-          focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
-      >
-        {saving ? "Saving..." : "Save Settings"}
-      </button>
-      {readOnly && <p className="text-center text-amber-400 text-xs mt-2">Read-only mode. Changes cannot be saved.</p>}
-    </div>
-  );
-};
 
 const UsersAndRolesTab = () => {
   const [editingUser, setEditingUser] = useState<MockUser | null>(null);
@@ -284,21 +189,4 @@ export default function SettingsPage() {
         </div>
       </div>
   );
-}
-
-const baseInput =
-  "w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl text-zinc-100 min-h-[48px] disabled:opacity-50 disabled:bg-zinc-900/50 " +
-  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";
-
-function Field({ label, children, hint }: any) {
-  return (
-    <div className="space-y-1">
-      <label className="text-xs text-zinc-500 uppercase font-semibold ml-1">{label}</label>
-       {hint && <p className="text-xs text-zinc-600 ml-1">{hint}</p>}
-      {children}
-    </div>
-  );
-}
-function Input({ value, onChange, type = "text", ...props }: any) {
-  return <input type={type} className={baseInput} value={value} onChange={(e) => onChange(e.target.value)} {...props} />;
 }
