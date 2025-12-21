@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Send, Users } from 'lucide-react';
+import { ArrowLeft, Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ResidentPicker, ResidentPickerValue } from '@/components/shared/ResidentPicker';
 import { useState } from 'react';
@@ -14,22 +14,6 @@ import { useRouter } from 'next/navigation';
 import { writeActivity } from '@/lib/bos/activity/writeActivity';
 import { Loader2 } from 'lucide-react';
 
-const ActionButton = ({ href, icon: Icon, title, description, disabled = false }: { href?: string, icon: React.ElementType, title: string, description: string, disabled?: boolean, onClick?: () => void }) => {
-    const content = (
-        <div className={`p-4 rounded-lg transition-colors flex items-center gap-4 h-full ${disabled ? 'bg-zinc-800/20 opacity-50 cursor-not-allowed' : 'bg-zinc-800/50 hover:bg-zinc-800 cursor-pointer'}`}>
-            <div className={`p-3 rounded-md ${disabled ? 'bg-zinc-700/20' : 'bg-zinc-700/50'}`}>
-                <Icon className={`h-6 w-6 ${disabled ? 'text-zinc-500' : 'text-blue-400'}`} />
-            </div>
-            <div>
-                <h3 className={`font-semibold text-lg ${disabled ? 'text-zinc-500' : ''}`}>{title}</h3>
-                <p className={`text-sm ${disabled ? 'text-zinc-600' : 'text-zinc-400'}`}>{description}</p>
-            </div>
-        </div>
-    );
-    if(href) return disabled ? <div>{content}</div> : <Link href={href} passHref>{content}</Link>;
-    return <button onClick={disabled ? undefined : () => {}} className="w-full text-left">{content}</button>
-};
-
 export default function SendPage() {
   const [resident, setResident] = useState<ResidentPickerValue | undefined>(undefined);
   const [amount, setAmount] = useState('');
@@ -38,7 +22,7 @@ export default function SendPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const canDisburse = resident && amount && parseFloat(amount) > 0 && purpose;
+  const canDisburse = resident?.residentId && amount && parseFloat(amount) > 0 && purpose;
 
   const handleDisburse = async () => {
     if (!canDisburse) return;
@@ -50,7 +34,7 @@ export default function SendPage() {
             entityId: `disburse-${Date.now()}`,
             status: 'ok',
             title: 'Funds Disbursed',
-            subtitle: `₱${parseFloat(amount).toFixed(2)} to ${resident.mode === 'resident' ? resident.residentNameSnapshot : resident.manualName} for ${purpose}`,
+            subtitle: `₱${parseFloat(amount).toFixed(2)} to ${resident.residentNameSnapshot} for ${purpose}`,
         } as any);
 
         toast({
@@ -86,10 +70,10 @@ export default function SendPage() {
         <Card className="max-w-4xl mx-auto">
             <CardHeader>
                 <CardTitle>Send to Single Resident</CardTitle>
-                <CardDescription>Manually disburse funds to an individual.</CardDescription>
+                <CardDescription>Manually disburse funds to an individual. This will be queued for processing.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <ResidentPicker label="Recipient" value={resident} onChange={setResident} allowManual={true} />
+                <ResidentPicker label="Recipient" value={resident} onChange={setResident} allowManual={false} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">

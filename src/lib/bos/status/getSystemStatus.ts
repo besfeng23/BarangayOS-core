@@ -1,4 +1,6 @@
 
+'use client';
+
 import { db, DB_VERSION } from '@/lib/bosDb';
 import { getRecentErrors } from '@/lib/bos/errors/errorBus';
 import { getSettingsSnapshot } from '@/lib/bos/print/getSettingsSnapshot';
@@ -71,6 +73,8 @@ const EXPECTED_STORES = [
   'meta',
   'sync_queue',
   'audit_queue',
+  'devices',
+  'clinic_queue'
 ];
 
 export async function getSystemStatus(): Promise<SystemStatus> {
@@ -131,10 +135,14 @@ export async function getSystemStatus(): Promise<SystemStatus> {
     }
   }
   if (storeExists('meta')) {
-      const lastSyncRow = await db.meta.get('lastSyncAt');
-      if(lastSyncRow) syncStatus.lastSyncAt = new Date(lastSyncRow.value).toISOString();
-      const lastErrorRow = await db.meta.get('lastSyncError');
-      if(lastErrorRow) syncStatus.lastError = lastErrorRow.value;
+      try {
+        const lastSyncRow = await db.meta.get('lastSyncAt');
+        if(lastSyncRow) syncStatus.lastSyncAt = new Date(lastSyncRow.value).toISOString();
+        const lastErrorRow = await db.meta.get('lastSyncError');
+        if(lastErrorRow) syncStatus.lastError = lastErrorRow.value;
+      } catch(e) {
+          console.warn("Could not read from meta table", e);
+      }
   }
 
 
@@ -143,13 +151,13 @@ export async function getSystemStatus(): Promise<SystemStatus> {
   
   // --- Module Status ---
   const modules: ModuleStatus[] = [
-      { name: 'Residents', route: '/residents', state: storeExists('residents') ? 'OK' : 'BROKEN', notes: [], quickActions: [] },
-      { name: 'Certificates', route: '/certificates', state: storeExists('certificate_issuances') && storeExists('print_jobs') ? 'OK' : 'BROKEN', notes: [], quickActions: [] },
-      { name: 'Blotter', route: '/blotter', state: storeExists('blotters') ? 'OK' : 'BROKEN', notes: [], quickActions: [] },
-      { name: 'Business Permits', route: '/permits', state: storeExists('businesses') && storeExists('permit_issuances') ? 'OK' : 'BROKEN', notes: [], quickActions: [] },
-      { name: 'Print Center', route: '/print', state: storeExists('print_jobs') ? 'OK' : 'BROKEN', notes: [], quickActions: [] },
-      { name: 'Activity History', route: '/history', state: storeExists('activity_log') ? 'OK' : 'BROKEN', notes: [], quickActions: [] },
-      { name: 'Settings', route: '/settings', state: storeExists('settings') ? 'OK' : 'BROKEN', notes: [], quickActions: [] },
+      { name: 'Residents', route: '/residents', state: storeExists('residents') ? 'OK' : 'BROKEN', notes: [!storeExists('residents') ? "Resident table missing." : ""], quickActions: [] },
+      { name: 'Certificates', route: '/certificates', state: storeExists('certificate_issuances') && storeExists('print_jobs') ? 'OK' : 'BROKEN', notes: [!storeExists('certificate_issuances') ? "Certificate table missing." : ""], quickActions: [] },
+      { name: 'Blotter', route: '/blotter', state: storeExists('blotters') ? 'OK' : 'BROKEN', notes: [!storeExists('blotters') ? "Blotter table missing." : ""], quickActions: [] },
+      { name: 'Business Permits', route: '/permits', state: storeExists('businesses') && storeExists('permit_issuances') ? 'OK' : 'BROKEN', notes: [!storeExists('businesses') ? "Business table missing." : ""], quickActions: [] },
+      { name: 'Print Center', route: '/print', state: storeExists('print_jobs') ? 'OK' : 'BROKEN', notes: [!storeExists('print_jobs') ? "Print queue missing." : ""], quickActions: [] },
+      { name: 'Activity History', route: '/history', state: storeExists('activity_log') ? 'OK' : 'BROKEN', notes: [!storeExists('activity_log') ? "Activity log missing." : ""], quickActions: [] },
+      { name: 'Settings', route: '/settings', state: storeExists('settings') ? 'OK' : 'BROKEN', notes: [!storeExists('settings') ? "Settings table missing." : ""], quickActions: [] },
   ];
 
   return {
@@ -157,7 +165,7 @@ export async function getSystemStatus(): Promise<SystemStatus> {
     app: {
       nextVersion: process.env.NEXT_PUBLIC_VERSION || null,
       nodeEnv: process.env.NODE_ENV || null,
-      buildId: process.env.BUILD_ID || null,
+      buildId: process.env.NEXT_PUBLIC_BUILD_ID || null,
     },
     modules,
     dexie: dexieStatus,

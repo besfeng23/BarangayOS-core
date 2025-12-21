@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
@@ -11,11 +12,6 @@ export type BlotterFilterState = {
   status?: string;
   tag?: string;
 };
-
-async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt" | "occurredAtISO" | "searchTokens" | "synced">) {
-    // This function seems to be intended to be imported from another module now.
-    // Assuming it's available or should be implemented elsewhere.
-}
 
 export function useBlotterData() {
   const [filters, setFilters] = useState<BlotterFilterState>({ q: "" });
@@ -229,7 +225,7 @@ export function useBlotterData() {
     clearDraft,
     createBlotter,
     updateBlotterStatus,
-    logActivity,
+    logActivity: () => {}, // logActivity is now handled by writeActivity
     toast,
   };
 }

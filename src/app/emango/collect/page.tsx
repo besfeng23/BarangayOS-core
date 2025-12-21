@@ -173,7 +173,7 @@ export default function CollectPage() {
                  />
             </div>
             <div className="text-center">
-                <p className="text-lg">Service: <span className="font-bold capitalize">{service.replace('-', ' ')}</span></p>
+                <p className="text-lg">Service: <span className="font-bold capitalize">{service?.replace('-', ' ')}</span></p>
                 <p className="text-3xl font-bold">₱{parseFloat(amount || '0').toFixed(2)}</p>
             </div>
           </div>

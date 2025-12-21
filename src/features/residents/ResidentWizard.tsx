@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import WorkflowShell from "@/components/system/WorkflowShell";
 import StickyActionBar from "@/components/system/StickyActionBar";
 import ActionResultModal from "@/components/system/ActionResultModal";
@@ -122,8 +122,8 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
         entityId: rec.id,
         status: "ok",
         title: `Resident ${mode === 'create' ? 'Created' : 'Updated'}`,
-        subtitle: `${rec.fullName} • ${rec.purok || 'No Purok'}`,
-      });
+        subtitle: `${(rec as any).fullName} • ${(rec as any).purok || 'No Purok'}`,
+      } as any);
 
       setNewResidentId(rec.id);
       setSaveResult({ ok: true, message: "Resident Saved", statusLine: isOnline ? "Data has been synced to the cloud." : "Saved locally. Queued for sync." });
@@ -212,7 +212,7 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
 
 const Field = ({ label, children, error }: { label: string, children: React.ReactNode, error?: string }) => (
   <div className="space-y-2">
-    <label className="text-lg font-medium">{label}</label>
+    <Label>{label}</Label>
     {children}
     {error && <p className="text-sm text-red-400 mt-1">{error}</p>}
   </div>
@@ -290,5 +290,3 @@ const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f:
         </CardContent>
     </Card>
 );
-
-    

@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import React, { useState } from "react";
 import { usePrintCenter } from "@/hooks/usePrintCenter";

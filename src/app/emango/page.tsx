@@ -1,17 +1,22 @@
 
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Banknote, Users, QrCode, Send, History, BarChart3, Settings, ShieldAlert, ArrowLeft, BookLock } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/bosDb';
+import { useMemo } from 'react';
 
-const StatCard = ({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) => (
+const StatCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
     <Card className="bg-zinc-800/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-zinc-400">{title}</CardTitle>
             <Icon className="h-4 w-4 text-zinc-500" />
         </CardHeader>
         <CardContent>
-            <div className="text-2xl font-bold">{value}</div>
+            <div className="text-2xl font-bold">{typeof value === 'number' ? `₱${value.toFixed(2)}` : value}</div>
         </CardContent>
     </Card>
 );
@@ -28,11 +33,39 @@ const ActionButton = ({ href, icon: Icon, title, description, disabled = false }
             </div>
         </div>
     );
-    return disabled ? <div>{content}</div> : <Link href={href} passHref>{content}</Link>;
+    if(disabled) {
+        return <div className="relative">{content}<div className="absolute inset-0" title="This feature is not available in the demo."></div></div>;
+    }
+    return <Link href={href} passHref>{content}</Link>;
 };
 
 
 export default function EmangoHomePage() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const stats = useLiveQuery(() => {
+    const todayStart = new Date(today).toISOString();
+    return Promise.all([
+        db.activity_log.where('type').equals('PAYMENT_COLLECTED').and(item => item.occurredAtISO >= todayStart).toArray(),
+        db.activity_log.where('type').equals('PAYMENT_DISBURSED').and(item => item.status === 'ok').count(),
+    ]);
+  }, [today], [{ collections: 0, transactions: 0 }, 0]);
+
+  const { collections, transactions } = useMemo(() => {
+      if (!stats || !stats[0]) return { collections: 0, transactions: 0 };
+      const collectionsToday = stats[0].reduce((sum, tx) => {
+          const amountMatch = tx.subtitle.match(/₱([\d,.]+)/);
+          if (amountMatch) {
+              return sum + parseFloat(amountMatch[1].replace(/,/g, ''));
+          }
+          return sum;
+      }, 0);
+      return { collections: collectionsToday, transactions: stats[0].length };
+  }, [stats]);
+  
+  const pendingDisbursements = stats ? stats[1] : 0;
+
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="flex items-center justify-between">
@@ -54,10 +87,10 @@ export default function EmangoHomePage() {
         </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Today's Collections" value="₱1,250.00" icon={Banknote} />
-        <StatCard title="Transactions Today" value="15" icon={Users} />
-        <StatCard title="Pending Disbursements" value="₱8,500.00" icon={Send} />
-        <StatCard title="Issues / Reversals" value="1" icon={ShieldAlert} />
+        <StatCard title="Today's Collections" value={collections} icon={Banknote} />
+        <StatCard title="Transactions Today" value={transactions} icon={Users} />
+        <StatCard title="Pending Disbursements" value={pendingDisbursements} icon={Send} />
+        <StatCard title="Issues / Reversals" value={0} icon={ShieldAlert} />
       </div>
 
        <div className="grid gap-6 lg:grid-cols-2">

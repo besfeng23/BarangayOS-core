@@ -66,6 +66,7 @@ export default function AppClientLayout({
       } catch (error: any) {
         setBootError(error);
         setBootState('error');
+        recordError('db-init', error.message);
       }
     }
     initialize();
@@ -105,22 +106,21 @@ export default function AppClientLayout({
     return <FullscreenLoader />;
   }
   
-  if(isStatusPage || isJobsPortal) {
-      return (
-        <>
-         <IdleScreensaver />
-         {children}
-        </>
-      )
-  }
+  const requiresAuth = !isLoginPage && !isLandingPage && !isStatusPage;
 
-  return (
-    <AuthGuard>
-      <IdleScreensaver />
-      <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
-        {children}
-      </TerminalShell>
-      <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-    </AuthGuard>
-  );
+  const content = (
+      <>
+        <IdleScreensaver />
+        {isStatusPage || isJobsPortal ? (
+            children
+        ) : (
+          <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
+            {children}
+          </TerminalShell>
+        )}
+        <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      </>
+  )
+
+  return requiresAuth ? <AuthGuard>{content}</AuthGuard> : content;
 }
