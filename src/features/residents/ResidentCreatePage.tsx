@@ -284,7 +284,7 @@ const Step2Personal = ({ form, setForm, errors, age }: { form: FormState, setFor
 );
 
 const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors }) => (
-     <Card className="bg-slate-800/50 border-slate-700">
+     <Card className="bg-zinc-900/40 border-zinc-800 rounded-2xl">
         <CardHeader>
             <CardTitle>Step 3: Address</CardTitle>
         </CardHeader>

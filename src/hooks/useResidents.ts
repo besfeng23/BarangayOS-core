@@ -1,6 +1,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db, ResidentLocal, resetLocalDatabase, DB_VERSION } from "@/lib/bosDb";
+import { toTokens } from "@/lib/bos/searchTokens";
 
 export function useResidents() {
   const [query, setQuery] = useState("");

@@ -9,6 +9,13 @@ import { SyncStatusBadge } from "@/features/residents/components/SyncStatusBadge
 import { useToast } from "@/components/ui/toast";
 import { norm } from "@/lib/uuid";
 
+const btnPrimary =
+  "px-5 py-4 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold " +
+  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950";
+const btnSecondary =
+  "px-5 py-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 " +
+  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";
+
 export default function ResidentProfilePage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -30,13 +37,13 @@ export default function ResidentProfilePage() {
   // This effect can be used to show a toast passed via query param or other means
   useEffect(() => {
     const toastMessage = searchParams.get('toast');
-    if (!toastShownRef.current && toastMessage) {
+    if (!toastShownRef.current && toastMessage && resident) {
       toastShownRef.current = true;
       toast({title: decodeURIComponent(toastMessage)});
       // Clear the toast message from the URL without reloading
       router.replace(`/residents/${id}`, { scroll: false });
     }
-  }, [searchParams, toast, router, id]);
+  }, [searchParams, toast, router, id, resident]);
 
   if (!resident) {
     return (
@@ -113,10 +120,3 @@ export default function ResidentProfilePage() {
       </>
   );
 }
-
-const btnPrimary =
-  "px-5 py-4 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-100 font-semibold " +
-  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ring-offset-zinc-950";
-const btnSecondary =
-  "px-5 py-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-zinc-100 " +
-  "focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950";
