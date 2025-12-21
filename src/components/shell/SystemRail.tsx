@@ -35,17 +35,17 @@ export default function SystemRail({ onHelpClick }: { onHelpClick?: () => void }
   const subtitle = `${token} TERMINAL`;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-card/80 backdrop-blur-lg border-b">
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-3 min-w-0" aria-label="Go to Home Dashboard">
-          <div className="h-10 w-10 rounded-xl border border-zinc-800 bg-zinc-900/40 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl border bg-background flex items-center justify-center">
             <svg
               width="22"
               height="22"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-zinc-100"
+              className="text-primary"
               aria-hidden="true"
             >
               {/* shield */}
@@ -77,8 +77,8 @@ export default function SystemRail({ onHelpClick }: { onHelpClick?: () => void }
           </div>
 
           <div className="hidden sm:block leading-none min-w-0">
-            <div className="text-zinc-100 font-semibold truncate">{settings?.barangayName ?? 'BarangayOS'}</div>
-            <div className="text-[10px] tracking-widest uppercase text-zinc-400 truncate">
+            <div className="text-foreground font-semibold truncate">{settings?.barangayName ?? 'BarangayOS'}</div>
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground truncate">
               {subtitle}
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function SystemRail({ onHelpClick }: { onHelpClick?: () => void }
                 </Button>
             )}
             {settings?.trialEnabled && (
-                <div className="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full px-2 py-1">
+                <div className="text-xs bg-amber-500/20 text-amber-600 border border-amber-500/30 rounded-full px-2 py-1 font-semibold">
                     Trial • {settings.trialDaysRemaining} days
                 </div>
             )}

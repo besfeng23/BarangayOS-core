@@ -4,25 +4,34 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 15%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
+    --background: 220 20% 95%; /* Light gray background */
+    --foreground: 220 20% 10%; /* Dark blue-gray text */
+
+    --card: 220 20% 100%; /* White cards */
+    --card-foreground: 220 20% 10%;
+
+    --popover: 220 20% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    --primary: 210 100% 45%; /* Strong Blue */
     --primary-foreground: 210 40% 98%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+
+    --secondary: 45 100% 50%; /* Gold/Yellow */
+    --secondary-foreground: 220 20% 10%;
+
+    --muted: 220 20% 90%; /* Lighter gray for muted backgrounds */
+    --muted-foreground: 220 15% 45%; /* Muted text */
+
+    --accent: 220 20% 92%; /* Slightly darker gray for accents */
+    --accent-foreground: 220 20% 10%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 27%;
-    --input: 217 33% 27%;
-    --ring: 217.2 91.2% 59.8%;
+
+    --border: 220 20% 80%;
+    --input: 220 20% 85%;
+    --ring: 210 100% 45%;
+
     --radius: 0.75rem;
   }
 
@@ -33,9 +42,9 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217 33% 17%;
+    --primary: 45 100% 50%; /* Gold/Yellow for dark mode primary */
+    --primary-foreground: 220 20% 10%;
+    --secondary: 210 100% 45%; /* Blue for dark mode secondary */
     --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
@@ -45,7 +54,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 27%;
     --input: 217 33% 27%;
-    --ring: 217.2 91.2% 59.8%;
+    --ring: 45 100% 50%;
   }
 }
 
@@ -58,6 +67,7 @@
     font-family: 'Inter', sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-      font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto', sans-serif;
+    @apply font-bold text-foreground;
   }
 }

@@ -87,10 +87,10 @@ export function ResidentPicker({
   if (!isEditing) {
     return (
       <div className="space-y-1">
-        <label className="text-xs text-zinc-400 uppercase font-medium ml-1">{label}</label>
-        <div className="flex items-center gap-2 p-2 rounded-xl bg-zinc-950 border border-zinc-800 min-h-[56px] h-14">
-          <User className="h-5 w-5 text-blue-400 flex-shrink-0" />
-          <span className="font-semibold flex-1 text-slate-200">{displayName}</span>
+        <label className="text-xs text-muted-foreground uppercase font-medium ml-1">{label}</label>
+        <div className="flex items-center gap-2 p-2 rounded-xl bg-background border min-h-[56px] h-14">
+          <User className="h-5 w-5 text-primary flex-shrink-0" />
+          <span className="font-semibold flex-1">{displayName}</span>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleClear}>
             <X className="h-4 w-4" />
           </Button>
@@ -101,7 +101,7 @@ export function ResidentPicker({
 
   return (
     <div className="space-y-1">
-      <label className="text-xs text-zinc-400 uppercase font-medium ml-1">{label}</label>
+      <label className="text-xs text-muted-foreground uppercase font-medium ml-1">{label}</label>
       {safeValue.mode === "manual" ? (
         <div className="flex items-center gap-2">
           <Input
@@ -109,7 +109,7 @@ export function ResidentPicker({
             value={safeValue.manualName || ""}
             onChange={(e) => onChange({ ...safeValue, manualName: e.target.value })}
             onBlur={handleManualBlur}
-            className={`h-14 text-lg bg-zinc-950 border-zinc-700 ${isInvalid ? 'border-red-500' : ''}`}
+            className={`h-14 text-lg bg-background ${isInvalid ? 'border-destructive' : ''}`}
           />
            <Button variant="ghost" onClick={() => onChange({ ...safeValue, mode: "resident", manualName: "" })}>
                 Cancel
@@ -126,28 +126,28 @@ export function ResidentPicker({
             }}
             onBlur={() => setTimeout(() => setShowResults(false), 150)} // Delay to allow click
             onFocus={() => { if(searchQuery) setShowResults(true); }}
-            className="h-14 text-lg bg-zinc-950 border-zinc-700 pl-4 pr-10"
+            className="h-14 text-lg bg-background pl-4 pr-10"
           />
-          {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 animate-spin" />}
+          {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />}
           
           {showResults && (
-            <div className="absolute z-10 w-full mt-1 bg-zinc-900 border border-zinc-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-1 bg-card border rounded-xl shadow-lg max-h-60 overflow-y-auto">
               {results.map((res) => (
                 <button
                   key={res.id}
                   type="button"
                   onMouseDown={() => handleSelectResident(res)} // Use onMouseDown to beat onBlur
-                  className="w-full text-left p-3 hover:bg-zinc-800 transition-colors"
+                  className="w-full text-left p-3 hover:bg-accent transition-colors"
                 >
-                  <p className="font-semibold text-slate-200">{res.fullName}</p>
-                  <p className="text-sm text-zinc-400">{res.householdNo ? `HH: ${res.householdNo}` : "No household"} • {res.addressText}</p>
+                  <p className="font-semibold">{res.fullName}</p>
+                  <p className="text-sm text-muted-foreground">{res.householdNo ? `HH: ${res.householdNo}` : "No household"} • {res.addressText}</p>
                 </button>
               ))}
               {allowManual && (
                 <button
                   type="button"
                   onMouseDown={handleSetManual}
-                  className="w-full text-left p-3 text-blue-400 hover:bg-zinc-800"
+                  className="w-full text-left p-3 text-primary hover:bg-accent"
                 >
                   Or, enter name manually
                 </button>
@@ -157,7 +157,7 @@ export function ResidentPicker({
         </div>
       )}
        {isInvalid && errorMessage && (
-            <p className="text-sm text-red-400 mt-1">{errorMessage}</p>
+            <p className="text-sm text-destructive mt-1">{errorMessage}</p>
         )}
     </div>
   );

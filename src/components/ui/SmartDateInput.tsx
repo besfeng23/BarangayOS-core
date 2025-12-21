@@ -18,7 +18,7 @@ const QuickActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>>
   <button
     type="button"
     className={cn(
-      "rounded-full bg-slate-800 px-3 py-1 text-xs font-bold uppercase text-blue-400 transition-colors hover:bg-slate-700",
+      "rounded-full bg-muted px-3 py-1 text-xs font-bold uppercase text-primary transition-colors hover:bg-accent",
       className
     )}
     {...props}
@@ -40,12 +40,12 @@ export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange,
   return (
     <div className={cn('w-full', className)}>
       {labelText && (
-        <label className="mb-1 block text-sm font-medium text-slate-300">
+        <label className="mb-1 block text-sm font-medium">
           {labelText}
         </label>
       )}
        {helperText && (
-        <p className="mb-2 text-xs text-slate-400">{helperText}</p>
+        <p className="mb-2 text-xs text-muted-foreground">{helperText}</p>
       )}
       <div className="mb-2 flex items-center gap-2">
         <QuickActionButton onClick={() => handleQuickAction('today')}>
@@ -59,9 +59,9 @@ export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange,
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3 text-lg text-white focus:ring-2 focus:ring-blue-600"
+        className="w-full rounded-lg border bg-background p-3 text-lg focus:ring-2 focus:ring-ring"
         style={{
-          colorScheme: 'dark', // Inverts the calendar icon to white
+          colorScheme: 'light', 
         }}
       />
     </div>

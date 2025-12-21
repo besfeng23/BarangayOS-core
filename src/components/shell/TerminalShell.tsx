@@ -5,7 +5,7 @@ import BottomNav from './BottomNav';
 
 export default function TerminalShell({ children, onHelpClick }: { children: React.ReactNode, onHelpClick?: () => void }) {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <SystemRail onHelpClick={onHelpClick} />
       <main className="flex-1 pt-16 pb-20">
         {children}

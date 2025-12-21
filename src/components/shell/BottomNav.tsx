@@ -28,7 +28,7 @@ const NavButton = ({
     <button
       className={cn(
         "flex flex-col items-center justify-center h-full w-20 transition-colors duration-200",
-        isActive ? "text-blue-400" : "text-zinc-400 hover:text-zinc-100"
+        isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
       )}
     >
       <Icon className="w-6 h-6" />
@@ -42,7 +42,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 h-20 bg-zinc-900/90 backdrop-blur-lg border-t border-zinc-800 z-40">
+    <footer className="fixed bottom-0 left-0 right-0 h-20 bg-card/90 backdrop-blur-lg border-t z-40">
       <nav className="h-full flex items-center justify-around max-w-md mx-auto">
         {navItems.map((item) => (
           <NavButton
