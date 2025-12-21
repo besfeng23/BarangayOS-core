@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { resetLocalDatabase } from '@/lib/bosDb';
 import { HelpCircle } from 'lucide-react';
 import HelpDrawer from '@/components/ai/HelpDrawer';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 const ErrorPanel = ({ error, onReset }: { error: Error, onReset: () => void }) => (
   <div className="flex items-center justify-center min-h-screen bg-zinc-950">
@@ -102,12 +104,13 @@ export default function AppClientLayout({
   }
 
   return (
-    <>
+    <AuthGuard>
       <IdleScreensaver />
       <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
         {children}
       </TerminalShell>
       <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-    </>
+    </AuthGuard>
   );
 }
+
