@@ -6,6 +6,7 @@ import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Save } from "lucide-react";
@@ -290,3 +291,6 @@ const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f:
         </CardContent>
     </Card>
 );
+
+
+    
