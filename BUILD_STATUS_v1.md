@@ -8,14 +8,14 @@ This report provides a consolidated snapshot of the project's final V1 state, ou
 
 The following core modules are implemented and reachable through the main application router and sidebar navigation. All primary user flows are wired and functional.
 
-- **`/` (Dashboard)** - `src/app/page.tsx` - **[Status: Active/Wired]**
-- **`/residents` (Resident Index)** - `src/app/residents/page.tsx` - **[Status: Active/Wired]**
-- **`/blotter` (Blotter Log)** - `src/app/blotter/page.tsx` - **[Status: Active/Wired]**
-- **`/certificates` (Certificates)** - `src/app/certificates/page.tsx` - **[Status: Active/Wired]**
-- **`/permits` (Business Permits)** - `src/app/permits/page.tsx` - **[Status: Active/Wired]**
-- **`/reports` (Reports & Analytics)** - `src/app/reports/page.tsx` - **[Status: Active/Wired]**
-- **`/settings` (Admin Settings)** - `src/app/settings/page.tsx` - **[Status: Active/Wired]**
-- **`/login` (Login Page)** - `src/app/login/page.tsx` - **[Status: Active/Wired]**
+- `/` (Dashboard) - `src/app/page.tsx` - **[Status: Active/Wired]**
+- `/residents` (Resident Index) - `src/app/residents/page.tsx` - **[Status: Active/Wired]**
+- `/blotter` (Blotter Log) - `src/app/blotter/page.tsx` - **[Status: Active/Wired]**
+- `/certificates` (Certificates) - `src/app/certificates/page.tsx` - **[Status: Active/Wired]**
+- `/permits` (Business Permits) - `src/app/permits/page.tsx` - **[Status: Active/Wired]**
+- `/reports` (Reports & Analytics) - `src/app/reports/page.tsx` - **[Status: Active/Wired]**
+- `/settings` (Admin Settings) - `src/app/settings/page.tsx` - **[Status: Active/Wired]**
+- `/login` (Login Page) - `src/app/login/page.tsx` - **[Status: Active/Wired]**
 
 ---
 
