@@ -1,4 +1,5 @@
 
+
 import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
@@ -155,12 +156,14 @@ export type ActivityLogLocal = {
   type:
     | "RESIDENT_CREATED"
     | "RESIDENT_UPDATED"
+    | "RESIDENT_VIEW"
     | "CERT_ISSUED"
     | "CERT_PRINTED"
     | "BLOTTER_CREATED"
     | "BLOTTER_UPDATED"
     | "BLOTTER_RESOLVED"
     | "BLOTTER_PRINTED"
+    | "BLOTTER_VIEW"
     | "BUSINESS_CREATED"
     | "BUSINESS_UPDATED"
     | "BUSINESS_RENEWED"
@@ -171,11 +174,13 @@ export type ActivityLogLocal = {
     | "ERROR"
     | "SETTINGS_UPDATED"
     | "QUOTATION_REQUESTED"
+    | "JOB_APPLICATION_SUBMITTED"
     | "PAYMENT_COLLECTED"
+    | "PAYMENT_DISBURSED"
     | "DEVICE_CREATED"
     | "DEVICE_UPDATED";
 
-  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system" | "procurement" | "emango";
+  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system" | "procurement" | "emango" | "jobs";
   entityId: string; // id of record or "sync"
   status: "ok" | "warn" | "error"; // for UI color/badge (lightweight)
 

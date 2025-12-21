@@ -1,4 +1,5 @@
 
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, ActivityLogItem, BlotterRecord, BlotterStatus, Party } from "@/lib/bosDb";
@@ -213,6 +214,8 @@ export function useBlotterData() {
     },
     []
   );
+  
+  const logActivity = () => {};
 
   return {
     filters,
@@ -225,7 +228,7 @@ export function useBlotterData() {
     clearDraft,
     createBlotter,
     updateBlotterStatus,
-    logActivity: () => {}, // logActivity is now handled by writeActivity
+    logActivity,
     toast,
   };
 }

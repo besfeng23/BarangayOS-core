@@ -112,7 +112,7 @@ export default function CollectPage() {
               placeholder="Search for resident or enter name"
               allowManual={true}
             />
-            {!payerName && <p className="text-sm text-yellow-400">Please select a payer to continue.</p>}
+            {!payerName && <p className="text-sm text-yellow-400 mt-1">Please select or enter a payer to continue.</p>}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -129,7 +129,7 @@ export default function CollectPage() {
                         <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                 </Select>
-                 {!service && <p className="text-sm text-yellow-400">Please select a service.</p>}
+                 {!service && <p className="text-sm text-yellow-400 mt-1">Please select a service.</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount" className="text-lg">Amount (₱)</Label>
@@ -143,7 +143,7 @@ export default function CollectPage() {
                   min="0.01"
                   step="0.01"
                 />
-                 {service && parseFloat(amount) <= 0 && <p className="text-sm text-yellow-400">Enter a valid amount.</p>}
+                 {service && parseFloat(amount) <= 0 && <p className="text-sm text-yellow-400 mt-1">Enter a valid amount.</p>}
               </div>
             </div>
 

@@ -11,6 +11,9 @@ import AIDrawer from "@/components/ai/AIDrawer";
 import { Loader2 } from "lucide-react";
 import { ResidentPicker } from "@/components/shared/ResidentPicker";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 export default function CertificatesPage() {
   const { enqueue } = useSyncQueue();
@@ -82,7 +85,7 @@ export default function CertificatesPage() {
             <h2 className="text-white text-sm font-semibold">2. Certificate Details</h2>
             <div className="space-y-4 mt-2">
                <label className="block text-slate-200 text-xs mt-2 mb-1">Certificate Type</label>
-                <Select onValueChange={(e) => setCertType(e.target.value as any)} value={certType}>
+                <Select onValueChange={(e) => setCertType(e as any)} value={certType}>
                     <SelectTrigger className="h-12 text-lg bg-zinc-950 border-zinc-700">
                         <SelectValue placeholder="Select type..." />
                     </SelectTrigger>

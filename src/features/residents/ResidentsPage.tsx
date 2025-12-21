@@ -3,7 +3,6 @@
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
-import BottomNav from "@/components/app-hub/BottomNav";
 
 const CHIP_PUROK = ["Purok 1", "Purok 2", "Purok 3", "Purok 4"];
 const CHIP_SEX = ["Male", "Female", "Other"];

@@ -1,4 +1,5 @@
 
+
 import { db } from './bosDb';
 import { logActivity } from './activityLog';
 import type { SyncQueueItem } from './bosDb';
@@ -18,7 +19,6 @@ export async function addToQueue(item: Omit<SyncQueueItem, 'id' | 'status' | 'cr
     createdAt: Date.now(),
   };
   await db.sync_queue.add(newItem);
-  await logActivity(`Queued ${item.opType} for ${item.entityType}` as any);
   window.dispatchEvent(new CustomEvent('queue-changed'));
   return id;
 }
@@ -41,7 +41,7 @@ export async function updateQueueItem(id: number, updates: Partial<Omit<SyncQueu
     const updatedItem: any = { ...item, ...updates, lastAttempt: Date.now() };
     await db.sync_queue.put(updatedItem);
     if(updates.status) {
-       await logActivity(`Sync item ${id} status changed to ${updates.status}` as any);
+      // Avoid noisy logging for sync queue status changes
     }
     window.dispatchEvent(new CustomEvent('queue-changed'));
   }

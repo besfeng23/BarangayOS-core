@@ -106,8 +106,6 @@ export default function AppClientLayout({
     return <FullscreenLoader />;
   }
   
-  const requiresAuth = !isLoginPage && !isLandingPage && !isStatusPage;
-
   const content = (
       <>
         <IdleScreensaver />
@@ -122,5 +120,5 @@ export default function AppClientLayout({
       </>
   )
 
-  return requiresAuth ? <AuthGuard>{content}</AuthGuard> : content;
+  return <AuthGuard>{content}</AuthGuard>;
 }

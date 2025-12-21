@@ -1,4 +1,5 @@
 
+
 import { useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, ActivityLogLocal as ActivityLogItem, ResidentLocal as ResidentRecord } from "@/lib/bosDb";
@@ -21,11 +22,6 @@ export function calcAge(birthdateISO: string): number {
   const m = now.getMonth() - d.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
   return Math.max(0, age);
-}
-
-async function logActivity(item: Omit<ActivityLogItem, "id" | "createdAt" | "occurredAtISO" | "searchTokens" | "synced">) {
-    // This is now handled by writeActivity, so we can potentially remove this function
-    // For now, let's keep it but it might be redundant
 }
 
 export function useResidentsData() {
@@ -171,6 +167,8 @@ export function useResidentsData() {
       .count();
     return count > 0;
   }, []);
+  
+  const logActivity = () => {};
 
   return {
     filters,

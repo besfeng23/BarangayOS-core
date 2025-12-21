@@ -112,7 +112,10 @@ export default function PrintCenterPage() {
           <div className="text-zinc-400 text-sm p-4 text-center">Loading print jobs...</div>
         ) : items.length === 0 ? (
           <div className="text-center text-zinc-500 p-8 border-2 border-dashed border-zinc-800 rounded-2xl">
-            {tab === 'queued' ? 'No print jobs waiting. Print a certificate or record to add one.' : 'No recent print history.'}
+            <p className="font-semibold text-lg">The Print Queue is Empty</p>
+            <p className="mt-2">
+              {tab === 'queued' ? 'Print a certificate or record to add a job to this queue.' : 'No recently printed documents found.'}
+            </p>
           </div>
         ) : (
           items.map((job) => <JobCard key={job.id} job={job} onPrint={handlePrint} isPrinting={printingId === job.id} />)

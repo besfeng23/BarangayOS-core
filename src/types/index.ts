@@ -1,4 +1,5 @@
 
+
 import { Timestamp } from 'firebase/firestore';
 import type { CityHealthTypes } from './city-health';
 import type { JobsPortalTypes } from './jobs-portal';
@@ -9,7 +10,6 @@ import type { FinancialsTypes } from './financials';
 import type { AnnouncementsTypes } from './announcements';
 import type { BusinessPermit } from './permits';
 import type { BlotterCase } from './blotter';
-import type { Transaction } from './transactions';
 import type { ReportData } from './reports';
 import type { SecurityDevice } from './security';
 
@@ -211,6 +211,22 @@ export interface ActivityLogItem {
     createdAt: string; // ISO string
 }
 
+export type Transaction = {
+  id: string;
+  barangayId: string;
+  residentRef: string; // Firestore document ID of the resident
+  residentNameSnapshot: string; // Denormalized for quick display
+  type: 'Barangay Clearance' | 'Certificate of Indigency' | 'Certificate of Residency';
+  purpose: string;
+  feesCollected: number;
+  officialSignee: string; // Name of the Punong Barangay
+  transactionDate: Timestamp;
+  status: 'COMPLETED' | 'CANCELLED' | 'PENDING';
+  createdBy: string; // UID of the secretary/encoder
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 
 export type {
   CityHealthTypes,
@@ -222,7 +238,6 @@ export type {
   AnnouncementsTypes,
   BusinessPermit,
   BlotterCase,
-  Transaction,
   ReportData,
   SecurityDevice,
 };
