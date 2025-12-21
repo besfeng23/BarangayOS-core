@@ -8,6 +8,7 @@ import { useResidents } from "@/hooks/useResidents";
 import { useIssueCertificate, CertType } from "@/hooks/certificates/useIssueCertificate";
 import AIAssistButton from "@/components/ai/AIAssistButton";
 import AIDrawer from "@/components/ai/AIDrawer";
+import { Loader2 } from "lucide-react";
 
 export default function CertificatesPage() {
   const { enqueue } = useSyncQueue();
@@ -31,6 +32,7 @@ export default function CertificatesPage() {
   const handleSelect = (id: string, name: string) => {
     setSelectedResidentId(id);
     setSelectedResidentName(name);
+    setResidentQuery(name);
   };
 
   const onIssue = async () => {
@@ -51,8 +53,8 @@ export default function CertificatesPage() {
     <>
       <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
         <div className="mb-4">
-          <h1 className="text-white text-xl font-semibold">Mga Sertipiko</h1>
-          <p className="text-slate-200 text-sm mt-1">Mag-issue, mag-print, at i-sync (offline-safe).</p>
+          <h1 className="text-white text-xl font-semibold">Issue Certificate</h1>
+          <p className="text-slate-200 text-sm mt-1">Issue, print, and sync certificates (offline-safe).</p>
         </div>
 
         {issue.banner && (
@@ -63,7 +65,7 @@ export default function CertificatesPage() {
               : "border-emerald-900/40 bg-emerald-950/20",
           ].join(" ")}>
             <div className="text-white text-sm font-semibold">
-              {issue.banner.kind === "error" ? "Ayusin ito" : "Status"}
+              {issue.banner.kind === "error" ? "Error" : "Status"}
             </div>
             <div className="text-slate-200 text-sm mt-1">{issue.banner.msg}</div>
           </div>
@@ -72,10 +74,10 @@ export default function CertificatesPage() {
         {/* Workstation card (Residents baseline) */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
           {/* Step 1: Select resident */}
-          <div className="text-white text-sm font-semibold">1) Pumili ng Residente</div>
+          <div className="text-white text-sm font-semibold">1. Select a Resident</div>
           <input
             className="mt-2 h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
-            placeholder="Hanapin ang pangalan ng residente…"
+            placeholder="Search for a resident by name…"
             value={residentQuery}
             onChange={(e) => {
               const v = e.target.value;
@@ -83,6 +85,9 @@ export default function CertificatesPage() {
               residents.setQuery(v);
             }}
           />
+          {!selectedResidentId && !purpose && (
+             <p className="text-sm text-yellow-400 mt-2">Select a resident to continue.</p>
+          )}
 
           <div className="mt-3 space-y-2">
             {selectedResidentId ? (
@@ -94,15 +99,19 @@ export default function CertificatesPage() {
                   onClick={() => {
                     setSelectedResidentId(null);
                     setSelectedResidentName("");
+                    setResidentQuery("");
+                    residents.setQuery("");
                   }}
                 >
-                  Palitan ang Residente
+                  Change Resident
                 </button>
               </div>
             ) : (
               <>
-                {filtered.length === 0 ? (
-                  <div className="text-slate-200 text-sm">Walang nahanap na residente.</div>
+                {residents.loading ? (
+                    <div className="text-slate-400 text-sm p-4 text-center">Searching...</div>
+                ) : filtered.length === 0 && residentQuery ? (
+                  <div className="text-slate-400 text-sm p-4 text-center">No residents found.</div>
                 ) : (
                   filtered.map((r) => (
                     <button
@@ -112,7 +121,7 @@ export default function CertificatesPage() {
                     >
                       <div className="text-white text-sm font-semibold">{r.fullName}</div>
                       <div className="text-slate-200 text-xs mt-1">
-                        {r.householdNo ? `Household: ${r.householdNo}` : "Household: —"} • ID: {r.id}
+                        {r.householdNo ? `Household: ${r.householdNo}` : "No household"} • ID: {r.id}
                       </div>
                     </button>
                   ))
@@ -122,9 +131,12 @@ export default function CertificatesPage() {
           </div>
 
           {/* Step 2: Details */}
-          <div className="mt-6 text-white text-sm font-semibold">2) Detalye ng Sertipiko</div>
+          <div className="mt-6 text-white text-sm font-semibold">2. Certificate Details</div>
+          {!purpose.trim() && (
+             <p className="text-sm text-yellow-400 mt-2">Enter a purpose to continue.</p>
+          )}
 
-          <label className="block text-slate-200 text-xs mt-2 mb-1">Uri ng Sertipiko</label>
+          <label className="block text-slate-200 text-xs mt-2 mb-1">Certificate Type</label>
           <select
             className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
             value={certType}
@@ -133,16 +145,15 @@ export default function CertificatesPage() {
             <option>Barangay Clearance</option>
             <option>Certificate of Residency</option>
             <option>Indigency</option>
-            <option>Business Clearance</option>
           </select>
 
           <div className="flex justify-between items-center mt-3 mb-1">
-            <label className="block text-slate-200 text-xs">Layunin (Purpose) *</label>
+            <label className="block text-slate-200 text-xs">Purpose *</label>
             <AIAssistButton onClick={() => setIsAiDrawerOpen(true)} disabled={!purpose.trim()} />
           </div>
           <input
             className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
-            placeholder="e.g., Para sa trabaho"
+            placeholder="e.g., For Local Employment"
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
           />
@@ -150,28 +161,20 @@ export default function CertificatesPage() {
           {/* Primary action */}
           <button
             className={[
-              "mt-4 h-12 w-full rounded-xl font-semibold",
-              canIssue ? "bg-zinc-100 text-zinc-950" : "bg-zinc-800 text-slate-200 cursor-not-allowed",
+              "mt-4 h-12 w-full rounded-xl font-semibold flex items-center justify-center",
+              canIssue ? "bg-zinc-100 text-zinc-950" : "bg-zinc-800 text-slate-400 cursor-not-allowed",
             ].join(" ")}
             disabled={!canIssue}
             onClick={onIssue}
           >
-            {issue.busy ? "Nag-iissue…" : "I-issue at I-print"}
+            {issue.busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {issue.busy ? "Issuing…" : "Issue & Print"}
           </button>
 
-          <div className="mt-3 text-xs text-slate-200">
-            Gumagana offline: naka-save muna sa device, tapos naka-sync.
+          <div className="mt-3 text-xs text-slate-400 text-center">
+            All records are saved locally first, then synced to the cloud.
           </div>
         </div>
-
-        {/* Hidden print frame */}
-        <PrintFrame
-          html={issue.printingHTML}
-          onAfterPrint={issue.afterPrint}
-          onError={(e) => {
-            console.error("Print error:", e);
-          }}
-        />
       </div>
 
       <AIDrawer

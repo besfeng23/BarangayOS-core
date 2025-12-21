@@ -143,13 +143,6 @@ const SystemTab = () => {
           <Button variant="outline" className="mt-3">View System Status Page</Button>
         </Link>
       </div>
-      <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
-        <h3 className="font-semibold">Data Export</h3>
-        <p className="text-sm text-zinc-400">Export all local data (residents, blotter, etc.) to a CSV zip file.</p>
-        <Button onClick={handleExport} disabled={isExporting} className="mt-3">
-          {isExporting ? "Exporting..." : "Export All Data"}
-        </Button>
-      </div>
     </div>
   );
 };
@@ -163,18 +156,14 @@ export default function SettingsPage() {
           <p className="text-zinc-400 mt-1">Configure your BarangayOS terminal.</p>
           
           <Tabs defaultValue="profile" className="mt-6">
-            <TabsList className="grid w-full grid-cols-5 max-w-lg">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-lg">
               <TabsTrigger value="profile">Barangay Profile</TabsTrigger>
-              <TabsTrigger value="ai">AI Profile</TabsTrigger>
               <TabsTrigger value="devices">Devices</TabsTrigger>
               <TabsTrigger value="users">Users & Roles</TabsTrigger>
               <TabsTrigger value="system">System</TabsTrigger>
             </TabsList>
             <TabsContent value="profile" className="mt-6">
               <BarangayProfileTab />
-            </TabsContent>
-             <TabsContent value="ai" className="mt-6">
-              <AIProfileTab />
             </TabsContent>
             <TabsContent value="devices" className="mt-6">
               <DeviceSettingsTab />

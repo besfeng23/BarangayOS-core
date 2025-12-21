@@ -23,7 +23,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 type ModuleStatus = 'INSTALLED' | 'AVAILABLE';
 
@@ -39,16 +38,16 @@ interface Module {
 const modules: Module[] = [
   {
     id: 'residents',
-    name: 'Listahan ng Residente',
-    description: 'Tingnan, i-add, o i-manage ang mga residente.',
+    name: 'Resident Records',
+    description: 'View, add, or manage residents.',
     icon: Users,
     status: 'INSTALLED',
     href: '/residents',
   },
   {
     id: 'certificates',
-    name: 'Mga Sertipiko',
-    description: 'Mag-issue ng mga opisyal na dokumento ng barangay.',
+    name: 'Certificates',
+    description: 'Issue official barangay documents.',
     icon: FileText,
     status: 'INSTALLED',
     href: '/certificates',
@@ -56,7 +55,7 @@ const modules: Module[] = [
   {
     id: 'blotter',
     name: 'Digital Blotter',
-    description: 'Mag-log at i-manage ang mga community disputes.',
+    description: 'Log and manage community disputes.',
     icon: Scale,
     status: 'INSTALLED',
     href: '/blotter',
@@ -64,32 +63,34 @@ const modules: Module[] = [
   {
     id: 'payments',
     name: 'Digital Payments',
-    description: 'eMango Wallet para sa mga koleksyon at disbursement.',
+    description: 'eMango Wallet for collections and disbursements.',
     icon: Wallet,
     status: 'INSTALLED',
     href: '/emango',
   },
   {
-    id: 'security',
-    name: 'Security',
-    description: 'I-manage ang mga security device at insidente.',
-    icon: Shield,
-    status: 'AVAILABLE',
-  },
-  {
-    id: 'health',
-    name: 'Health EMR',
-    description: 'City Health EMR para sa mga pasyente at konsultasyon.',
-    icon: HeartPulse,
-    status: 'AVAILABLE',
-  },
-  {
     id: 'procurement',
     name: 'Add-ons & Procurement',
-    description: 'Tingnan at mag-request ng mga hardware add-ons.',
+    description: 'Browse and request hardware add-ons.',
     icon: Briefcase,
     status: 'INSTALLED',
     href: '/addons',
+  },
+  {
+    id: 'security',
+    name: 'Security & Emergency',
+    description: 'Manage security devices and incidents.',
+    icon: Shield,
+    status: 'INSTALLED',
+    href: '/security',
+  },
+  {
+    id: 'health',
+    name: 'City Health EMR',
+    description: 'View patient records and consultations.',
+    icon: HeartPulse,
+    status: 'INSTALLED',
+    href: '/city-health',
   },
 ];
 
@@ -114,7 +115,7 @@ const ModuleCard = ({ module, onInstallClick }: { module: Module; onInstallClick
             : 'bg-blue-600/20 border-blue-500/30 text-blue-300 group-hover:bg-blue-500 group-hover:text-black'
         }`}
       >
-        {module.status === 'INSTALLED' ? 'BUKSAN' : 'I-INSTALL'}
+        {module.status === 'INSTALLED' ? 'OPEN' : 'INSTALL'}
       </div>
     </div>
   );
@@ -133,14 +134,14 @@ const ActivationModal = ({ module, isOpen, onClose }: { module: Module | null, i
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
                 <DialogHeader>
-                    <DialogTitle>I-activate ang {module.name}?</DialogTitle>
+                    <DialogTitle>Activate {module.name}?</DialogTitle>
                     <DialogDescription>
-                        Ang module na ito ay nangangailangan ng activation. Makipag-ugnayan sa inyong system administrator.
+                        This module requires activation. Please contact your system administrator.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="h-12">Kanselahin</Button>
-                    <Button onClick={onClose} className="h-12">Naiintindihan</Button>
+                    <Button variant="outline" onClick={onClose} className="h-12">Cancel</Button>
+                    <Button onClick={onClose} className="h-12">Understood</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -160,9 +161,9 @@ export default function AppHubPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold">Mga Aplikasyon</h1>
+        <h1 className="text-3xl font-bold">Applications</h1>
         <p className="text-slate-200">
-          I-manage ang mga naka-install na modules para sa inyong barangay.
+          Manage installed modules for your barangay.
         </p>
       </header>
 

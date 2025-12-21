@@ -18,7 +18,7 @@ const Chip = ({ label, active, onClick }: { label: string; active: boolean; onCl
   </button>
 );
 
-const JobCard = ({ job, onPrint }: { job: any; onPrint: (id: string) => void }) => {
+const JobCard = ({ job, onPrint, isPrinting }: { job: any; onPrint: (id: string) => void, isPrinting: boolean }) => {
   const isFailed = job.status === "failed";
   return (
     <div className={`p-4 rounded-2xl border bg-zinc-900/40 ${isFailed ? "border-red-900/50" : "border-zinc-800"}`}>
@@ -36,6 +36,7 @@ const JobCard = ({ job, onPrint }: { job: any; onPrint: (id: string) => void }) 
             onClick={() => onPrint(job.id)}
             variant={isFailed ? "destructive" : "secondary"}
             className="h-12"
+            disabled={isPrinting}
           >
             {job.status === "printed" ? "Reprint" : isFailed ? "Try Again" : "Print"}
           </Button>
@@ -58,6 +59,7 @@ export default function PrintCenterPage() {
       reload(); // Refresh the list to update status
     } catch (e: any) {
       toast({ variant: "destructive", title: "Print Failed", description: e?.message ?? "An error occurred." });
+      reload();
     } finally {
       setPrintingId(null);
     }
@@ -71,6 +73,8 @@ export default function PrintCenterPage() {
         toast({ title: "No Queued Jobs", description: "There are no new documents waiting to be printed." });
     }
   }
+
+  const hasQueuedJobs = items.some(job => job.status === 'queued');
 
   return (
     <div className="mx-auto w-full max-w-3xl p-4 md:p-6 space-y-4">
@@ -93,7 +97,11 @@ export default function PrintCenterPage() {
         />
         
         {tab === 'queued' && (
-            <Button className="h-12 w-full font-semibold" onClick={printNext} disabled={printingId !== null}>
+            <Button 
+                className="h-12 w-full font-semibold" 
+                onClick={printNext} 
+                disabled={printingId !== null || !hasQueuedJobs}
+            >
                 {printingId ? 'Printing...' : 'Print Next in Queue'}
             </Button>
         )}
@@ -101,13 +109,13 @@ export default function PrintCenterPage() {
 
       <div className="space-y-2">
         {loading ? (
-          <div className="text-zinc-400 text-sm">Loading...</div>
+          <div className="text-zinc-400 text-sm p-4 text-center">Loading print jobs...</div>
         ) : items.length === 0 ? (
           <div className="text-center text-zinc-500 p-8 border-2 border-dashed border-zinc-800 rounded-2xl">
-            No print jobs found in this category.
+            {tab === 'queued' ? 'No print jobs waiting. Print a certificate or record to add one.' : 'No recent print history.'}
           </div>
         ) : (
-          items.map((job) => <JobCard key={job.id} job={job} onPrint={handlePrint} />)
+          items.map((job) => <JobCard key={job.id} job={job} onPrint={handlePrint} isPrinting={printingId === job.id} />)
         )}
       </div>
     </div>

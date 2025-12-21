@@ -1,7 +1,7 @@
 
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSettings } from "@/hooks/useSettings";
+import { useSettings } from "@/lib/bos/settings/useSettings";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Trash2, Plus } from "lucide-react";
 export default function DeviceSettingsTab() {
   const { settings, save, saving, loading } = useSettings();
   const { toast } = useToast();
-  const [deviceTypes, setDeviceTypes] = useState(settings.securityDeviceTypes || []);
+  const [deviceTypes, setDeviceTypes] = useState<string[]>([]);
   const [newType, setNewType] = useState("");
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function DeviceSettingsTab() {
 
   const handleSave = async () => {
     const updatedSettings = { ...settings, securityDeviceTypes: deviceTypes };
-    await save(updatedSettings);
+    await save(updatedSettings as any);
     toast({ title: "Device Settings Saved" });
   };
 

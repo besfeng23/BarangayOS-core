@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,9 +16,19 @@ import { writeActivity } from '@/lib/bos/activity/writeActivity';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 
+const feeSchedule = {
+    cedula: 50.00,
+    clearance: 75.00,
+    'permit-fee': 500.00,
+    rental: 1000.00,
+    other: 0.00,
+} as const;
+
+type ServiceType = keyof typeof feeSchedule;
+
 export default function CollectPage() {
   const [amount, setAmount] = useState('');
-  const [service, setService] = useState('');
+  const [service, setService] = useState<ServiceType | ''>('');
   const [resident, setResident] = useState<ResidentPickerValue | undefined>(undefined);
   const [showQRModal, setShowQRModal] = useState(false);
   const { toast } = useToast();
@@ -26,7 +36,20 @@ export default function CollectPage() {
 
 
   const payerName = resident?.mode === 'resident' ? resident.residentNameSnapshot : resident?.manualName;
-  const canGenerate = payerName && amount && parseFloat(amount) > 0 && service;
+  const canGenerate = useMemo(() => {
+    const parsedAmount = parseFloat(amount);
+    return payerName && service && !isNaN(parsedAmount) && parsedAmount > 0;
+  }, [payerName, service, amount]);
+
+  const handleServiceChange = (value: ServiceType) => {
+    setService(value);
+    const fee = feeSchedule[value];
+    if (fee > 0) {
+        setAmount(fee.toFixed(2));
+    } else {
+        setAmount('');
+    }
+  }
 
   const handleGenerateQR = () => {
     if (canGenerate) {
@@ -89,10 +112,12 @@ export default function CollectPage() {
               placeholder="Search for resident or enter name"
               allowManual={true}
             />
+            {!payerName && <p className="text-sm text-yellow-400">Please select a payer to continue.</p>}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="service" className="text-lg">Service / Fee</Label>
-                 <Select onValueChange={setService} value={service}>
+                 <Select onValueChange={(v) => handleServiceChange(v as ServiceType)} value={service}>
                     <SelectTrigger className="h-12 text-lg">
                         <SelectValue placeholder="Select service..." />
                     </SelectTrigger>
@@ -104,6 +129,7 @@ export default function CollectPage() {
                         <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                 </Select>
+                 {!service && <p className="text-sm text-yellow-400">Please select a service.</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount" className="text-lg">Amount (₱)</Label>
@@ -114,7 +140,10 @@ export default function CollectPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="h-12 text-lg text-right"
+                  min="0.01"
+                  step="0.01"
                 />
+                 {service && parseFloat(amount) <= 0 && <p className="text-sm text-yellow-400">Enter a valid amount.</p>}
               </div>
             </div>
 
@@ -144,7 +173,7 @@ export default function CollectPage() {
                  />
             </div>
             <div className="text-center">
-                <p className="text-lg">Service: <span className="font-bold">{service}</span></p>
+                <p className="text-lg">Service: <span className="font-bold capitalize">{service.replace('-', ' ')}</span></p>
                 <p className="text-3xl font-bold">₱{parseFloat(amount || '0').toFixed(2)}</p>
             </div>
           </div>

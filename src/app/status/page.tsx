@@ -13,7 +13,7 @@ const StatusPill = ({ state }: { state: ModuleStatus['state'] }) => {
   const config = {
     OK: { icon: CheckCircle, color: 'text-green-400', label: 'OK' },
     WARN: { icon: AlertTriangle, color: 'text-yellow-400', label: 'Warning' },
-    BROKEN: { icon: XCircle, color: 'text-red-400', label: 'Broken' },
+    BROKEN: { icon: XCircle, color: 'text-red-400', label: 'Error' },
   };
   const { icon: Icon, color, label } = config[state] || config.WARN;
   return (
@@ -83,8 +83,21 @@ export default function StatusPage() {
         ) : !status ? (
           <div className="text-center p-12 text-red-400">Failed to load system status.</div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Panel title="Modules" className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Panel title="Recent Errors" className="lg:col-span-3">
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {status.errors.recent.length === 0 ? <p className="text-sm text-zinc-500">No recent errors recorded.</p> : (
+                    status.errors.recent.map((err, i) => (
+                        <div key={i} className="p-2 bg-red-950/30 border border-red-500/20 rounded-md font-mono text-xs">
+                           <p className="text-red-300 font-bold">[{err.source}] {formatDistanceToNow(new Date(err.atISO), { addSuffix: true })}</p>
+                           <p className="text-red-400 mt-1">{err.message}</p>
+                        </div>
+                    ))
+                )}
+              </div>
+            </Panel>
+            
+            <Panel title="Modules" className="lg:col-span-3">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {status.modules.map(mod => (
                     <div key={mod.name} className="bg-zinc-800/50 p-4 rounded-xl border border-zinc-700">
@@ -105,7 +118,7 @@ export default function StatusPage() {
               </div>
             </Panel>
             
-            <Panel title="Offline Database (Dexie)">
+            <Panel title="Offline Database (Dexie)" className="lg:col-span-2">
               <InfoRow label="DB Name" value={status.dexie.dbName} />
               <InfoRow label="DB Version" value={status.dexie.version} />
               <div className="space-y-2 pt-2">
@@ -133,19 +146,6 @@ export default function StatusPage() {
                 <InfoRow label="Barangay Name" value={status.settings.barangayName} />
                 <InfoRow label="Punong Barangay" value={status.settings.punongBarangay} />
                 <InfoRow label="Trial Mode" value={status.settings.trialEnabled ? `Yes (${status.settings.daysRemaining} days left)` : 'No'} />
-            </Panel>
-            
-             <Panel title="Recent Errors" className="lg:col-span-2">
-              <div className="max-h-60 overflow-y-auto space-y-2">
-                {status.errors.recent.length === 0 ? <p className="text-sm text-zinc-500">No recent errors recorded.</p> : (
-                    status.errors.recent.map((err, i) => (
-                        <div key={i} className="p-2 bg-red-950/30 border border-red-500/20 rounded-md font-mono text-xs">
-                           <p className="text-red-300 font-bold">[{err.source}] {formatDistanceToNow(new Date(err.atISO), { addSuffix: true })}</p>
-                           <p className="text-red-400 mt-1">{err.message}</p>
-                        </div>
-                    ))
-                )}
-              </div>
             </Panel>
           </div>
         )}

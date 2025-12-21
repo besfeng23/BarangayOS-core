@@ -8,6 +8,7 @@ import { ResidentPicker } from "@/components/shared/ResidentPicker";
 import { SmartDateInput } from "@/components/ui/SmartDateInput";
 import AIAssistButton from "@/components/ai/AIAssistButton";
 import AIDrawer from "@/components/ai/AIDrawer";
+import { Loader2 } from "lucide-react";
 
 export default function BlotterPage() {
   const { enqueue } = useSyncQueue();
@@ -27,8 +28,8 @@ export default function BlotterPage() {
         {ws.mode === "list" && (
           <>
             <div className="mb-4">
-              <h1 className="text-white text-xl font-semibold">Blotter</h1>
-              <p className="text-slate-200 text-sm mt-1">Logbook para sa mga insidente.</p>
+              <h1 className="text-white text-xl font-semibold">Blotter Records</h1>
+              <p className="text-slate-200 text-sm mt-1">Logbook for community incidents.</p>
             </div>
 
             {ws.banner && (
@@ -37,7 +38,7 @@ export default function BlotterPage() {
                 ws.banner.kind === "error" ? "border-red-900/50 bg-red-950/30" : "border-emerald-900/40 bg-emerald-950/20"
               ].join(" ")}>
                 <div className="text-white text-sm font-semibold">
-                  {ws.banner.kind === "error" ? "Ayusin ito" : "Status"}
+                  {ws.banner.kind === "error" ? "Error" : "Success"}
                 </div>
                 <div className="text-slate-200 text-sm mt-1">{ws.banner.msg}</div>
               </div>
@@ -46,7 +47,7 @@ export default function BlotterPage() {
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
               <input
                 className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
-                placeholder="Hanapin ang pangalan, lugar, o keyword…"
+                placeholder="Search name, location, or keyword…"
                 value={ws.query}
                 onChange={(e) => ws.setQuery(e.target.value)}
               />
@@ -54,16 +55,16 @@ export default function BlotterPage() {
                 className="mt-3 h-12 w-full rounded-xl bg-zinc-100 text-zinc-950 font-semibold"
                 onClick={ws.newBlotter}
               >
-                + Mag-file ng Blotter
+                + File New Blotter
               </button>
               <div className="mt-3 text-xs text-slate-200">
-                {ws.loading ? "Nagloload…" : `${ws.items.length} na record(s)`}
+                {ws.loading ? "Loading…" : `${ws.items.length} record(s)`}
               </div>
             </div>
 
             <div className="mt-4 space-y-2">
               {ws.items.length === 0 && !ws.loading ? (
-                <div className="text-slate-200 text-sm p-4 text-center border-2 border-dashed border-zinc-800 rounded-2xl">Walang laman. Pindutin ang 'Mag-file' para magsimula.</div>
+                <div className="text-slate-200 text-sm p-4 text-center border-2 border-dashed border-zinc-800 rounded-2xl">No records found. Click 'File New Blotter' to start.</div>
               ) : (
                 ws.items.map((b) => (
                   <button
@@ -90,25 +91,25 @@ export default function BlotterPage() {
               className="mb-3 h-12 rounded-xl bg-zinc-900/40 border border-zinc-800 text-white px-4 font-semibold"
               onClick={ws.backToList}
             >
-              ← Bumalik
+              ← Back to List
             </button>
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4">
               <div className="text-white text-sm font-semibold">
-                {ws.draft.id ? "I-edit ang Blotter" : "Bagong Blotter Record"}
+                {ws.draft.id ? "Edit Blotter Record" : "New Blotter Record"}
               </div>
 
               {/* Required fields */}
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 space-y-4">
                 <SmartDateInput
-                  labelText="Petsa ng Insidente *"
-                  helperText="Kelan nangyari ang insidente?"
+                  labelText="Date of Incident *"
+                  helperText="When did the incident happen?"
                   value={ws.draft.incidentDateISO}
                   onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
                 />
 
                 <div>
-                  <label className="block text-slate-200 text-xs mb-1">Lugar ng Insidente *</label>
+                  <label className="block text-slate-200 text-xs mb-1">Location of Incident *</label>
                   <input
                     className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
                     value={ws.draft.locationText}
@@ -117,24 +118,24 @@ export default function BlotterPage() {
                 </div>
                 
                 <ResidentPicker
-                    label="Nagrereklamo (Complainant) *"
+                    label="Complainant *"
                     value={ws.draft.complainant}
                     onChange={(val) => ws.setDraft(d => ({ ...d, complainant: val }))}
                     allowManual={false}
-                    errorMessage="Kailangan pumili ng valid na residente."
+                    errorMessage="A valid resident must be selected as complainant."
                 />
                 
                 <ResidentPicker
-                    label="Inirereklamo (Respondent) *"
+                    label="Respondent *"
                     value={ws.draft.respondent}
                     onChange={(val) => ws.setDraft(d => ({ ...d, respondent: val }))}
                     allowManual={false}
-                    errorMessage="Kailangan pumili ng valid na residente."
+                    errorMessage="A valid resident must be selected as respondent."
                 />
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="block text-slate-200 text-xs">Salaysay (Narrative) *</label>
+                    <label className="block text-slate-200 text-xs">Narrative *</label>
                     <AIAssistButton onClick={ws.openAiDrawer} disabled={!ws.draft.narrative.trim()} />
                   </div>
                   <textarea
@@ -148,7 +149,7 @@ export default function BlotterPage() {
                   className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white font-semibold"
                   onClick={() => ws.setMore(!ws.more)}
                 >
-                  {ws.more ? "Itago ang iba pang detalye" : "Iba pang detalye (optional)"}
+                  {ws.more ? "Hide Optional Details" : "Show Optional Details"}
                 </button>
 
                 {ws.more && (
@@ -159,20 +160,21 @@ export default function BlotterPage() {
 
                 {ws.banner && ws.banner.kind === "error" && (
                   <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-3">
-                    <div className="text-white text-sm font-semibold">Ayusin ito</div>
+                    <div className="text-white text-sm font-semibold">Please fix this</div>
                     <div className="text-slate-200 text-sm mt-1">{ws.banner.msg}</div>
                   </div>
                 )}
 
                 <button
                   className={[
-                    "h-12 w-full rounded-xl font-semibold",
+                    "h-12 w-full rounded-xl font-semibold flex items-center justify-center",
                     ws.busy || !ws.canSave ? "bg-zinc-800 text-slate-200 cursor-not-allowed" : "bg-zinc-100 text-zinc-950"
                   ].join(" ")}
                   disabled={ws.busy || !ws.canSave}
                   onClick={() => ws.save(enqueue)}
                 >
-                  {ws.busy ? "Sini-save…" : "I-save ang Kaso"}
+                  {ws.busy ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+                  {ws.busy ? "Saving…" : "Save Case"}
                 </button>
 
                 <button
@@ -183,7 +185,7 @@ export default function BlotterPage() {
                   disabled={ws.busy || !ws.draft.id}
                   onClick={() => ws.resolve(enqueue)}
                 >
-                  Markahan bilang 'Resolved'
+                  Mark as 'Resolved'
                 </button>
 
                 <button
@@ -194,11 +196,11 @@ export default function BlotterPage() {
                   disabled={!ws.draft.id}
                   onClick={onPrint}
                 >
-                  I-print ang Record
+                  Print Record
                 </button>
 
-                <div className="text-xs text-slate-200">
-                  Gumagana offline: naka-save muna sa device, tapos naka-sync.
+                <div className="text-xs text-slate-400 text-center">
+                  All changes are saved locally first, then synced to the cloud when online.
                 </div>
               </div>
             </div>

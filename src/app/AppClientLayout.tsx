@@ -12,6 +12,7 @@ import { resetLocalDatabase } from '@/lib/bosDb';
 import { HelpCircle } from 'lucide-react';
 import HelpDrawer from '@/components/ai/HelpDrawer';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { Loader2 } from 'lucide-react';
 
 const ErrorPanel = ({ error, onReset }: { error: Error, onReset: () => void }) => (
   <div className="flex items-center justify-center min-h-screen bg-zinc-950">
@@ -35,6 +36,17 @@ const ErrorPanel = ({ error, onReset }: { error: Error, onReset: () => void }) =
     </div>
   </div>
 );
+
+const FullscreenLoader = () => (
+    <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+        <div className="text-center">
+            <p className="text-xl font-bold text-zinc-200">Initializing BarangayOS</p>
+            <p className="text-zinc-400">Preparing the local database...</p>
+        </div>
+    </div>
+);
+
 
 export default function AppClientLayout({
   children,
@@ -81,7 +93,7 @@ export default function AppClientLayout({
   const isJobsPortal = pathname.startsWith('/jobs') || pathname.startsWith('/applications') || pathname.startsWith('/profile') || pathname.startsWith('/saved');
 
 
-  if (isLoginPage || isLandingPage || isJobsPortal) {
+  if (isLoginPage || isLandingPage) {
     return <>{children}</>;
   }
 
@@ -90,11 +102,10 @@ export default function AppClientLayout({
   }
 
   if (bootState === 'loading') {
-    // You can keep the skeleton loader from AuthProvider or put a specific one here
-    return null;
+    return <FullscreenLoader />;
   }
   
-  if(isStatusPage) {
+  if(isStatusPage || isJobsPortal) {
       return (
         <>
          <IdleScreensaver />
@@ -113,4 +124,3 @@ export default function AppClientLayout({
     </AuthGuard>
   );
 }
-

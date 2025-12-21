@@ -16,19 +16,20 @@ const StatCard = ({ title, value, icon: Icon }: { title: string, value: string, 
     </Card>
 );
 
-const ActionButton = ({ href, icon: Icon, title, description }: { href: string, icon: React.ElementType, title: string, description: string }) => (
-    <Link href={href} passHref>
-        <div className="p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer flex items-center gap-4 h-full">
-            <div className="p-3 bg-zinc-700/50 rounded-md">
-                <Icon className="h-6 w-6 text-blue-400" />
+const ActionButton = ({ href, icon: Icon, title, description, disabled = false }: { href: string, icon: React.ElementType, title: string, description: string, disabled?: boolean }) => {
+    const content = (
+        <div className={`p-4 rounded-lg transition-colors flex items-center gap-4 h-full ${disabled ? 'bg-zinc-800/20 opacity-50 cursor-not-allowed' : 'bg-zinc-800/50 hover:bg-zinc-800 cursor-pointer'}`}>
+            <div className={`p-3 rounded-md ${disabled ? 'bg-zinc-700/20' : 'bg-zinc-700/50'}`}>
+                <Icon className={`h-6 w-6 ${disabled ? 'text-zinc-500' : 'text-blue-400'}`} />
             </div>
             <div>
-                <h3 className="font-semibold text-lg">{title}</h3>
-                <p className="text-sm text-zinc-400">{description}</p>
+                <h3 className={`font-semibold text-lg ${disabled ? 'text-zinc-500' : ''}`}>{title}</h3>
+                <p className={`text-sm ${disabled ? 'text-zinc-600' : 'text-zinc-400'}`}>{description}</p>
             </div>
         </div>
-    </Link>
-);
+    );
+    return disabled ? <div>{content}</div> : <Link href={href} passHref>{content}</Link>;
+};
 
 
 export default function EmangoHomePage() {
@@ -93,22 +94,25 @@ export default function EmangoHomePage() {
                         description="Search all wallet activities."
                    />
                    <ActionButton 
-                        href="/emango/reports" 
+                        href="#" 
                         icon={BarChart3} 
                         title="Reports" 
                         description="View summaries and export data."
+                        disabled={true}
                    />
                     <ActionButton 
-                        href="/emango/audit" 
+                        href="#" 
                         icon={BookLock} 
                         title="Audit Logs" 
                         description="Review detailed activity logs."
+                        disabled={true}
                    />
                    <ActionButton 
-                        href="/emango/settings" 
+                        href="#" 
                         icon={Settings} 
                         title="Settings" 
                         description="Configure fees, roles, and limits."
+                        disabled={true}
                    />
                 </CardContent>
             </Card>
