@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ResidentPicker } from '@/components/residents/ResidentPicker';
+import { ResidentPicker } from '@/components/shared/ResidentPicker';
 import type { Resident } from '@/lib/firebase/schema';
 
 const Step1People = ({ formData, setFormData }: { formData: any, setFormData: any }) => {
@@ -20,8 +20,10 @@ const Step1People = ({ formData, setFormData }: { formData: any, setFormData: an
       <div className="space-y-4">
         <h3 className="text-xl font-semibold text-blue-400">Complainant (Nagrereklamo)</h3>
         <ResidentPicker
-          onSelectResident={handleSelectComplainant}
-          selectedResident={formData.complainant}
+          label="Complainant"
+          allowManual={false}
+          value={formData.complainant}
+          onChange={(val: any) => setFormData({ ...formData, complainant: val })}
         />
       </div>
 
@@ -29,9 +31,10 @@ const Step1People = ({ formData, setFormData }: { formData: any, setFormData: an
       <div className="space-y-4">
         <h3 className="text-xl font-semibold text-orange-400">Respondent (Inirereklamo)</h3>
         <ResidentPicker
-          onSelectResident={handleSelectRespondent}
-          selectedResident={formData.respondent}
-          isRespondent
+          label="Respondent"
+          allowManual={false}
+          value={formData.respondent}
+          onChange={(val: any) => setFormData({ ...formData, respondent: val })}
         />
       </div>
     </div>
