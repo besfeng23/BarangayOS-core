@@ -1,26 +1,19 @@
 'use client';
 import { createContext, ReactNode } from 'react';
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-import { useQueueCount } from '@/hooks/useQueueCount';
 import { useSyncWorker } from '@/hooks/useSyncWorker';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 
-interface SyncContextType {
-  isOnline: boolean;
-  queueCount: number;
-}
+export interface SyncContextType extends ReturnType<typeof useSyncStatus> {}
 
 export const SyncContext = createContext<SyncContextType | undefined>(
   undefined
 );
 
 export const SyncProvider = ({ children }: { children: ReactNode }) => {
-  const { isOnline } = useNetworkStatus();
-  const queueCount = useQueueCount();
-  useSyncWorker(); // This hook will run the sync logic in the background
-
-  const value = { isOnline, queueCount };
+  const syncState = useSyncStatus();
+  useSyncWorker(); // background sync based on network state
 
   return (
-    <SyncContext.Provider value={value}>{children}</SyncContext.Provider>
+    <SyncContext.Provider value={syncState}>{children}</SyncContext.Provider>
   );
 };

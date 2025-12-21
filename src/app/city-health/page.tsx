@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, Search, Settings, Home, Users, BarChart3, Bot, Mic } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 
 const StatCard = ({ title, value, subtext }: { title: string, value: string, subtext: string }) => (
     <Card className="bg-slate-800/50 border-slate-700 flex-1 cursor-pointer hover:bg-slate-800 transition-colors">
@@ -18,7 +19,14 @@ const StatCard = ({ title, value, subtext }: { title: string, value: string, sub
 
 
 export default function CityHealthHomePage() {
+  const { state: syncState, label: syncLabel, totalQueued } = useSyncStatus();
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const badgeTone = {
+    synced: 'bg-green-500/20 text-green-300 border-green-500/40',
+    queued: 'bg-amber-500/20 text-amber-200 border-amber-500/40',
+    offline: 'bg-amber-500/20 text-amber-200 border-amber-500/40',
+    error: 'bg-red-500/20 text-red-200 border-red-500/40',
+  }[syncState] || 'bg-zinc-700 text-zinc-100';
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-gray-200 font-sans">
@@ -32,9 +40,9 @@ export default function CityHealthHomePage() {
             </p>
         </div>
         <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1 text-sm font-medium rounded-full bg-green-500/20 text-green-400">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                Synced
+            <div className={`flex items-center gap-2 px-3 py-1 text-sm font-medium rounded-full border ${badgeTone}`}>
+                <span className="w-2 h-2 rounded-full bg-current"></span>
+                {syncLabel}{totalQueued > 0 ? ` (${totalQueued})` : ''}
             </div>
             <Button variant="ghost" size="icon"><Search className="h-6 w-6" /></Button>
             <Button variant="ghost" size="icon"><Bell className="h-6 w-6" /></Button>

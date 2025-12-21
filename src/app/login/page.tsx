@@ -23,6 +23,12 @@ export default function LoginPage() {
   const router = useRouter();
   const auth = getAuth(app);
 
+  const handleDemoLogin = () => {
+    localStorage.setItem('bos-demo-user', '1');
+    window.dispatchEvent(new Event('bos-demo-login'));
+    router.push('/');
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -106,6 +112,15 @@ export default function LoginPage() {
             >
               {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               {loading ? 'Signing In...' : 'Sign In'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 text-lg"
+              onClick={handleDemoLogin}
+              disabled={loading}
+            >
+              Continue as Demo (Offline)
             </Button>
           </form>
         </CardContent>

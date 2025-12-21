@@ -6,6 +6,7 @@ import { useResidentsData, calcAge } from "@/hooks/useResidentsData";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Save } from "lucide-react";
@@ -28,6 +29,7 @@ type FormState = {
 };
 
 type FormErrors = Partial<Record<keyof FormState, string>>;
+type FieldRefs = { [K in keyof FormState]: React.RefObject<HTMLDivElement> };
 
 interface ResidentWizardProps {
     mode: 'create' | 'edit';
@@ -59,8 +61,28 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
   const [showResultModal, setShowResultModal] = useState(false);
   const [saveResult, setSaveResult] = useState<{ok: boolean, message: string, statusLine: string} | null>(null);
   const [newResidentId, setNewResidentId] = useState<string | null>(initial?.id || null);
+  const fieldRefs = useMemo<FieldRefs>(() => ({
+    lastName: React.createRef<HTMLDivElement>(),
+    firstName: React.createRef<HTMLDivElement>(),
+    middleName: React.createRef<HTMLDivElement>(),
+    suffix: React.createRef<HTMLDivElement>(),
+    birthdate: React.createRef<HTMLDivElement>(),
+    sex: React.createRef<HTMLDivElement>(),
+    civilStatus: React.createRef<HTMLDivElement>(),
+    purok: React.createRef<HTMLDivElement>(),
+    addressLine1: React.createRef<HTMLDivElement>(),
+  }), []);
 
   const age = useMemo(() => (form.birthdate ? calcAge(form.birthdate) : null), [form.birthdate]);
+
+  const scrollToFirstError = (errs: FormErrors) => {
+    const firstKey = Object.keys(errs)[0] as keyof FormState | undefined;
+    if (firstKey && fieldRefs[firstKey]?.current) {
+      fieldRefs[firstKey].current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const input = fieldRefs[firstKey].current?.querySelector("input, button, select") as HTMLElement | null;
+      input?.focus();
+    }
+  };
 
   const validateStep = (currentStep: number): boolean => {
     const newErrors: FormErrors = {};
@@ -78,6 +100,9 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
         if (!form.addressLine1) newErrors.addressLine1 = "Address is required.";
     }
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      scrollToFirstError(newErrors);
+    }
     return Object.keys(newErrors).length === 0;
   };
 
@@ -161,11 +186,11 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
   const renderStepContent = () => {
     switch (step) {
       case 1:
-        return <Step1Name form={form} setForm={setForm} errors={errors} />;
+        return <Step1Name form={form} setForm={setForm} errors={errors} refs={fieldRefs} />;
       case 2:
-        return <Step2Personal form={form} setForm={setForm} errors={errors} age={age} />;
+        return <Step2Personal form={form} setForm={setForm} errors={errors} age={age} refs={fieldRefs} />;
       case 3:
-        return <Step3Address form={form} setForm={setForm} errors={errors} />;
+        return <Step3Address form={form} setForm={setForm} errors={errors} refs={fieldRefs} />;
       default:
         return null;
     }
@@ -210,45 +235,48 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
   );
 }
 
-const Field = ({ label, children, error }: { label: string, children: React.ReactNode, error?: string }) => (
-  <div className="space-y-2">
-    <Label>{label}</Label>
-    {children}
-    {error && <p className="text-sm text-red-400 mt-1">{error}</p>}
-  </div>
+const Field = React.forwardRef<HTMLDivElement, { label: string; children: React.ReactNode; error?: string }>(
+  ({ label, children, error }, ref) => (
+    <div className="space-y-2" ref={ref}>
+      <Label>{label}</Label>
+      {children}
+      {error && <p className="text-sm text-red-400 mt-1">{error}</p>}
+    </div>
+  )
 );
+Field.displayName = "Field";
 
-const Step1Name = ({ form, setForm, errors }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors }) => (
+const Step1Name = ({ form, setForm, errors, refs }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors, refs: FieldRefs }) => (
     <Card className="bg-zinc-900/40 border-zinc-800 rounded-2xl">
         <CardContent className="space-y-6 pt-6">
-            <Field label="Last Name *" error={errors.lastName}>
+            <Field label="Last Name *" error={errors.lastName} ref={refs.lastName}>
                 <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className={`h-12 text-lg bg-zinc-950 border-zinc-700 ${errors.lastName && 'border-red-500'}`} />
             </Field>
-            <Field label="First Name *" error={errors.firstName}>
+            <Field label="First Name *" error={errors.firstName} ref={refs.firstName}>
                 <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className={`h-12 text-lg bg-zinc-950 border-zinc-700 ${errors.firstName && 'border-red-500'}`} />
             </Field>
-            <Field label="Middle Name">
+            <Field label="Middle Name" ref={refs.middleName}>
                 <Input value={form.middleName} onChange={(e) => setForm({ ...form, middleName: e.target.value })} className="h-12 text-lg bg-zinc-950 border-zinc-700" />
             </Field>
-            <Field label="Suffix (e.g. Jr., Sr., III)">
+            <Field label="Suffix (e.g. Jr., Sr., III)" ref={refs.suffix}>
                 <Input value={form.suffix} onChange={(e) => setForm({ ...form, suffix: e.target.value })} className="h-12 text-lg bg-zinc-950 border-zinc-700" />
             </Field>
         </CardContent>
     </Card>
 );
 
-const Step2Personal = ({ form, setForm, errors, age }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors, age: number | null }) => (
+const Step2Personal = ({ form, setForm, errors, age, refs }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors, age: number | null, refs: FieldRefs }) => (
      <Card className="bg-zinc-900/40 border-zinc-800 rounded-2xl">
         <CardContent className="space-y-6 pt-6">
             <div className="grid grid-cols-2 gap-6">
-                <Field label="Birthdate *" error={errors.birthdate}>
+                <Field label="Birthdate *" error={errors.birthdate} ref={refs.birthdate}>
                     <Input type="date" value={form.birthdate} onChange={(e) => setForm({ ...form, birthdate: e.target.value })} className={`h-12 text-lg bg-zinc-950 border-zinc-700 ${errors.birthdate && 'border-red-500'}`} />
                 </Field>
                 <Field label="Age">
                     <div className="h-12 text-lg flex items-center px-3 rounded-md bg-zinc-800/50 border border-zinc-700">{age !== null ? `${age} years old` : '-'}</div>
                 </Field>
             </div>
-            <Field label="Sex *" error={errors.sex}>
+            <Field label="Sex *" error={errors.sex} ref={refs.sex}>
                 <Select onValueChange={(value: FormState['sex']) => setForm({ ...form, sex: value })} value={form.sex}>
                     <SelectTrigger className={`h-12 text-lg bg-zinc-950 border-zinc-700 ${errors.sex && 'border-red-500'}`}>
                         <SelectValue placeholder="Please select an option..." />
@@ -260,7 +288,7 @@ const Step2Personal = ({ form, setForm, errors, age }: { form: FormState, setFor
                     </SelectContent>
                 </Select>
             </Field>
-             <Field label="Civil Status *" error={errors.civilStatus}>
+             <Field label="Civil Status *" error={errors.civilStatus} ref={refs.civilStatus}>
                  <Select onValueChange={(value: FormState['civilStatus']) => setForm({ ...form, civilStatus: value })} value={form.civilStatus}>
                     <SelectTrigger className={`h-12 text-lg bg-zinc-950 border-zinc-700 ${errors.civilStatus && 'border-red-500'}`}>
                         <SelectValue placeholder="Please select an option..." />
@@ -278,13 +306,13 @@ const Step2Personal = ({ form, setForm, errors, age }: { form: FormState, setFor
     </Card>
 );
 
-const Step3Address = ({ form, setForm, errors }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors }) => (
+const Step3Address = ({ form, setForm, errors, refs }: { form: FormState, setForm: (f: FormState) => void, errors: FormErrors, refs: FieldRefs }) => (
      <Card className="bg-zinc-900/40 border-zinc-800 rounded-2xl">
         <CardContent className="space-y-6 pt-6">
-            <Field label="Purok / Zone *" error={errors.purok}>
+            <Field label="Purok / Zone *" error={errors.purok} ref={refs.purok}>
                 <Input value={form.purok} onChange={(e) => setForm({ ...form, purok: e.target.value })} placeholder="e.g. Purok 3" className={`h-12 text-lg bg-zinc-950 border-zinc-700 ${errors.purok && 'border-red-500'}`} />
             </Field>
-            <Field label="Address Line *" error={errors.addressLine1}>
+            <Field label="Address Line *" error={errors.addressLine1} ref={refs.addressLine1}>
                 <Input value={form.addressLine1} onChange={(e) => setForm({ ...form, addressLine1: e.target.value })} placeholder="e.g. 123 Rizal St., Brgy. Dau" className={`h-12 text-lg bg-zinc-950 border-zinc-700 ${errors.addressLine1 && 'border-red-500'}`} />
             </Field>
         </CardContent>

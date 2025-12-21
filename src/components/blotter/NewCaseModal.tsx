@@ -55,6 +55,15 @@ const NewCaseModal = ({ isOpen, onClose }: NewCaseModalProps) => {
   }
 
   const handleSave = async () => {
+    if (!formData.complainant || !formData.respondent || !formData.narrative || !formData.date) {
+        setSaveResult({ 
+            ok: false, 
+            message: "Please complete all required fields.", 
+            statusLine: "Complainant, respondent, date, and narrative are required." 
+        });
+        setShowResultModal(true);
+        return;
+    }
     setIsSaving(true);
     toast({ title: "Filing Case...", description: "Saving the blotter case locally." });
 

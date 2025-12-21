@@ -1,4 +1,6 @@
 import React from "react";
+import Link from "next/link";
+import { Button } from "../ui/button";
 
 export function TrialBanner({
   visible,
@@ -18,8 +20,15 @@ export function TrialBanner({
     >
       <div className="max-w-6xl mx-auto">
         <div className="bg-amber-500/15 border border-amber-500/30 text-amber-200 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-2xl shadow-black">
-          <div className="text-sm font-semibold">Trial Mode</div>
-          <div className="text-xs text-amber-200/80">{message}</div>
+          <div>
+            <div className="text-sm font-semibold">Trial Mode</div>
+            <div className="text-xs text-amber-200/80">{message}</div>
+          </div>
+          <Link href="/activation">
+            <Button size="sm" variant="secondary" className="text-amber-900 bg-amber-200 hover:bg-amber-100">
+              Activate Now
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import { enqueuePrintJob } from "@/lib/bos/print/enqueuePrintJob";
 import { performPrintJob } from "@/lib/bos/print/performPrintJob";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 import { getManilaDate } from "@/lib/date";
+import { blotterSchema } from "@/lib/validation/schemas";
 
 type Mode = "list" | "form";
 type Banner = { kind: "ok" | "error"; msg: string } | null;
@@ -26,6 +27,7 @@ type Draft = {
   notes: string;
   status?: "Pending" | "Resolved";
 };
+type DraftErrors = Partial<Record<keyof Draft, string>>;
 
 const DRAFT_KEY = "draft:blotter:workstation";
 
@@ -60,6 +62,7 @@ export function useBlotterWorkstation() {
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [banner, setBanner] = useState<Banner>(null);
+  const [fieldErrors, setFieldErrors] = useState<DraftErrors>({});
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [more, setMore] = useState(false);
@@ -173,51 +176,58 @@ export function useBlotterWorkstation() {
   }, []);
 
   const validate = useCallback((d: Draft) => {
-    if (!d.incidentDateISO) throw new Error("Kailangan ang petsa ng insidente.");
-    if (!d.locationText.trim()) throw new Error("Kailangan ang lugar ng insidente.");
-    if (d.complainant.mode !== 'resident' || !d.complainant.residentId) throw new Error("Kailangan pumili ng valid na residente para sa nagrereklamo.");
-    if (d.respondent.mode !== 'resident' || !d.respondent.residentId) throw new Error("Kailangan pumili ng valid na residente para sa inirereklamo.");
-    if (!getPartyName(d.complainant)) throw new Error("Kailangan ang pangalan ng nagrereklamo.");
-    if (!getPartyName(d.respondent)) throw new Error("Kailangan ang pangalan ng inirereklamo.");
-    if (!d.narrative.trim()) throw new Error("Kailangan ang salaysay (narrative).");
+    const parsed = blotterSchema.safeParse(d);
+    if (!parsed.success) {
+      const flat = parsed.error.flatten().fieldErrors;
+      setFieldErrors({
+        incidentDateISO: flat.incidentDateISO?.[0],
+        locationText: flat.locationText?.[0],
+        complainant: flat.complainant?.[0],
+        respondent: flat.respondent?.[0],
+        narrative: flat.narrative?.[0],
+      });
+      throw new Error("Kailangan kumpletuhin ang mga required fields.");
+    }
+    setFieldErrors({});
+    return parsed.data;
   }, []);
 
   const save = useCallback(async (enqueue: (job: { type: string; payload: any }) => Promise<void>) => {
     setBusy(true);
     setBanner(null);
     try {
-      validate(draft);
+      const parsed = validate(draft);
       const nowISO = new Date().toISOString();
       const id = draft.id ?? uuid();
 
-      const complainantName = getPartyName(draft.complainant);
-      const respondentName = getPartyName(draft.respondent);
+      const complainantName = getPartyName(parsed.complainant);
+      const respondentName = getPartyName(parsed.respondent);
 
       const rec: BlotterLocal = {
         id,
-        status: (draft.status ?? "Pending") as any,
-        incidentDateISO: new Date(draft.incidentDateISO).toISOString(),
-        locationText: draft.locationText.trim(),
+        status: (parsed.status ?? "Pending") as any,
+        incidentDateISO: new Date(parsed.incidentDateISO).toISOString(),
+        locationText: parsed.locationText.trim(),
         complainantName,
         respondentName,
-        complainant: draft.complainant,
-        respondent: draft.respondent,
-        narrative: draft.narrative.trim(),
-        actionsTaken: draft.actionsTaken.trim() || undefined,
-        settlement: draft.settlement.trim() || undefined,
-        notes: draft.notes.trim() || undefined,
+        complainant: parsed.complainant,
+        respondent: parsed.respondent,
+        narrative: parsed.narrative.trim(),
+        actionsTaken: (parsed.actionsTaken || "").trim() || undefined,
+        settlement: (parsed.settlement || "").trim() || undefined,
+        notes: (parsed.notes || "").trim() || undefined,
         createdAtISO: (await db.blotters.get(id))?.createdAtISO ?? nowISO,
         updatedAtISO: nowISO,
         searchTokens: toTokens([
           id,
-          upper(draft.locationText),
+          upper(parsed.locationText),
           upper(complainantName),
           upper(respondentName),
-          upper(draft.narrative),
-          upper(draft.actionsTaken),
-          upper(draft.settlement),
-          upper(draft.notes),
-          draft.status ?? "Pending",
+          upper(parsed.narrative),
+          upper(parsed.actionsTaken || ""),
+          upper(parsed.settlement || ""),
+          upper(parsed.notes || ""),
+          parsed.status ?? "Pending",
         ].join(" ")),
       };
 
@@ -331,6 +341,7 @@ export function useBlotterWorkstation() {
     selectedId,
     draft, setDraft,
     more, setMore,
+    fieldErrors,
     reload,
     newBlotter,
     editBlotter,

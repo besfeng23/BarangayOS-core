@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { deriveSyncBadgeState, formatSyncStatus } from '@/hooks/useSyncStatus';
 
 const StatusPill = ({ state }: { state: ModuleStatus['state'] }) => {
   const config = {
@@ -59,6 +60,13 @@ export default function StatusPage() {
   }, []);
   
   const overallState = status?.modules.some(m => m.state === 'BROKEN') ? 'BROKEN' : status?.modules.some(m => m.state === 'WARN') ? 'WARN' : 'OK';
+  const syncBadge = status ? deriveSyncBadgeState(typeof navigator !== 'undefined' ? navigator.onLine : true, {
+    pending: status.sync.pending ?? 0,
+    syncing: status.sync.syncing ?? 0,
+    failed: status.sync.failed ?? 0,
+    lastSyncAt: status.sync.lastSyncAt ? new Date(status.sync.lastSyncAt).getTime() : null,
+  }) : 'synced';
+  const syncLabel = status ? formatSyncStatus(syncBadge, (status.sync.pending ?? 0) + (status.sync.syncing ?? 0) + (status.sync.failed ?? 0)) : 'Syncing...';
 
   return (
       <div className="max-w-6xl mx-auto p-4 space-y-4">
@@ -134,6 +142,7 @@ export default function StatusPage() {
             </Panel>
 
             <Panel title="Sync Queue">
+                <InfoRow label="State" value={syncLabel} />
                 <InfoRow label="Pending" value={status.sync.pending} />
                 <InfoRow label="Syncing" value={status.sync.syncing} />
                 <InfoRow label="Failed" value={status.sync.failed} />

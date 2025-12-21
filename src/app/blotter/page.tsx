@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useSyncQueue } from "@/hooks/bos/useSyncQueue";
 import { useBlotterWorkstation } from "@/hooks/blotter/useBlotterWorkstation";
 import { ResidentPicker } from "@/components/shared/ResidentPicker";
@@ -13,6 +13,14 @@ import { Loader2 } from "lucide-react";
 export default function BlotterPage() {
   const { enqueue } = useSyncQueue();
   const ws = useBlotterWorkstation();
+
+  useEffect(() => {
+    const keys = Object.keys(ws.fieldErrors || {});
+    if (keys.length > 0) {
+      const el = document.querySelector(`[data-blotter-field="${keys[0]}"]`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [ws.fieldErrors]);
 
   const onPrint = async () => {
     try {
@@ -101,20 +109,24 @@ export default function BlotterPage() {
 
               {/* Required fields */}
               <div className="mt-4 space-y-4">
-                <SmartDateInput
-                  labelText="Date of Incident *"
-                  helperText="When did the incident happen?"
-                  value={ws.draft.incidentDateISO}
-                  onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
-                />
+                <div data-blotter-field="incidentDateISO">
+                  <SmartDateInput
+                    labelText="Date of Incident *"
+                    helperText="When did the incident happen?"
+                    value={ws.draft.incidentDateISO}
+                    onChange={(v) => ws.setDraft((d) => ({ ...d, incidentDateISO: v }))}
+                  />
+                  {ws.fieldErrors.incidentDateISO && <p className="text-sm text-red-400 mt-1">{ws.fieldErrors.incidentDateISO}</p>}
+                </div>
 
-                <div>
+                <div data-blotter-field="locationText">
                   <label className="block text-slate-200 text-xs mb-1">Location of Incident *</label>
                   <input
                     className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3"
                     value={ws.draft.locationText}
                     onChange={(e) => ws.setDraft((d) => ({ ...d, locationText: e.target.value }))}
                   />
+                  {ws.fieldErrors.locationText && <p className="text-sm text-red-400 mt-1">{ws.fieldErrors.locationText}</p>}
                 </div>
                 
                 <ResidentPicker
@@ -122,7 +134,7 @@ export default function BlotterPage() {
                     value={ws.draft.complainant}
                     onChange={(val) => ws.setDraft(d => ({ ...d, complainant: val }))}
                     allowManual={false}
-                    errorMessage="A valid resident must be selected as complainant."
+                    errorMessage={ws.fieldErrors.complainant || "A valid resident must be selected as complainant."}
                 />
                 
                 <ResidentPicker
@@ -130,10 +142,10 @@ export default function BlotterPage() {
                     value={ws.draft.respondent}
                     onChange={(val) => ws.setDraft(d => ({ ...d, respondent: val }))}
                     allowManual={false}
-                    errorMessage="A valid resident must be selected as respondent."
+                    errorMessage={ws.fieldErrors.respondent || "A valid resident must be selected as respondent."}
                 />
 
-                <div>
+                <div data-blotter-field="narrative">
                   <div className="flex justify-between items-center mb-1">
                     <label className="block text-slate-200 text-xs">Narrative *</label>
                     <AIAssistButton onClick={ws.openAiDrawer} disabled={!ws.draft.narrative.trim()} />
@@ -143,6 +155,7 @@ export default function BlotterPage() {
                     value={ws.draft.narrative}
                     onChange={(e) => ws.setDraft((d) => ({ ...d, narrative: e.target.value }))}
                   />
+                  {ws.fieldErrors.narrative && <p className="text-sm text-red-400 mt-1">{ws.fieldErrors.narrative}</p>}
                 </div>
 
                 <button
@@ -154,7 +167,33 @@ export default function BlotterPage() {
 
                 {ws.more && (
                   <div className="space-y-3">
-                    {/* Optional fields are removed for simplicity in this pass, matching older implementation */}
+                    <div>
+                      <label className="block text-slate-200 text-xs mb-1">Actions Taken</label>
+                      <textarea
+                        className="min-h-[80px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
+                        value={ws.draft.actionsTaken}
+                        onChange={(e) => ws.setDraft((d) => ({ ...d, actionsTaken: e.target.value }))}
+                        placeholder="Barangay response or mediation steps."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-200 text-xs mb-1">Settlement / Agreement</label>
+                      <textarea
+                        className="min-h-[80px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
+                        value={ws.draft.settlement}
+                        onChange={(e) => ws.setDraft((d) => ({ ...d, settlement: e.target.value }))}
+                        placeholder="Any agreement reached."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-200 text-xs mb-1">Notes</label>
+                      <textarea
+                        className="min-h-[80px] w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white px-3 py-2"
+                        value={ws.draft.notes}
+                        onChange={(e) => ws.setDraft((d) => ({ ...d, notes: e.target.value }))}
+                        placeholder="Internal notes."
+                      />
+                    </div>
                   </div>
                 )}
 

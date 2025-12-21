@@ -2,7 +2,7 @@
 "use client";
 import React, { createContext, useContext, ReactNode, useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/lib/bosDb";
+import { db, type DeviceType } from "@/lib/bosDb";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
 
 export type BarangaySettings = {
@@ -14,6 +14,7 @@ export type BarangaySettings = {
   trialDaysRemaining: number;
   controlPrefix: string;
   readOnlyMode: boolean;
+  securityDeviceTypes: DeviceType[];
   updatedAtISO: string;
 };
 
@@ -28,6 +29,16 @@ const DEFAULTS: BarangaySettings = {
   trialDaysRemaining: 5,
   controlPrefix: "BRGY",
   readOnlyMode: false,
+  securityDeviceTypes: [
+    'CCTV',
+    'NVR',
+    'BODY_CAM',
+    'DASH_CAM',
+    'PANIC_BUTTON',
+    'SIREN',
+    'LED_DISPLAY',
+    'PA_SYSTEM',
+  ],
   updatedAtISO: new Date().toISOString(),
 };
 
@@ -52,7 +63,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [saving, setSaving] = useState(false);
 
   const settingsData = useLiveQuery(() => db.settings.get(KEY), [], null);
-  const settings = settingsData?.value as BarangaySettings ?? DEFAULTS;
+  const settings = { ...DEFAULTS, ...(settingsData?.value as BarangaySettings ?? {}) };
   const loading = settingsData === null;
 
   const save = useCallback(async (updates: Partial<BarangaySettings>) => {

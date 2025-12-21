@@ -48,6 +48,7 @@ export default function AddDeviceModal({ isOpen, onClose, onSave, device }: AddD
     status: device?.status || 'ACTIVE',
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; type?: string; location?: string }>({});
 
   useEffect(() => {
     setDraft({
@@ -61,6 +62,13 @@ export default function AddDeviceModal({ isOpen, onClose, onSave, device }: AddD
   }, [device, isOpen]);
 
   const handleSave = async () => {
+    const nextErrors: { name?: string; type?: string; location?: string } = {};
+    if (!draft.name.trim()) nextErrors.name = 'Name is required.';
+    if (!draft.type) nextErrors.type = 'Select a device type.';
+    if (!draft.location.trim()) nextErrors.location = 'Location is required.';
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     setIsSaving(true);
     try {
       await onSave(draft);
@@ -94,26 +102,28 @@ export default function AddDeviceModal({ isOpen, onClose, onSave, device }: AddD
               id="name"
               value={draft.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className="col-span-3"
+              className={`col-span-3 ${errors.name ? 'border-red-500' : ''}`}
               placeholder="e.g., Hall Entrance Cam 1"
             />
+            {errors.name && <p className="col-span-4 text-right text-sm text-red-400">{errors.name}</p>}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="type" className="text-right">
               Type
             </Label>
             <Select onValueChange={(value) => handleChange('type', value as DeviceType)} value={draft.type}>
-              <SelectTrigger className="col-span-3">
+              <SelectTrigger className={`col-span-3 ${errors.type ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Select device type" />
               </SelectTrigger>
               <SelectContent>
-                {deviceTypes.map((t) => (
+                {(deviceTypes.length ? deviceTypes : ['CCTV', 'PANIC_BUTTON']).map((t) => (
                   <SelectItem key={t} value={t}>
                     {t.replace(/_/g, ' ')}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {errors.type && <p className="col-span-4 text-right text-sm text-red-400">{errors.type}</p>}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="location" className="text-right">
@@ -123,9 +133,10 @@ export default function AddDeviceModal({ isOpen, onClose, onSave, device }: AddD
               id="location"
               value={draft.location}
               onChange={(e) => handleChange('location', e.target.value)}
-              className="col-span-3"
+              className={`col-span-3 ${errors.location ? 'border-red-500' : ''}`}
               placeholder="e.g., Main Hall Entrance"
             />
+            {errors.location && <p className="col-span-4 text-right text-sm text-red-400">{errors.location}</p>}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="ip-address" className="text-right">
@@ -161,7 +172,7 @@ export default function AddDeviceModal({ isOpen, onClose, onSave, device }: AddD
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving || !draft.name.trim() || !draft.type || !draft.location.trim()}>
             {isSaving ? 'Saving...' : 'Save Device'}
           </Button>
         </DialogFooter>
