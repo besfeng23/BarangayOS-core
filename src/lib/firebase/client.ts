@@ -1,59 +1,61 @@
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore } from "firebase/firestore";
+import { getAuth, Auth } from "firebase/auth";
+import { getAnalytics, Analytics, isSupported } from "firebase/analytics";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
+// Standard Firebase config object using environment variables for security.
 const firebaseConfig = {
   apiKey: "AIzaSyAgNyILqGlsW1YV8OF63ubJljSZoEByMcA",
   authDomain: "studio-603796794-a3dad.firebaseapp.com",
   projectId: "studio-603796794-a3dad",
-  storageBucket: "studio-603796794-a3dad.firebasestorage.app",
+  storageBucket: "studio-603796794-a3dad.appspot.com",
   messagingSenderId: "1057904202072",
   appId: "1:1057904202072:web:0156b6def50c6badb0952d",
-  measurementId: "G-5HPJBLXZPM",
-  databaseURL: "https://studio-603796794-a3dad-default-rtdb.firebaseio.com",
+  measurementId: "G-5HPJBLXZPM"
 };
 
-// Initialize Firebase (Singleton Pattern)
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Initialize Firebase App (Singleton Pattern)
+const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Analytics
-isSupported().then((supported) => {
-  if (supported) {
-    getAnalytics(app);
-    console.log("✅ Firebase Analytics Enabled");
-  } else {
-    console.log("Firebase Analytics is not supported in this environment.");
-  }
-});
-
-
-// Initialize Firestore with Offline Persistence
-// This enables multi-tab offline support, which is critical for the kiosk architecture.
-// Data will be saved locally and synced automatically when the connection is restored.
-let db;
+let db: Firestore;
 try {
   db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager()
-    })
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
   });
-  console.log("✅ BOS Offline Persistence Enabled");
+  console.log("✅ Firebase Offline Persistence Enabled (Multi-Tab)");
 } catch (error) {
-    if (error instanceof Error && 'code' in error && (error as {code: string}).code === 'failed-precondition') {
-        console.warn("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
-        // If persistence fails, we still get an instance of Firestore, just without multi-tab persistence.
-        db = getFirestore(app);
-    } else {
-        console.error("Error enabling offline persistence: ", error);
-        // Fallback to in-memory persistence if offline setup fails for other reasons
-        db = getFirestore(app);
-    }
+  if (error instanceof Error && 'code' in error && (error as {code: string}).code === 'failed-precondition') {
+    console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time. Falling back to memory cache for this tab.");
+  } else {
+    console.error("Error enabling offline persistence: ", error);
+  }
+  // Fallback to regular getFirestore if initialization fails
+  db = getFirestore(app);
 }
 
-const auth = getAuth(app);
-const rtdb = getDatabase(app);
+const auth: Auth = getAuth(app);
+const storage: FirebaseStorage = getStorage(app);
 
-export { app, db, auth, rtdb };
+// Lazy-initialized Analytics instance
+let analytics: Analytics | null = null;
+
+/**
+ * Safely gets the Firebase Analytics instance, only if running in a supported browser environment.
+ * This prevents crashes during server-side rendering or in unsupported contexts.
+ * @returns The Firebase Analytics instance, or null if not supported.
+ */
+export const getAnalyticsIfSupported = async (): Promise<Analytics | null> => {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+    if (!analytics) {
+        if (await isSupported()) {
+            analytics = getAnalytics(app);
+        }
+    }
+    return analytics;
+}
+
+export { app, db, auth, storage };

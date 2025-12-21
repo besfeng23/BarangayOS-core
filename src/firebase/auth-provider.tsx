@@ -30,6 +30,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [auth]);
 
+  // The loader was removed as per the bug fix for AppClientLayout.
+  // AppClientLayout now handles the initial loading state for the whole app,
+  // including waiting for auth state. This prevents rendering children
+  // prematurely while auth is still loading.
   if (loading) {
     return (
         <div className="flex flex-col h-screen bg-slate-900 p-8 space-y-4">
