@@ -27,7 +27,6 @@ import { PartnerTileGuard } from "@/components/dashboard/PartnerTileGuard";
 import { TrialBanner } from "@/components/system/TrialBanner";
 import { useSettings } from '@/lib/bos/settings/useSettings';
 import { Button } from '@/components/ui/button';
-import AIQuickSearch from '@/components/ai/AIQuickSearch';
 
 export default function Home() {
   const [activeBlotterCount, setActiveBlotterCount] = useState(0);
@@ -91,8 +90,6 @@ export default function Home() {
           At-a-glance overview of barangay operations.
         </p>
       </header>
-
-      <AIQuickSearch />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
          <ModuleCard

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
-import GlobalSearch from "../app-hub/search/GlobalSearch";
+import AIQuickSearch from "@/components/ai/AIQuickSearch";
 import { StatusIndicator } from "../shell/StatusIndicator";
 import { useSettings } from "@/lib/bos/settings/useSettings";
 import { Button } from "../ui/button";
@@ -84,8 +84,8 @@ export default function SystemRail({ onHelpClick }: { onHelpClick?: () => void }
           </div>
         </Link>
 
-        <div className="flex-1 flex justify-center px-4">
-          <GlobalSearch />
+        <div className="flex-1 flex justify-center px-4 max-w-lg">
+          <AIQuickSearch />
         </div>
 
         <div className="flex items-center gap-2">

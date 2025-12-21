@@ -1,11 +1,12 @@
+
 'use client';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import SearchInput from './SearchInput';
 import SearchOverlay from './SearchOverlay';
+import AIQuickSearch from '@/components/ai/AIQuickSearch';
 
 export default function GlobalSearch() {
   const isMobile = useIsMobile();
@@ -29,9 +30,6 @@ export default function GlobalSearch() {
     );
   }
 
-  return (
-    <div className="w-full max-w-md">
-      <SearchInput />
-    </div>
-  );
+  // For desktop, use the AI Quick Search directly.
+  return <AIQuickSearch />;
 }

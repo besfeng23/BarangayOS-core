@@ -8,6 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Bot, Loader2, Search } from 'lucide-react';
 import { nlq } from '@/ai/flows/nlq';
 import { useToast } from '@/components/ui/toast';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Badge } from '@/components/ui/badge';
 
 const SUGGESTIONS = [
@@ -19,6 +24,7 @@ const SUGGESTIONS = [
 export default function AIQuickSearch() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -26,7 +32,7 @@ export default function AIQuickSearch() {
     if (!searchText.trim()) return;
     
     setLoading(true);
-    setQuery(searchText); // Update input field with the text being searched
+    setQuery(searchText);
 
     try {
       const result = await nlq({ query: searchText, context: 'dashboard' });
@@ -55,6 +61,7 @@ export default function AIQuickSearch() {
       const destination = `/${targetModule}?${queryString}`;
       
       router.push(destination);
+      setIsOpen(false);
 
     } catch (error) {
       console.error("AI Quick Search failed:", error);
@@ -73,39 +80,50 @@ export default function AIQuickSearch() {
     handleSearch(query);
   }
 
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setQuery(e.target.value);
+      if(e.target.value.length > 1 && !isOpen) {
+          setIsOpen(true);
+      } else if (e.target.value.length <= 1 && isOpen) {
+          setIsOpen(false);
+      }
+  }
+
   return (
-    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
-      <div className="flex items-center gap-2">
-        <Bot className="text-blue-400 h-6 w-6 flex-shrink-0" />
-        <h3 className="text-lg font-semibold">AI Quick Search</h3>
-      </div>
-      <form onSubmit={handleFormSubmit} className="relative mt-2 flex gap-2">
-        <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <Input 
-                placeholder="Ask something like 'show me active blotter cases'" 
-                className="bg-zinc-900 border-zinc-600 text-white pl-10 pr-28 h-12 w-full rounded-md"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                disabled={loading}
-            />
-        </div>
-        <Button type="submit" size="lg" className="h-12" disabled={loading || !query.trim()}>
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Search'}
-        </Button>
-      </form>
-      <div className="flex flex-wrap gap-2 mt-2">
-        {SUGGESTIONS.map(s => (
-            <Badge 
-                key={s} 
-                variant="secondary" 
-                className="cursor-pointer hover:bg-zinc-600"
-                onClick={() => handleSearch(s)}
-            >
-                {s}
-            </Badge>
-        ))}
-      </div>
-    </div>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild className="w-full">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <Input
+                    placeholder="AI search: active cases, purok 3 residents..."
+                    className="bg-zinc-800 border-zinc-700 h-9 pl-9 text-sm"
+                    value={query}
+                    onChange={handleQueryChange}
+                    onKeyDown={(e) => { if(e.key === 'Enter') { handleSearch(query) }}}
+                />
+                {loading && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 animate-spin" />
+                )}
+            </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-4" align="start">
+            <div className="flex items-center gap-2 mb-4">
+                <Bot className="text-blue-400 h-5 w-5 flex-shrink-0" />
+                <h3 className="text-sm font-semibold">AI Assistant Suggestions</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+                {SUGGESTIONS.map(s => (
+                    <Badge 
+                        key={s} 
+                        variant="secondary" 
+                        className="cursor-pointer hover:bg-zinc-600"
+                        onClick={() => handleSearch(s)}
+                    >
+                        {s}
+                    </Badge>
+                ))}
+            </div>
+        </PopoverContent>
+    </Popover>
   );
 }
