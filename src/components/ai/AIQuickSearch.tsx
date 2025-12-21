@@ -20,6 +20,7 @@ const SUGGESTIONS = [
   "residents in purok 3",
   "expired business permits",
 ];
+const AI_DISABLED = true;
 
 export default function AIQuickSearch() {
   const [query, setQuery] = useState('');
@@ -30,6 +31,13 @@ export default function AIQuickSearch() {
 
   const handleSearch = async (searchText: string) => {
     if (!searchText.trim()) return;
+    if (AI_DISABLED) {
+      toast({
+        title: "Coming Soon",
+        description: "AI Quick Search is disabled in this demo build.",
+      });
+      return;
+    }
     
     setLoading(true);
     setQuery(searchText);
@@ -95,11 +103,12 @@ export default function AIQuickSearch() {
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <Input
-                    placeholder="AI search: active cases, purok 3 residents..."
+                    placeholder={AI_DISABLED ? "AI Quick Search (Coming Soon)" : "AI search: active cases, purok 3 residents..."}
                     className="bg-zinc-800 border-zinc-700 h-9 pl-9 text-sm"
                     value={query}
                     onChange={handleQueryChange}
                     onKeyDown={(e) => { if(e.key === 'Enter') { handleSearch(query) }}}
+                    disabled={AI_DISABLED}
                 />
                 {loading && (
                     <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 animate-spin" />
@@ -117,9 +126,10 @@ export default function AIQuickSearch() {
                         key={s} 
                         variant="secondary" 
                         className="cursor-pointer hover:bg-zinc-600"
-                        onClick={() => handleSearch(s)}
-                    >
-                        {s}
+                    onClick={() => handleSearch(s)}
+                    disabled={AI_DISABLED}
+                >
+                    {AI_DISABLED ? `${s} (disabled)` : s}
                     </Badge>
                 ))}
             </div>

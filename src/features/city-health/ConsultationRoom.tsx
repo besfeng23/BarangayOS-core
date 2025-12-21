@@ -6,7 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, ClinicQueueItem } from '@/lib/bosDb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Stethoscope, FileText, CheckCircle } from 'lucide-react';
+import { ArrowLeft, User, Stethoscope, FileText, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,7 +46,11 @@ export function ConsultationRoom() {
     const [assessment, setAssessment] = useState('');
     const [plan, setPlan] = useState('');
     
-    const queueItem = useLiveQuery(() => db.clinic_queue.get(id), [id]);
+    const queueItem = useLiveQuery(async () => (await db.clinic_queue.get(id)) ?? null, [id], undefined as ClinicQueueItem | null | undefined);
+    const loading = queueItem === undefined;
+    const patientName = queueItem?.patient?.mode === 'resident'
+        ? (queueItem.patient.residentNameSnapshot || queueItem.patientName)
+        : (queueItem?.patient?.manualName || queueItem?.patientName || 'Patient');
 
     const handleEndConsultation = async () => {
         if (!queueItem) return;
@@ -58,7 +62,7 @@ export function ConsultationRoom() {
             });
             toast({
                 title: 'Consultation Finished',
-                description: `${queueItem.patientName}'s consultation has been marked as done.`
+                description: `${patientName}'s consultation has been marked as done.`
             });
             router.push('/city-health/queue');
         } catch (error) {
@@ -71,10 +75,25 @@ export function ConsultationRoom() {
         }
     };
     
-    if (!queueItem) {
+    if (loading) {
         return (
-            <div className="p-8 text-center">
-                <p>Loading consultation...</p>
+            <div className="p-8 text-center space-y-3">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-400" />
+                <p className="text-sm text-muted-foreground">Loading consultation...</p>
+            </div>
+        );
+    }
+
+    if (queueItem === null) {
+        return (
+            <div className="p-8 text-center space-y-3">
+                <p className="text-lg font-semibold">Consultation record not found.</p>
+                <p className="text-sm text-muted-foreground">Please return to the queue and start again.</p>
+                <div className="flex justify-center">
+                    <Link href="/city-health/queue" passHref>
+                        <Button variant="outline">Back to Queue</Button>
+                    </Link>
+                </div>
             </div>
         );
     }
@@ -131,4 +150,3 @@ export function ConsultationRoom() {
         </div>
     );
 }
-

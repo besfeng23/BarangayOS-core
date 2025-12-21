@@ -105,6 +105,9 @@ export default function PrintCenterPage() {
                 {printingId ? 'Printing...' : 'Print Next in Queue'}
             </Button>
         )}
+        {tab === 'queued' && !hasQueuedJobs && (
+            <p className="text-sm text-zinc-400 text-center">No jobs in queue.</p>
+        )}
       </div>
 
       <div className="space-y-2">

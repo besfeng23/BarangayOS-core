@@ -1,41 +1,22 @@
 "use client";
-
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/lib/bosDb";
+import { useMemo } from "react";
+import { useSyncStatus } from "./useSyncStatus";
 
 export function useSyncHealth() {
-  const pendingCount = useLiveQuery(async () => {
-    try {
-      return await db.sync_queue.where("status").anyOf(["pending", "syncing"]).count();
-    } catch {
-      return 0;
-    }
-  }, [], 0);
+  const { snapshot, state, isOnline } = useSyncStatus();
 
-  const errorCount = useLiveQuery(async () => {
-    try {
-      return await db.sync_queue.where("status").equals("failed").count();
-    } catch {
-      return 0;
-    }
-  }, [], 0);
-  
-  const lastSync = useLiveQuery(async () => {
-      try {
-        const last = await db.meta.get('lastSyncAt');
-        return last?.value ? new Date(last.value as number) : null;
-      } catch {
-        return null;
-      }
-  }, [], null);
-
-  const state: "synced" | "syncing" | "failed" | "offline" = (() => {
-    // This part does not need navigator.onLine as useNetworkStatus handles it better.
-    // Assuming online status is handled by a provider or another hook.
-    if (errorCount && errorCount > 0) return "failed";
-    if (pendingCount && pendingCount > 0) return "syncing";
+  const mappedState: "synced" | "syncing" | "failed" | "offline" = useMemo(() => {
+    if (state === "offline") return "offline";
+    if (state === "error") return "failed";
+    if (state === "queued") return "syncing";
     return "synced";
-  })();
+  }, [state]);
 
-  return { state, pendingCount: pendingCount || 0, errorCount: errorCount || 0, lastSync };
+  return {
+    state: mappedState,
+    pendingCount: snapshot.pending + snapshot.syncing,
+    errorCount: snapshot.failed,
+    lastSync: snapshot.lastSyncAt ? new Date(snapshot.lastSyncAt) : null,
+    isOnline,
+  };
 }

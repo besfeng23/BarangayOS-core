@@ -22,12 +22,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const auth = getAuth(app);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const applyDemoUser = () => {
+      const demo = typeof window !== 'undefined' ? localStorage.getItem('bos-demo-user') : null;
+      if (demo) {
+        setUser({ uid: 'demo', email: 'demo@barangayos.app' } as User);
+        setLoading(false);
+        return true;
+      }
+      return false;
+    };
+
+    if (applyDemoUser()) return;
+
+    const unsubscribe = onAuthStateChanged(auth, (next) => {
+      setUser(next);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    const handleDemoEvent = () => { applyDemoUser(); };
+    window.addEventListener('storage', handleDemoEvent);
+    window.addEventListener('bos-demo-login', handleDemoEvent as any);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('storage', handleDemoEvent);
+      window.removeEventListener('bos-demo-login', handleDemoEvent as any);
+    };
   }, [auth]);
 
   // The loader was removed as per the bug fix for AppClientLayout.

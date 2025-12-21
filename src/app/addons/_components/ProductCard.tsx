@@ -18,7 +18,7 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
       <div className="relative aspect-video overflow-hidden">
         <Image
           src={product.imageUrl}
-          alt={product.name}
+          alt={`${product.name} – ${product.imageHint}`}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
           data-ai-hint={product.imageHint}

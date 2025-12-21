@@ -8,6 +8,7 @@ import { Banknote, Users, QrCode, Send, History, BarChart3, Settings, ShieldAler
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/bosDb';
 import { useMemo } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const StatCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
     <Card className="bg-zinc-800/50">
@@ -42,6 +43,15 @@ const ActionButton = ({ href, icon: Icon, title, description, disabled = false }
 
 export default function EmangoHomePage() {
   const today = new Date().toISOString().slice(0, 10);
+  const dbHealthy = useLiveQuery(async () => {
+    try {
+      await db.open();
+      await db.activity_log.count();
+      return true;
+    } catch {
+      return false;
+    }
+  }, [], true);
 
   const stats = useLiveQuery(() => {
     const todayStart = new Date(today).toISOString();
@@ -68,6 +78,8 @@ export default function EmangoHomePage() {
   const pendingDisbursements = stats ? (stats[1] || 0) : 0;
 
 
+  const fallback = !dbHealthy;
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="flex items-center justify-between">
@@ -88,6 +100,16 @@ export default function EmangoHomePage() {
             </div>
         </div>
 
+      {fallback && (
+        <Alert variant="destructive" className="bg-red-900/30 border-red-800">
+          <AlertTitle>Temporarily unavailable (Demo)</AlertTitle>
+          <AlertDescription>
+            Digital Payments is in demo mode right now. You can still browse the dashboard cards below,
+            but live wallet data and Firebase sync are paused to avoid crashes.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Today's Collections" value={collections} icon={Banknote} />
         <StatCard title="Transactions Today" value={transactions} icon={Users} />
@@ -107,12 +129,14 @@ export default function EmangoHomePage() {
                         icon={QrCode} 
                         title="Collect Payment" 
                         description="Generate a QR code for a service fee."
+                        disabled={fallback}
                    />
                    <ActionButton 
                         href="/emango/send" 
                         icon={Send} 
                         title="Disburse Funds" 
                         description="Send aid or payroll to residents."
+                        disabled={fallback}
                    />
                 </CardContent>
             </Card>
@@ -127,6 +151,7 @@ export default function EmangoHomePage() {
                         icon={History} 
                         title="Transaction History" 
                         description="Search all wallet activities."
+                        disabled={fallback}
                    />
                    <ActionButton 
                         href="/emango/reports" 

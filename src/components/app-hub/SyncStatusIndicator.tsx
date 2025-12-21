@@ -1,21 +1,18 @@
 'use client';
 
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-import { useQueueCount } from '@/hooks/useQueueCount';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { cn } from '@/lib/utils';
 import { Wifi, WifiOff } from 'lucide-react';
 
 export default function SyncStatusIndicator() {
-  const { isOnline } = useNetworkStatus();
-  const queueCount = useQueueCount();
-
-  const getStatus = () => {
+  const { isOnline, snapshot, state } = useSyncStatus();
+  const queueCount = snapshot.pending + snapshot.syncing + snapshot.failed;
+  const status = (() => {
     if (!isOnline) return { color: 'red', icon: WifiOff };
-    if (queueCount > 0) return { color: 'amber', icon: Wifi };
+    if (state === 'error') return { color: 'red', icon: Wifi };
+    if (queueCount > 0 || state === 'queued') return { color: 'amber', icon: Wifi };
     return { color: 'green', icon: Wifi };
-  };
-
-  const status = getStatus();
+  })();
   const colorClass = {
     red: 'bg-red-500 text-red-50',
     amber: 'bg-amber-500 text-amber-950 animate-pulse',

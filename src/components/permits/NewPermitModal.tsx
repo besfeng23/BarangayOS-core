@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
@@ -14,11 +14,13 @@ import PrintPermitModal from './PrintPermitModal';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { businessPermitConverter, type BusinessPermit } from '@/lib/firebase/schema';
+import { permitFormSchema } from '@/lib/validation/schemas';
 
 interface NewPermitModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+export { permitFormSchema };
 
 const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null);
@@ -26,11 +28,20 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
   const [businessType, setBusinessType] = useState('');
   const [address, setAddress] = useState('');
   const [fees, setFees] = useState('500.00');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [newPermit, setNewPermit] = useState<BusinessPermit | null>(null);
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const canSave = !!selectedResident && businessName.trim().length > 1 && businessType.trim().length > 0 && address.trim().length > 2 && parseFloat(fees) > 0;
+  useEffect(() => {
+    const first = Object.keys(errors).find((key) => errors[key]);
+    if (first) {
+      const el = document.querySelector(`[data-permit-field="${first}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [errors]);
 
   const handleSelectResident = (resident: Resident | null) => {
     setSelectedResident(resident);
@@ -49,14 +60,31 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
   }
 
   const handleSave = async () => {
-    if (!selectedResident || !businessName || !businessType) {
+    const parsed = permitFormSchema.safeParse({
+      resident: selectedResident ? { id: selectedResident.id, displayName: selectedResident.displayName } : null,
+      businessName,
+      businessType,
+      address,
+      fees,
+    });
+
+    if (!parsed.success) {
+        const flat = parsed.error.flatten().fieldErrors;
+        setErrors({
+          resident: flat.resident?.[0] || '',
+          businessName: flat.businessName?.[0] || '',
+          businessType: flat.businessType?.[0] || '',
+          address: flat.address?.[0] || '',
+          fees: flat.fees?.[0] || '',
+        });
         toast({
             variant: "destructive",
             title: "Missing Information",
-            description: "Please select a resident owner and provide business name and type.",
+            description: "Please fill in the highlighted fields.",
         });
         return;
     }
+    setErrors({});
     
     if (!window.confirm("Are you sure you want to issue this permit?")) {
         return;
@@ -154,21 +182,23 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
           </DialogHeader>
           
           <div className="py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="col-span-2 space-y-2">
+            <div className="col-span-2 space-y-2" data-permit-field="resident">
                 <Label className="text-lg">1. Select Owner</Label>
                 <ResidentPicker onSelectResident={handleSelectResident} selectedResident={selectedResident} />
+                {errors.resident && <p className="text-sm text-red-400">{errors.resident}</p>}
             </div>
 
             <div className={`col-span-2 space-y-6 transition-opacity ${!selectedResident ? 'opacity-50 pointer-events-none' : ''}`}>
-                 <div className="space-y-2">
+                 <div className="space-y-2" data-permit-field="businessName">
                     <Label htmlFor="businessName" className="text-lg">2. Business Name</Label>
-                    <Input id="businessName" placeholder="e.g., Aling Nena's Sari-Sari Store" className="h-12 text-lg bg-slate-900 border-slate-600" onChange={(e) => setBusinessName(e.target.value)} value={businessName}/>
+                    <Input id="businessName" placeholder="e.g., Aling Nena's Sari-Sari Store" className={`h-12 text-lg bg-slate-900 border-slate-600 ${errors.businessName ? 'border-red-500' : ''}`} onChange={(e) => setBusinessName(e.target.value)} value={businessName}/>
+                    {errors.businessName && <p className="text-sm text-red-400">{errors.businessName}</p>}
                 </div>
                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2" data-permit-field="businessType">
                         <Label htmlFor="businessType" className="text-lg">3. Business Type</Label>
                         <Select onValueChange={setBusinessType} value={businessType}>
-                            <SelectTrigger className="h-12 text-lg bg-slate-900 border-slate-600">
+                            <SelectTrigger className={`h-12 text-lg bg-slate-900 border-slate-600 ${errors.businessType ? 'border-red-500' : ''}`}>
                                 <SelectValue placeholder="Select type..." />
                             </SelectTrigger>
                             <SelectContent className="bg-slate-800 text-white border-slate-700">
@@ -179,25 +209,28 @@ const NewPermitModal = ({ isOpen, onClose }: NewPermitModalProps) => {
                                 <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                         </Select>
+                        {errors.businessType && <p className="text-sm text-red-400">{errors.businessType}</p>}
                     </div>
-                     <div className="space-y-2">
+                     <div className="space-y-2" data-permit-field="fees">
                         <Label htmlFor="fees" className="text-lg">5. Fees Collected (₱)</Label>
-                        <Input id="fees" type="number" placeholder="0.00" className="h-12 text-lg bg-slate-900 border-slate-600" value={fees} onChange={(e) => setFees(e.target.value)} />
+                        <Input id="fees" type="number" placeholder="0.00" className={`h-12 text-lg bg-slate-900 border-slate-600 ${errors.fees ? 'border-red-500' : ''}`} value={fees} onChange={(e) => setFees(e.target.value)} min="0" />
+                        {errors.fees && <p className="text-sm text-red-400">{errors.fees}</p>}
                     </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2" data-permit-field="address">
                     <Label htmlFor="address" className="text-lg">4. Business Address</Label>
-                    <Input id="address" placeholder="e.g., 123 Rizal St." className="h-12 text-lg bg-slate-900 border-slate-600" onChange={(e) => setAddress(e.target.value)} value={address}/>
+                    <Input id="address" placeholder="e.g., 123 Rizal St." className={`h-12 text-lg bg-slate-900 border-slate-600 ${errors.address ? 'border-red-500' : ''}`} onChange={(e) => setAddress(e.target.value)} value={address}/>
+                    {errors.address && <p className="text-sm text-red-400">{errors.address}</p>}
                 </div>
             </div>
           </div>
 
 
           <DialogFooter>
-             <Button variant="outline" className="h-12 text-lg" onClick={onClose} disabled={isSaving}>
+            <Button variant="outline" className="h-12 text-lg" onClick={onClose} disabled={isSaving}>
                 Cancel
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={isSaving || !selectedResident}>
+            <Button className="bg-blue-600 hover:bg-blue-700 h-12 text-lg" onClick={handleSave} disabled={isSaving || !canSave}>
                 <Save className="mr-2 h-5 w-5" />
                 {isSaving ? 'Saving...' : 'Review & Save'}
             </Button>

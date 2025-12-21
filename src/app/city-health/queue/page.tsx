@@ -5,12 +5,38 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Filter, ArrowLeft, ArrowDownUp, Users } from 'lucide-react';
+import { Plus, Filter, ArrowLeft, ArrowDownUp, Users, Stethoscope, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, ClinicQueueItem } from '@/lib/bosDb';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { ResidentPicker, ResidentPickerValue } from '@/components/shared/ResidentPicker';
+import { z } from 'zod';
+import { useMemo, useState } from 'react';
+import { toTokens } from '@/lib/bos/searchTokens';
+import { uuid } from '@/lib/uuid';
+
+const TAG_OPTIONS = ['Fever', 'Cough', 'Prenatal', 'Follow-up', 'Senior', 'Child'];
+
+const queueFormSchema = z.object({
+  patient: z.object({
+    mode: z.enum(['resident', 'manual']),
+    residentId: z.string().nullable().optional(),
+    residentNameSnapshot: z.string().optional(),
+    manualName: z.string().optional(),
+  }),
+  reason: z.string().min(5, 'Lagyan ng detalye ang pakay o sintomas (min 5 chars).'),
+  tags: z.array(z.string()).optional(),
+}).refine((val) => {
+  if (!val.patient) return false;
+  if (val.patient.mode === 'resident') {
+    return Boolean(val.patient.residentId && val.patient.residentNameSnapshot);
+  }
+  return Boolean(val.patient.manualName && val.patient.manualName.trim().length > 1);
+}, { path: ['patient'], message: 'Pumili ng pasyente o ilagay ang pangalan.' });
 
 const QueueCard = ({ item }: { item: ClinicQueueItem }) => {
     const router = useRouter();
@@ -21,9 +47,11 @@ const QueueCard = ({ item }: { item: ClinicQueueItem }) => {
         return Math.floor((new Date().getTime() - new Date(birthdate).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
     }
 
-    const patientName = item.patient.mode === 'resident' ? item.patient.residentNameSnapshot : item.patient.manualName;
-    const age = item.patient.mode === 'resident' ? 'N/A' : getAge(); // Simplified for now
-    const sex = item.patient.mode === 'resident' ? 'N/A' : 'N/A'; // Simplified for now
+    const patientName = item.patient?.mode === 'resident'
+        ? (item.patient.residentNameSnapshot || item.patientName)
+        : (item.patient?.manualName || item.patientName);
+    const age = item.patient?.mode === 'resident' ? 'N/A' : getAge(); // Simplified for now
+    const sex = item.patient?.mode === 'resident' ? 'N/A' : 'N/A'; // Simplified for now
 
     const handleStartConsult = async () => {
         try {
@@ -55,13 +83,13 @@ const QueueCard = ({ item }: { item: ClinicQueueItem }) => {
                     </div>
                     <p className="text-sm text-slate-400">{age}yo • {sex}</p>
                     <div className="flex gap-2 mt-2">
-                        {item.tags.map(tag => <Badge key={tag} variant="destructive" className="text-xs">{tag}</Badge>)}
+                        {(item.tags || []).map(tag => <Badge key={tag} variant="destructive" className="text-xs min-h-[32px] px-2">{tag}</Badge>)}
                     </div>
                     {/* {vitals && <p className="text-xs text-green-400 mt-2 font-mono">{vitals}</p>} */}
                 </div>
                 <div className="flex gap-2 self-end md:self-center">
-                    <Button variant="outline" size="sm">Record Vitals</Button>
-                    {item.status === 'WAITING' && <Button size="sm" onClick={handleStartConsult}>Start Consult</Button>}
+                    <Button variant="outline" size="sm" className="min-h-[44px]">Record Vitals</Button>
+                    {item.status === 'WAITING' && <Button size="sm" className="min-h-[44px]" onClick={handleStartConsult}>Start Consult</Button>}
                 </div>
             </CardContent>
         </Card>
@@ -70,10 +98,80 @@ const QueueCard = ({ item }: { item: ClinicQueueItem }) => {
 
 export default function QueuePage() {
     const queue = useLiveQuery(() => db.clinic_queue.orderBy('createdAtISO').toArray(), []);
+    const { toast } = useToast();
+    const [patient, setPatient] = useState<ResidentPickerValue | undefined>(undefined);
+    const [reason, setReason] = useState('');
+    const [tags, setTags] = useState<string[]>([]);
+    const [formErrors, setFormErrors] = useState<{ patient?: string; reason?: string }>({});
+    const [saving, setSaving] = useState(false);
 
     const waiting = queue?.filter(p => p.status === 'WAITING') || [];
     const inConsult = queue?.filter(p => p.status === 'CONSULT') || [];
     const done = queue?.filter(p => p.status === 'DONE') || [];
+
+    const tagOptions = useMemo(() => TAG_OPTIONS, []);
+    const canAdd = useMemo(() => {
+        if (!patient || !reason.trim()) return false;
+        if (patient.mode === 'resident') {
+            return Boolean(patient.residentId && patient.residentNameSnapshot) && reason.trim().length >= 5;
+        }
+        return Boolean(patient.manualName && patient.manualName.trim().length > 1) && reason.trim().length >= 5;
+    }, [patient, reason]);
+
+    const resetForm = () => {
+        setPatient(undefined);
+        setReason('');
+        setTags([]);
+        setFormErrors({});
+    };
+
+    const handleAddToQueue = async () => {
+        const parsed = queueFormSchema.safeParse({ patient, reason, tags });
+        if (!parsed.success) {
+            const flat = parsed.error.flatten();
+            setFormErrors({
+                patient: flat.fieldErrors.patient?.[0],
+                reason: flat.fieldErrors.reason?.[0],
+            });
+            return;
+        }
+        setSaving(true);
+        try {
+            const nowISO = new Date().toISOString();
+            const patientName = parsed.data.patient.mode === 'resident'
+                ? parsed.data.patient.residentNameSnapshot!
+                : parsed.data.patient.manualName!.trim();
+
+            const newItem: ClinicQueueItem = {
+                id: uuid(),
+                createdAtISO: nowISO,
+                updatedAtISO: nowISO,
+                patient: parsed.data.patient as ResidentPickerValue,
+                patientName,
+                reason: parsed.data.reason.trim(),
+                status: 'WAITING',
+                tags: parsed.data.tags || [],
+                searchTokens: toTokens(`${patientName} ${parsed.data.reason}`),
+                synced: 0,
+            };
+
+            await db.clinic_queue.add(newItem as any);
+            toast({
+                title: 'Naidagdag sa pila',
+                description: `${patientName} is now in the waiting queue.`,
+            });
+            resetForm();
+        } catch (error) {
+            console.error(error);
+            toast({
+                variant: 'destructive',
+                title: 'Save failed',
+                description: 'We could not add this patient. Please try again.',
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
 
 
   return (
@@ -90,6 +188,69 @@ export default function QueuePage() {
         </header>
 
         <main className="flex-1 overflow-y-auto">
+            <div className="p-4">
+                <Card className="border-slate-700 bg-slate-900/40">
+                    <CardContent className="space-y-4 pt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 rounded-xl bg-blue-500/10 text-blue-200">
+                                <Stethoscope className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-slate-300 font-semibold">Add a patient to Today&apos;s Queue</p>
+                                <p className="text-xs text-slate-400">Offline-first entry. You can type a name or pick a resident.</p>
+                            </div>
+                        </div>
+                        <ResidentPicker
+                            label="Patient"
+                            value={patient}
+                            onChange={setPatient}
+                            placeholder="Search resident or enter manually"
+                            allowManual
+                            errorMessage={formErrors.patient}
+                        />
+                        {formErrors.patient && <p className="text-sm text-red-400" data-field="patient-error">{formErrors.patient}</p>}
+                        <div className="space-y-2" data-field="reason">
+                            <label className="text-xs text-slate-300 uppercase font-semibold">Reason / Concern *</label>
+                            <Textarea
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                className="min-h-[96px] bg-slate-950 border-slate-700"
+                                placeholder="Hal: Lagnat at ubo for 3 days..."
+                            />
+                            {formErrors.reason && <p className="text-sm text-red-400">{formErrors.reason}</p>}
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs text-slate-300 uppercase font-semibold">Tags</label>
+                            <div className="flex flex-wrap gap-2">
+                                {tagOptions.map(tag => (
+                                    <Button
+                                        key={tag}
+                                        variant={tags.includes(tag) ? 'secondary' : 'outline'}
+                                        size="sm"
+                                        className="min-h-[44px] px-4"
+                                        onClick={() => setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
+                                    >
+                                        {tag}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <Button
+                                className="min-h-[48px] sm:w-auto w-full"
+                                onClick={handleAddToQueue}
+                                disabled={!canAdd || saving}
+                            >
+                                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                                {saving ? 'Saving...' : 'Add to Queue'}
+                            </Button>
+                            <Button variant="ghost" className="min-h-[48px] sm:w-auto w-full" onClick={resetForm} disabled={saving}>
+                                Clear Form
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
             <Tabs defaultValue="waiting" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 sticky top-[73px] z-10 rounded-none">
                     <TabsTrigger value="waiting">Waiting ({waiting.length})</TabsTrigger>
@@ -139,13 +300,6 @@ export default function QueuePage() {
             </Link>
         </footer>
 
-        <Link href="/clinic-queue/add" passHref legacyBehavior>
-            <a className="fixed bottom-24 right-6 z-20 md:bottom-6">
-                <Button className="rounded-full w-16 h-16 shadow-lg">
-                    <Plus className="h-8 w-8" />
-                </Button>
-            </a>
-        </Link>
     </div>
   );
 }
