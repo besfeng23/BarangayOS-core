@@ -77,7 +77,7 @@ export default function SystemRail({ onHelpClick }: { onHelpClick?: () => void }
           </div>
 
           <div className="hidden sm:block leading-none min-w-0">
-            <div className="text-zinc-100 font-semibold truncate">BarangayOS</div>
+            <div className="text-zinc-100 font-semibold truncate">{settings?.barangayName ?? 'BarangayOS'}</div>
             <div className="text-[10px] tracking-widest uppercase text-zinc-400 truncate">
               {subtitle}
             </div>

@@ -1,3 +1,4 @@
+
 "use client";
 import ResidentProfilePage from "@/features/residents/ResidentProfilePage";
 

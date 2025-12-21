@@ -3,7 +3,7 @@
 import React, { createContext, useContext, ReactNode, useCallback, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
-import { writeActivity } from "../lib/bos/activity/writeActivity";
+import { writeActivity } from "@/lib/bos/activity/writeActivity";
 import type { DeviceType } from "@/lib/bosDb";
 import { AISettings } from "./useAISettings";
 

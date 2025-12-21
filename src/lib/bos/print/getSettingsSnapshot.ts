@@ -1,5 +1,6 @@
+
 import { db } from "@/lib/bosDb";
-import type { BarangaySettings } from "@/lib/bos/settings/useSettings";
+import type { BarangaySettings } from "@/hooks/useSettings";
 
 const KEY = "barangaySettings";
 
@@ -13,6 +14,7 @@ const DEFAULTS: BarangaySettings = {
   updatedAtISO: new Date().toISOString(),
   controlPrefix: "BRGY",
   readOnlyMode: false,
+  securityDeviceTypes: [],
 };
 
 export type BarangaySettingsSnapshot = BarangaySettings;
