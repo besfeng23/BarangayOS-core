@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect } from 'react';
 import { useNetworkStatus } from './useNetworkStatus';
@@ -9,59 +8,60 @@ import { db } from '@/lib/bosDb';
 import { useToast } from './use-toast';
 import { writeActivity } from '@/lib/bos/activity/writeActivity';
 import { recordError } from '@/lib/bos/errors/errorBus';
+import { cleanForStorage } from '@/lib/bos/dbUtils';
 
 let isWorkerRunning = false;
 
+const getCollectionName = (jobType: string): string => {
+    const map: { [key: string]: string } = {
+      'ACTIVITY_UPSERT': "activity_log",
+      'BLOTTER_UPSERT': "blotters",
+      'BUSINESS_UPSERT': "businesses",
+      'PERMIT_ISSUANCE_UPSERT': "permit_issuances",
+      'CERT_ISSUANCE_UPSERT': "certificate_issuances",
+      'DEVICE_UPSERT': 'devices',
+      'SETTINGS_UPSERT': 'settings',
+      'RESIDENT_UPSERT': 'residents',
+      'PRINTJOB_UPSERT': 'printJobs',
+      'PRINTLOG_ADD': 'printLogs',
+    };
+    const collection = map[jobType];
+    if (!collection) throw new Error(`Unsupported jobType for sync: ${jobType}`);
+    return collection;
+}
+
 const processQueueItem = async (item: SyncQueueItem): Promise<boolean> => {
-  if (item.id === undefined) throw new Error("Queue item is missing an ID");
+  if (item.id === undefined) {
+    recordError("sync-worker", "Queue item is missing an ID");
+    return false;
+  }
 
   await updateQueueItem(item.id, { status: 'syncing' });
 
   try {
     const { jobType, payload, entityId } = item;
-    
-    // Normalize ID retrieval
     const id = entityId || payload.id;
-    if (!id) {
-        // Special case for settings which has a fixed key
-        if(jobType !== 'SETTINGS_UPSERT') {
-          throw new Error(`Missing entityId or payload.id for jobType ${jobType}`);
-        }
+    
+    if (!id && jobType !== 'SETTINGS_UPSERT') {
+        throw new Error(`Missing entityId or payload.id for jobType ${jobType}`);
     }
 
+    const collectionName = getCollectionName(jobType);
+    
+    // Settings has a fixed doc ID, others use their entity ID
+    const docRef = jobType === 'SETTINGS_UPSERT'
+        ? doc(firestoreDb, `barangays/TEST-BARANGAY-1/config/identity`)
+        : doc(firestoreDb, `barangays/TEST-BARANGAY-1/${collectionName}`, id);
 
-    // This is a simplified mapping. In a real app, you might have a more robust system.
-    const collectionMap: { [key: string]: string } = {
-        'SETTINGS_UPSERT': "settings",
-        'ACTIVITY_UPSERT': "activity_log",
-        'BLOTTER_UPSERT': "blotter_cases",
-        'BUSINESS_UPSERT': "businesses",
-        'PERMIT_ISSUANCE_UPSERT': "permit_issuances",
-        'CERT_ISSUANCE_UPSERT': "certificate_issuances",
-        'PRINTJOB_UPSERT': "printJobs",
-        'PRINTLOG_ADD': 'printLogs',
-        'RESIDENT_CREATE': "residents",
-        'RESIDENT_UPDATE': "residents",
-        'RESIDENT_UPSERT': 'residents', // Add this alias
-    };
+    // Ensure payload is clean before sending to Firestore
+    const cleanedPayload = cleanForStorage(payload);
 
-    const collectionName = collectionMap[jobType];
-    if (!collectionName) {
-        throw new Error(`Unsupported jobType: ${jobType}`);
-    }
-
-    const docRef = collectionName === 'settings' 
-        ? doc(firestoreDb, "settings", "barangaySettings") // Settings has a fixed doc ID
-        : doc(firestoreDb, collectionName, id);
-
-    const { html, ...payloadWithoutHtml } = payload;
-    await setDoc(docRef, payloadWithoutHtml, { merge: true });
+    await setDoc(docRef, cleanedPayload, { merge: true });
 
     await updateQueueItem(item.id, { status: 'synced', synced: 1 });
     return true;
 
   } catch (error: any) {
-    if (item.id === undefined) throw new Error("Queue item is missing an ID");
     console.error('Sync failed for item:', item.id, error);
     recordError("sync", `Job ${item.jobType} (ID: ${item.id}) failed: ${error.message}`);
     
@@ -71,8 +71,7 @@ const processQueueItem = async (item: SyncQueueItem): Promise<boolean> => {
       tryCount: (item.tryCount || 0) + 1,
     });
     
-    // Return false to indicate failure for this item, but allow the loop to continue.
-    return false;
+    return false; // Indicate failure for this item
   }
 };
 
@@ -95,8 +94,6 @@ const runSyncCycle = async (toast: any) => {
       } else {
         failureCount++;
       }
-
-      // Check for next item regardless of previous outcome
       itemToProcess = await getOldestPendingItem();
     }
     
@@ -113,7 +110,6 @@ const runSyncCycle = async (toast: any) => {
     }
     
   } catch (error: any) {
-    // This block now only catches fatal errors in the runSyncCycle logic itself
     console.error('Sync cycle was interrupted by a fatal error.', error);
     await db.meta.put({ key: "lastSyncError", value: error.message });
     recordError("sync-worker", `Fatal error in sync cycle: ${error.message}`);
@@ -130,7 +126,6 @@ export function useSyncWorker() {
 
   useEffect(() => {
     if (isOnline) {
-      // Small delay to allow the network status to stabilize and avoid rapid-fire syncs
       const timer = setTimeout(() => {
         runSyncCycle(toast);
       }, 5000); 

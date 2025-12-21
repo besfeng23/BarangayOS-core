@@ -27,7 +27,7 @@ export const NLQOutputSchema = z.object({
   filters: z.array(z.object({
     field: z.string().describe('The database field to filter on, e.g., "purok", "status", "category".'),
     operator: z.enum(['equals', 'startsWith', 'contains']).describe('The comparison operator.'),
-    value: z.string().describe('The value to filter by.'),
+    value: z.any().describe('The value to filter by.'),
   })).describe('An array of structured filters derived from the query. Empty if none found.'),
   keywords: z.array(z.string()).describe('Remaining keywords from the query after filters are extracted.'),
   targetModule: z.enum(['residents', 'blotter', 'permits', 'unknown']).describe('The most likely module the user is searching for.'),

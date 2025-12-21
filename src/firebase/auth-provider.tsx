@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
@@ -9,31 +8,36 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  customClaims: { [key: string]: any } | null;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  customClaims: null,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [customClaims, setCustomClaims] = useState<{[key:string]: any} | null>(null);
   const auth = getAuth(app);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      if (user) {
+        const tokenResult = await user.getIdTokenResult();
+        setCustomClaims(tokenResult.claims);
+      } else {
+        setCustomClaims(null);
+      }
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [auth]);
 
-  // The loader was removed as per the bug fix for AppClientLayout.
-  // AppClientLayout now handles the initial loading state for the whole app,
-  // including waiting for auth state. This prevents rendering children
-  // prematurely while auth is still loading.
   if (loading) {
     return (
         <div className="flex flex-col h-screen bg-slate-900 p-8 space-y-4">
@@ -53,5 +57,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, customClaims }}>{children}</AuthContext.Provider>;
 };

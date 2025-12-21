@@ -1,5 +1,3 @@
-
-
 import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
@@ -21,15 +19,15 @@ export type DraftRow = {
 
 // Shared rows
 export type SyncQueueItem = {
-  id?: number;
+  id: number;
   jobType: string;
   payload: any;
   occurredAtISO: string;
   synced: 0 | 1;
-  status?: "pending" | "syncing" | "failed" | "done"; // for UI health counters
+  status: "pending" | "syncing" | "failed" | "synced"; // Changed from 'done' to 'synced'
   error?: string;
-  lastError?: string; // Add this to match the updateQueueItem call
-  tryCount?: number;   // Add this to match the updateQueueItem call
+  lastError?: string;
+  tryCount?: number;
   entityType?: string;
   entityId?: string;
   op?: "CREATE" | "UPDATE" | "DELETE" | "UPSERT";
@@ -47,22 +45,24 @@ export type ResidentLocal = {
   householdNoUpper?: string;
   addressText?: string;
   contact?: string;
-  lastName?: string;
-  firstName?: string;
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  suffix: string;
+  sex: 'Male' | 'Female' | 'Other';
+  birthdate: string;
+  civilStatus: 'Single' | 'Married' | 'Widowed' | 'Separated';
+  purok: string;
+  addressLine1: string;
+  status: 'ACTIVE' | 'INACTIVE';
   // ISO strings only (local-first)
   createdAtISO: string;
   updatedAtISO: string;
   // array of tokens (for multiEntry index)
   searchTokens: string[];
-};
-
-// Cases (optional safety banner elsewhere)
-export type CaseLocal = {
-  id: string;
-  residentId: string;
-  status: "Pending" | "Resolved" | string;
-  createdAtISO: string;
-  updatedAtISO: string;
+  lastNameNorm: string;
+  firstNameNorm: string;
+  synced: 0 | 1;
 };
 
 // Blotter
@@ -266,12 +266,10 @@ export type AICache = {
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
   residents!: Table<ResidentLocal, string>;
-  cases!: Table<CaseLocal, string>;
   blotters!: Table<BlotterLocal, string>;
   businesses!: Table<BusinessLocal, string>;
   permit_issuances!: Table<PermitIssuanceLocal, string>;
   certificate_issuances!: Table<CertificateIssuanceLocal, string>;
-  print_logs!: Table<PrintLogLocal, number>;
   print_jobs!: Table<PrintJobLocal, string>;
   activity_log!: Table<ActivityLogLocal, string>;
   devices!: Table<SecurityDeviceLocal, string>;
@@ -289,16 +287,14 @@ class BOSDexie extends Dexie {
       meta: "key",
       settings: "key",
       residents: "id, fullNameUpper, householdNoUpper, status, updatedAtISO, *searchTokens,lastNameNorm,firstNameNorm,birthdate",
-      cases: "id, residentId, status, updatedAtISO",
       blotters: "id, status, updatedAtISO, incidentDateISO, *searchTokens",
       businesses: "id, status, latestYear, updatedAtISO, *searchTokens",
       permit_issuances: "id, businessId, year, issuedAtISO, *searchTokens",
       certificate_issuances: "id, residentId, certType, issuedAtISO, controlNo, status, *searchTokens",
-      print_logs: "++id, issuanceId, issuedAtISO, certType, residentId, synced",
       print_jobs: "id, createdAtISO, printedAtISO, status, entityType, entityId, *searchTokens",
       activity_log: "id, occurredAtISO, type, entityType, entityId, status, *searchTokens",
-      sync_queue: "++id, occurredAtISO, synced, status, jobType, [entityType+entityId]", 
-      audit_queue: "++id, eventType, occurredAtISO, synced",
+      sync_queue: "++id, occurredAtISO, status, jobType, [entityType+entityId]", 
+      audit_queue: "++id, eventType, occurredAtISO",
       devices: "id, type, status, updatedAtISO, *searchTokens",
       clinic_queue: "id, status, createdAtISO, *searchTokens",
       ai_cache: "key, createdAt",
