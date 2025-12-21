@@ -1,4 +1,3 @@
-
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -77,8 +76,10 @@ export default function AppClientLayout({
   const isLoginPage = pathname === '/login';
   const isLandingPage = pathname.startsWith('/landing');
   const isStatusPage = pathname === '/status';
+  const isJobsPortal = pathname.startsWith('/jobs') || pathname.startsWith('/applications') || pathname.startsWith('/profile') || pathname.startsWith('/saved');
 
-  if (isLoginPage || isLandingPage) {
+
+  if (isLoginPage || isLandingPage || isJobsPortal) {
     return <>{children}</>;
   }
 
