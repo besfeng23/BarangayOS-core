@@ -7,13 +7,13 @@ import { getStorage, FirebaseStorage } from "firebase/storage";
 
 // Standard Firebase config object using environment variables for security.
 const firebaseConfig = {
-  apiKey: "AIzaSyAgNyILqGlsW1YV8OF63ubJljSZoEByMcA",
-  authDomain: "studio-603796794-a3dad.firebaseapp.com",
-  projectId: "studio-603796794-a3dad",
-  storageBucket: "studio-603796794-a3dad.appspot.com",
-  messagingSenderId: "1057904202072",
-  appId: "1:1057904202072:web:0156b6def50c6badb0952d",
-  measurementId: "G-5HPJBLXZPM"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase App (Singleton Pattern)

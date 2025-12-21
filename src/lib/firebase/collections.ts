@@ -1,3 +1,4 @@
+
 import { collection, CollectionReference, DocumentData } from 'firebase/firestore';
 import { db } from './client';
 import { residentConverter, blotterCaseConverter, businessPermitConverter, type Resident, type BlotterCase, type BusinessPermit } from './schema';
