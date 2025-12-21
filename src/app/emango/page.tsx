@@ -49,10 +49,10 @@ export default function EmangoHomePage() {
         db.activity_log.where('type').equals('PAYMENT_COLLECTED').and(item => item.occurredAtISO >= todayStart).toArray(),
         db.activity_log.where('type').equals('PAYMENT_DISBURSED').and(item => item.status === 'ok').count(),
     ]);
-  }, [today], [{ collections: 0, transactions: 0 }, 0]);
+  }, [today]);
 
   const { collections, transactions } = useMemo(() => {
-      if (!stats || !stats[0] || !Array.isArray(stats[0])) {
+      if (!stats || !Array.isArray(stats[0])) {
           return { collections: 0, transactions: 0 };
       }
       const collectionsToday = stats[0].reduce((sum, tx) => {

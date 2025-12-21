@@ -33,8 +33,8 @@ export default function Home() {
   const [pendingPermitsCount, setPendingPermitsCount] = useState(0);
   const { toast } = useToast();
   const { settings, loading: settingsLoading } = useSettings();
-  const pendingBlotterWrites = useQueueCount('blotter_cases');
-  const pendingPermitWrites = useQueueCount('business_permits');
+  const pendingBlotterWrites = useQueueCount('blotters');
+  const pendingPermitWrites = useQueueCount('businesses');
   
   useEffect(() => {
     // Listener for active blotter cases
@@ -92,6 +92,7 @@ export default function Home() {
           href="/blotter"
           badgeCount={totalBlotterBadge}
           badgeColor="amber"
+          badgeLabel='Active'
         />
          <ModuleCard
           title="Business Permits"
@@ -100,6 +101,7 @@ export default function Home() {
           href="/permits"
           badgeCount={totalPermitBadge}
           badgeColor="red"
+          badgeLabel='For Renewal'
         />
         <ModuleCard
             title="All Apps"
@@ -109,8 +111,12 @@ export default function Home() {
         />
       </div>
 
-      <TrialBanner visible={settings.trialEnabled} message="Activation required to unlock partner integrations" />
+      <TrialBanner 
+        visible={settings.trialEnabled} 
+        message="This is a trial account. Some features may be limited." 
+        ctaText="Activate Now"
+        onCtaClick={() => alert('Activation requires contacting your system administrator.')}
+       />
     </div>
   );
 }
-

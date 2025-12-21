@@ -51,7 +51,7 @@ export default function ModuleCard({
         <h3 className="text-lg font-semibold text-zinc-100">{title}</h3>
       </div>
       <p className="text-sm text-zinc-300 mt-2 flex-grow">{description}</p>
-      <div className="mt-3 w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 py-2 text-center text-xs font-bold tracking-widest text-zinc-100">
+      <div className="mt-3 w-full rounded-xl bg-zinc-800/60 border border-zinc-700/50 py-2 text-center text-xs font-bold tracking-widest text-zinc-100 group-hover:bg-amber-400/20 group-hover:border-amber-400/40 group-hover:text-amber-200 transition-colors">
         OPEN
       </div>
     </Link>
