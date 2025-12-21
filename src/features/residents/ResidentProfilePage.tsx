@@ -64,6 +64,13 @@ export default function ResidentProfilePage() {
     );
   }
 
+  // Safe way to get initials, provides fallback
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const first = firstName?.[0] || '';
+    const last = lastName?.[0] || '';
+    return `${first}${last}`.toUpperCase() || 'N/A';
+  }
+
   return (
       <>
         <div className="min-h-screen bg-zinc-950 text-zinc-100 pb-24">
@@ -79,7 +86,7 @@ export default function ResidentProfilePage() {
 
               <div className="flex flex-col sm:flex-row gap-5 items-start">
                 <div className="w-16 h-16 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 font-bold text-xl">
-                  {(resident as any).firstName[0]}{(resident as any).lastName[0]}
+                  {getInitials((resident as any).firstName, (resident as any).lastName)}
                 </div>
 
                 <div className="flex-1 min-w-0">
