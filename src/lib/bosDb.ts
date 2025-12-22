@@ -2,20 +2,11 @@ import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 18;
+export const DB_VERSION = 17;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
 export type SettingsRow = { key: string; value: any };
-
-export type DraftRow = {
-  id: string; // uuid
-  module: string;
-  key: string;
-  payload: any;
-  updatedAt: number; // timestamp
-};
-
 
 // Shared rows
 export type SyncQueueItem = {
@@ -186,11 +177,9 @@ export type ActivityLogLocal = {
     | "QUOTATION_REQUESTED"
     | "JOB_APPLICATION_SUBMITTED"
     | "DEVICE_CREATED"
-    | "DEVICE_UPDATED"
-    | "PAYMENT_COLLECTED"
-    | "PAYMENT_DISBURSED";
+    | "DEVICE_UPDATED";
 
-  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system" | "procurement" | "jobs" | "emango";
+  entityType: "resident" | "certificate" | "blotter" | "business" | "permit_issuance" | "sync" | "system" | "procurement" | "jobs";
   entityId: string; // id of record or "sync"
   status: "ok" | "warn" | "error"; // for UI color/badge (lightweight)
 
@@ -224,7 +213,7 @@ export type PrintJobLocal = {
 };
 
 // Security Module
-export type DeviceType = "CCTV" | "NVR" | "BODY_CAM" | "DASH_CAM" | "PANIC_BUTTON" | "SIREN" | "LED_DISPLAY" | "PA_SYSTEM" | string;
+export type DeviceType = "CCTV" | "NVR" | "BODY_CAM" | "DASH_CAM" | "PANIC_BUTTON" | "SIREN" | "LED_DISPLAY" | "PA_SYSTEM";
 export type DeviceStatus = "ACTIVE" | "MAINTENANCE" | "INACTIVE";
 
 export type SecurityDeviceLocal = {
@@ -240,29 +229,6 @@ export type SecurityDeviceLocal = {
   synced: 0 | 1;
 }
 
-// Clinic Module
-export type ClinicVisitStatus = "WAITING" | "TRIAGE" | "CONSULT" | "DONE" | "CANCELLED";
-
-export type ClinicQueueItem = {
-    id: string;
-    createdAtISO: string;
-    updatedAtISO: string;
-    patient: ResidentPickerValue;
-    patientName: string;
-    reason: string;
-    status: ClinicVisitStatus;
-    tags: string[];
-    searchTokens: string[];
-    synced: 0 | 1;
-}
-
-// AI Module
-export type AICache = {
-  key: string; // hash of the prompt/request
-  value: any; // cached response
-  createdAt: number; // timestamp for TTL
-};
-
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
   residents!: Table<ResidentLocal, string>;
@@ -273,17 +239,15 @@ class BOSDexie extends Dexie {
   print_jobs!: Table<PrintJobLocal, string>;
   activity_log!: Table<ActivityLogLocal, string>;
   devices!: Table<SecurityDeviceLocal, string>;
-  clinic_queue!: Table<ClinicQueueItem, string>;
+
   settings!: Table<SettingsRow, string>;
   meta!: Table<MetaRow, string>;
   sync_queue!: Table<SyncQueueItem, number>;
   audit_queue!: Table<AuditRow, number>;
-  ai_cache!: Table<AICache, string>;
-  drafts!: Table<DraftRow, string>;
 
   constructor() {
     super(DB_NAME);
-    this.version(18).stores({
+    this.version(17).stores({
       meta: "key",
       settings: "key",
       residents: "id, fullNameUpper, householdNoUpper, status, updatedAtISO, *searchTokens,lastNameNorm,firstNameNorm,birthdate",
@@ -296,9 +260,6 @@ class BOSDexie extends Dexie {
       sync_queue: "++id, occurredAtISO, status, jobType, [entityType+entityId]", 
       audit_queue: "++id, eventType, occurredAtISO",
       devices: "id, type, status, updatedAtISO, *searchTokens",
-      clinic_queue: "id, status, createdAtISO, *searchTokens",
-      ai_cache: "key, createdAt",
-      drafts: "id, &[module+key], updatedAt",
     });
   }
 }
