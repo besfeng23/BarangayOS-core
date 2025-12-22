@@ -29,7 +29,7 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/');
+      router.push('/apps'); // Redirect to the app hub after login
     } catch (err: any) {
       setError('Invalid email or password. Please try again.');
       console.error(err);

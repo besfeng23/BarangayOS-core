@@ -22,15 +22,12 @@ export const chatFlow = ai.defineFlow({
   const llm = ai.getGenerator('googleai/gemini-1.5-flash');
 
   const result = await llm.generate({
+    system: chatSystemPrompt,
     prompt: `
-      ${chatSystemPrompt}
-
       Current conversation history:
       ${input.history?.map(h => `${h.role}: ${h.content}`).join('\n') || 'No history.'}
 
       User's latest question: "${input.query}"
-
-      Provide your helpful and professional answer in the 'response' output field.
     `,
     output: {
       schema: ChatOutputSchema,
