@@ -145,19 +145,6 @@ export default function BlotterPage() {
                   />
                 </div>
 
-                <button
-                  className="h-12 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white font-semibold"
-                  onClick={() => ws.setMore(!ws.more)}
-                >
-                  {ws.more ? "Hide Optional Details" : "Show Optional Details"}
-                </button>
-
-                {ws.more && (
-                  <div className="space-y-3">
-                    {/* Optional fields are removed for simplicity in this pass, matching older implementation */}
-                  </div>
-                )}
-
                 {ws.banner && ws.banner.kind === "error" && (
                   <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-3">
                     <div className="text-white text-sm font-semibold">Please fix this</div>

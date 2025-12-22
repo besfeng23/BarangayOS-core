@@ -85,7 +85,7 @@ export function useBusinessPermitsWorkstation() {
     const year = Number(renewDraft.year);
     if (!year || year < 2000) return false;
     const fee = Number(renewDraft.feeAmount);
-    if (!isFinite(fee) || fee < 0) return false;
+    if (!isFinite(fee) || fee <= 0) return false;
     return true;
   }, [renewDraft]);
   
@@ -230,7 +230,7 @@ export function useBusinessPermitsWorkstation() {
       const year = Number(renewDraft.year);
       if (!year || year < 2000) throw new Error("Enter a valid year.");
       const feeAmount = Number(renewDraft.feeAmount);
-      if (!isFinite(feeAmount) || feeAmount < 0) throw new Error("Enter a valid fee.");
+      if (!isFinite(feeAmount) || feeAmount <= 0) throw new Error("Enter a valid fee amount.");
 
       const nowISO = new Date().toISOString();
       const issuanceId = uuid();
