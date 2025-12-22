@@ -48,8 +48,6 @@ export default function AddToQueuePage() {
             };
 
             await db.clinic_queue.add(newItem as any);
-
-            // For now, let's assume no sync queue for this module yet.
             
             toast({
                 title: 'Patient Added to Queue',
@@ -83,7 +81,7 @@ export default function AddToQueuePage() {
                 </div>
             </div>
 
-            <Card className="max-w-2xl mx-auto">
+            <Card className="max-w-2xl mx-auto bg-slate-800/50 border-slate-700">
                 <CardHeader>
                     <CardTitle>Patient Details</CardTitle>
                 </CardHeader>
@@ -102,7 +100,7 @@ export default function AddToQueuePage() {
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="e.g., Fever and cough for 3 days..."
-                            className="min-h-[100px] text-lg bg-zinc-900 border-zinc-700"
+                            className="min-h-[100px] text-lg bg-slate-900 border-slate-700"
                         />
                     </div>
                      <div>

@@ -2,7 +2,7 @@ import Dexie, { type Table } from "dexie";
 import type { ResidentPickerValue } from "@/components/shared/ResidentPicker";
 
 // IMPORTANT: This must be >= the highest version that has ever shipped to browsers.
-export const DB_VERSION = 17;
+export const DB_VERSION = 18;
 export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
@@ -10,7 +10,7 @@ export type SettingsRow = { key: string; value: any };
 
 // Shared rows
 export type SyncQueueItem = {
-  id: number;
+  id?: number;
   jobType: string;
   payload: any;
   occurredAtISO: string;
@@ -229,6 +229,21 @@ export type SecurityDeviceLocal = {
   synced: 0 | 1;
 }
 
+// City Health Module
+export type ClinicQueueItem = {
+  id?: string;
+  patient: ResidentPickerValue;
+  patientName: string;
+  reason: string;
+  tags: string[];
+  status: 'WAITING' | 'CONSULT' | 'DONE';
+  createdAtISO: string;
+  updatedAtISO: string;
+  searchTokens: string[];
+  synced: 0 | 1;
+}
+
+
 class BOSDexie extends Dexie {
   // Canonical tables (camelCase for app code)
   residents!: Table<ResidentLocal, string>;
@@ -239,6 +254,7 @@ class BOSDexie extends Dexie {
   print_jobs!: Table<PrintJobLocal, string>;
   activity_log!: Table<ActivityLogLocal, string>;
   devices!: Table<SecurityDeviceLocal, string>;
+  clinic_queue!: Table<ClinicQueueItem, string>;
 
   settings!: Table<SettingsRow, string>;
   meta!: Table<MetaRow, string>;
@@ -247,7 +263,7 @@ class BOSDexie extends Dexie {
 
   constructor() {
     super(DB_NAME);
-    this.version(17).stores({
+    this.version(18).stores({
       meta: "key",
       settings: "key",
       residents: "id, fullNameUpper, householdNoUpper, status, updatedAtISO, *searchTokens,lastNameNorm,firstNameNorm,birthdate",
@@ -260,6 +276,7 @@ class BOSDexie extends Dexie {
       sync_queue: "++id, occurredAtISO, status, jobType, [entityType+entityId]", 
       audit_queue: "++id, eventType, occurredAtISO",
       devices: "id, type, status, updatedAtISO, *searchTokens",
+      clinic_queue: "id, status, createdAtISO, *searchTokens",
     });
   }
 }

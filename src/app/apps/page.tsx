@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, 'useState } from 'react';
 import {
   Users,
   FileText,
@@ -10,6 +10,10 @@ import {
   HeartPulse,
   Wallet,
   LucideIcon,
+  Building,
+  Annoyed,
+  Newspaper,
+  LayoutGrid,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -59,10 +63,18 @@ const modules: Module[] = [
     status: 'INSTALLED',
     href: '/blotter',
   },
+   {
+    id: 'permits',
+    name: 'Business Permits',
+    description: 'Register and renew local business permits.',
+    icon: Building,
+    status: 'INSTALLED',
+    href: '/permits',
+  },
   {
-    id: 'payments',
-    name: 'Digital Payments',
-    description: 'eMango Wallet for collections and disbursements.',
+    id: 'emango',
+    name: 'eMango Wallet',
+    description: 'Digital collections and disbursements.',
     icon: Wallet,
     status: 'INSTALLED',
     href: '/emango',
@@ -74,6 +86,14 @@ const modules: Module[] = [
     icon: Briefcase,
     status: 'INSTALLED',
     href: '/addons',
+  },
+  {
+    id: 'jobs',
+    name: 'Jobs Portal',
+    description: 'Connect residents with local job opportunities.',
+    icon: Briefcase,
+    status: 'INSTALLED',
+    href: '/jobs',
   },
   {
     id: 'security',
@@ -91,26 +111,49 @@ const modules: Module[] = [
     status: 'INSTALLED',
     href: '/city-health',
   },
+  {
+    id: 'financials',
+    name: 'Financials',
+    description: 'Official bookkeeping and accounting system.',
+    icon: Wallet,
+    status: 'AVAILABLE',
+  },
+  {
+    id: 'announcements',
+    name: 'Announcements',
+    description: 'Publish announcements to the community.',
+    icon: Newspaper,
+    status: 'AVAILABLE',
+  },
+  {
+    id: 'more',
+    name: 'More Apps',
+    description: 'Explore other integrations and modules.',
+    icon: LayoutGrid,
+    status: 'AVAILABLE',
+  },
 ];
 
 const ModuleCard = ({ module, onInstallClick }: { module: Module; onInstallClick: (module: Module) => void; }) => {
   const content = (
     <div
-      className={`group relative flex flex-col rounded-2xl border bg-zinc-900/40 p-4 min-h-[180px] h-full ${
+      className={`group relative flex flex-col rounded-2xl border bg-slate-800/30 p-4 min-h-[180px] h-full ${
         module.status === 'INSTALLED'
-          ? 'border-zinc-800 hover:bg-zinc-900/60 cursor-pointer'
-          : 'border-zinc-700/80 grayscale opacity-80 hover:opacity-100 hover:grayscale-0 transition-all'
+          ? 'border-slate-700/80 hover:bg-slate-800/60 cursor-pointer'
+          : 'border-slate-700/50 grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all'
       }`}
     >
       <div className="flex items-center gap-4">
-        <module.icon className="w-8 h-8 text-zinc-400 group-hover:text-amber-400 transition-colors" />
-        <h3 className="text-lg font-semibold text-zinc-100">{module.name}</h3>
+        <div className={`p-2 rounded-lg ${module.status === 'INSTALLED' ? 'bg-blue-500/10' : 'bg-slate-700/50'}`}>
+            <module.icon className={`w-6 h-6 ${module.status === 'INSTALLED' ? 'text-blue-400' : 'text-slate-400'}`} />
+        </div>
+        <h3 className="text-lg font-semibold text-slate-100">{module.name}</h3>
       </div>
-      <p className="text-sm text-zinc-300 mt-2 flex-grow">{module.description}</p>
+      <p className="text-sm text-slate-300 mt-2 flex-grow">{module.description}</p>
       <div
-        className={`mt-4 w-full rounded-xl border py-3 text-center text-sm font-bold tracking-widest ${
+        className={`mt-4 w-full rounded-xl border py-2.5 text-center text-sm font-bold tracking-widest ${
           module.status === 'INSTALLED'
-            ? 'bg-zinc-800/60 border-zinc-700/50 text-zinc-100'
+            ? 'bg-slate-800/60 border-slate-700/50 text-slate-100'
             : 'bg-blue-600/20 border-blue-500/30 text-blue-300 group-hover:bg-blue-500 group-hover:text-black'
         }`}
       >
@@ -131,11 +174,11 @@ const ActivationModal = ({ module, isOpen, onClose }: { module: Module | null, i
     if (!module) return null;
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+            <DialogContent className="bg-slate-900 border-slate-800 text-white">
                 <DialogHeader>
                     <DialogTitle>Activate {module.name}?</DialogTitle>
                     <DialogDescription>
-                        This module requires activation. Please contact your system administrator.
+                        This module requires activation. Please contact your system administrator or account manager to enable this feature for your barangay.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -161,7 +204,7 @@ export default function AppHubPage() {
     <div className="p-4 sm:p-6 lg:p-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold">Applications</h1>
-        <p className="text-slate-200">
+        <p className="text-slate-300">
           Manage installed modules for your barangay.
         </p>
       </header>

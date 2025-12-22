@@ -51,7 +51,7 @@ export function ConsultationRoom() {
     const handleEndConsultation = async () => {
         if (!queueItem) return;
         try {
-            await db.clinic_queue.update(queueItem.id, { 
+            await db.clinic_queue.update(queueItem.id!, { 
                 status: 'DONE',
                 updatedAtISO: new Date().toISOString(),
                 // In a real app, we'd save the SOAP notes to a `consultations` table
@@ -95,13 +95,13 @@ export function ConsultationRoom() {
                 </Button>
             </div>
 
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
                     <PatientHeader item={queueItem} />
                 </CardHeader>
             </Card>
 
-            <Card>
+            <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Stethoscope className="h-5 w-5 text-green-400" />
@@ -111,19 +111,19 @@ export function ConsultationRoom() {
                 <CardContent className="space-y-6">
                     <div>
                         <Label htmlFor="subjective" className="text-lg font-semibold">Subjective</Label>
-                        <Textarea id="subjective" placeholder="Chief complaint, history of present illness..." className="min-h-[120px] mt-2 text-base" value={subjective} onChange={e => setSubjective(e.target.value)} />
+                        <Textarea id="subjective" placeholder="Chief complaint, history of present illness..." className="min-h-[120px] mt-2 text-base bg-slate-900 border-slate-700" value={subjective} onChange={e => setSubjective(e.target.value)} />
                     </div>
                      <div>
                         <Label htmlFor="objective" className="text-lg font-semibold">Objective</Label>
-                        <Textarea id="objective" placeholder="Vital signs, physical exam findings..." className="min-h-[120px] mt-2 text-base" value={objective} onChange={e => setObjective(e.target.value)} />
+                        <Textarea id="objective" placeholder="Vital signs, physical exam findings..." className="min-h-[120px] mt-2 text-base bg-slate-900 border-slate-700" value={objective} onChange={e => setObjective(e.target.value)} />
                     </div>
                      <div>
                         <Label htmlFor="assessment" className="text-lg font-semibold">Assessment</Label>
-                        <Textarea id="assessment" placeholder="Diagnosis or differential diagnoses..." className="min-h-[100px] mt-2 text-base" value={assessment} onChange={e => setAssessment(e.target.value)} />
+                        <Textarea id="assessment" placeholder="Diagnosis or differential diagnoses..." className="min-h-[100px] mt-2 text-base bg-slate-900 border-slate-700" value={assessment} onChange={e => setAssessment(e.target.value)} />
                     </div>
                      <div>
                         <Label htmlFor="plan" className="text-lg font-semibold">Plan</Label>
-                        <Textarea id="plan" placeholder="Medications, labs, referrals, follow-up..." className="min-h-[120px] mt-2 text-base" value={plan} onChange={e => setPlan(e.target.value)} />
+                        <Textarea id="plan" placeholder="Medications, labs, referrals, follow-up..." className="min-h-[120px] mt-2 text-base bg-slate-900 border-slate-700" value={plan} onChange={e => setPlan(e.target.value)} />
                     </div>
                 </CardContent>
             </Card>

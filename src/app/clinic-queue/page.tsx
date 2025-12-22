@@ -7,7 +7,7 @@ export default function ClinicQueueRedirectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/city-health');
+    router.replace('/city-health/queue');
   }, [router]);
 
   return (

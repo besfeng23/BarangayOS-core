@@ -27,7 +27,7 @@ const QueueCard = ({ item }: { item: ClinicQueueItem }) => {
 
     const handleStartConsult = async () => {
         try {
-            await db.clinic_queue.update(item.id, { status: 'CONSULT' });
+            await db.clinic_queue.update(item.id!, { status: 'CONSULT' });
             toast({
                 title: 'Consultation Started',
                 description: `${patientName} has been moved to the "In Consult" queue.`,
@@ -57,7 +57,6 @@ const QueueCard = ({ item }: { item: ClinicQueueItem }) => {
                     <div className="flex gap-2 mt-2">
                         {item.tags.map(tag => <Badge key={tag} variant="destructive" className="text-xs">{tag}</Badge>)}
                     </div>
-                    {/* {vitals && <p className="text-xs text-green-400 mt-2 font-mono">{vitals}</p>} */}
                 </div>
                 <div className="flex gap-2 self-end md:self-center">
                     <Button variant="outline" size="sm">Record Vitals</Button>
@@ -91,7 +90,7 @@ export default function QueuePage() {
 
         <main className="flex-1 overflow-y-auto">
             <Tabs defaultValue="waiting" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 sticky top-[73px] z-10 rounded-none">
+                <TabsList className="grid w-full grid-cols-3 sticky top-[73px] z-10 rounded-none bg-slate-950/50">
                     <TabsTrigger value="waiting">Waiting ({waiting.length})</TabsTrigger>
                     <TabsTrigger value="in-consult">In Consult ({inConsult.length})</TabsTrigger>
                     <TabsTrigger value="done">Done ({done.length})</TabsTrigger>
@@ -118,30 +117,10 @@ export default function QueuePage() {
                 </div>
             </Tabs>
         </main>
-        <footer className="flex md:hidden items-center justify-around p-2 border-t border-slate-700 sticky bottom-0 bg-slate-900/80 backdrop-blur-lg z-10">
-            <Link href="/city-health" passHref>
-                <Button variant="ghost" className="flex flex-col h-auto">
-                    <Users className="h-6 w-6"/>
-                    <span className="text-xs">Dashboard</span>
-                </Button>
-            </Link>
-            <Link href="/city-health/queue" passHref>
-                <Button variant="ghost" className="flex flex-col h-auto text-blue-400">
-                    <Users className="h-6 w-6"/>
-                    <span className="text-xs">Queue</span>
-                </Button>
-            </Link>
-            <Link href="/city-health/patients" passHref>
-                <Button variant="ghost" className="flex flex-col h-auto">
-                    <Users className="h-6 w-6"/>
-                    <span className="text-xs">Patients</span>
-                </Button>
-            </Link>
-        </footer>
-
+        
         <Link href="/clinic-queue/add" passHref legacyBehavior>
-            <a className="fixed bottom-24 right-6 z-20 md:bottom-6">
-                <Button className="rounded-full w-16 h-16 shadow-lg">
+            <a className="fixed bottom-6 right-6 z-20 md:bottom-6">
+                <Button className="rounded-full w-16 h-16 shadow-lg bg-blue-600 hover:bg-blue-700">
                     <Plus className="h-8 w-8" />
                 </Button>
             </a>
