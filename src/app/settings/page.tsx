@@ -142,6 +142,13 @@ const SystemTab = () => {
           <Button variant="outline" className="mt-3">View System Status Page</Button>
         </Link>
       </div>
+       <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+        <h3 className="font-semibold">Data Export</h3>
+        <p className="text-sm text-zinc-400">Download all local data as a zip file of CSVs for backup.</p>
+        <Button variant="outline" className="mt-3" onClick={handleExport} disabled={isExporting}>
+            {isExporting ? 'Exporting...' : 'Export All Data'}
+        </Button>
+      </div>
     </div>
   );
 };
@@ -158,7 +165,7 @@ export default function SettingsPage() {
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-lg">
               <TabsTrigger value="profile">Barangay Profile</TabsTrigger>
               <TabsTrigger value="devices">Devices</TabsTrigger>
-              <TabsTrigger value="users">Users & Roles</TabsTrigger>
+              <TabsTrigger value="users">Users &amp; Roles</TabsTrigger>
               <TabsTrigger value="system">System</TabsTrigger>
             </TabsList>
             <TabsContent value="profile" className="mt-6">

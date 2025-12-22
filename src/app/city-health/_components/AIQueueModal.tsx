@@ -17,11 +17,6 @@ import { db } from '@/lib/bosDb';
 import { toTokens } from '@/lib/bos/searchTokens';
 import { uuid } from '@/lib/uuid';
 
-interface AIQueueModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 // MOCK AI Function
 async function parseWithAI(text: string) {
     return new Promise(resolve => {

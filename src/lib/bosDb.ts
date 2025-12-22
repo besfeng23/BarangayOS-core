@@ -7,6 +7,8 @@ export const DB_NAME = "BarangayOS_Local";
 
 export type MetaRow = { key: string; value: any };
 export type SettingsRow = { key: string; value: any };
+export type AICacheRow = { key: string; value: any; createdAt: number };
+export type DraftRow = { id: string; type: string; routeToResume: string; residentName?: string; updatedAt: number; payload: any };
 
 // Shared rows
 export type SyncQueueItem = {
@@ -255,6 +257,8 @@ class BOSDexie extends Dexie {
   activity_log!: Table<ActivityLogLocal, string>;
   devices!: Table<SecurityDeviceLocal, string>;
   clinic_queue!: Table<ClinicQueueItem, string>;
+  ai_cache!: Table<AICacheRow, string>;
+  drafts!: Table<DraftRow, string>;
 
   settings!: Table<SettingsRow, string>;
   meta!: Table<MetaRow, string>;
@@ -277,6 +281,8 @@ class BOSDexie extends Dexie {
       audit_queue: "++id, eventType, occurredAtISO",
       devices: "id, type, status, updatedAtISO, *searchTokens",
       clinic_queue: "id, status, createdAtISO, *searchTokens",
+      ai_cache: 'key',
+      drafts: 'id',
     });
   }
 }

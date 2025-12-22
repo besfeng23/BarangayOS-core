@@ -74,7 +74,9 @@ const EXPECTED_STORES = [
   'sync_queue',
   'audit_queue',
   'devices',
-  'clinic_queue'
+  'clinic_queue',
+  'ai_cache',
+  'drafts'
 ];
 
 export async function getSystemStatus(): Promise<SystemStatus> {
