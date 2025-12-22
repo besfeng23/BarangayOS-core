@@ -3,75 +3,87 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Helper functions for secure, readable rules
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isSuperAdmin() {
+        return isSignedIn() && request.auth.token.role == 'superadmin';
+    }
 
-    // By default, deny all reads and writes.
-    match /{document=**} {
-      allow read, write: if false;
+    function isRole(role) {
+      return isSignedIn() && request.auth.token.role == role;
+    }
+
+    function isRoleIn(roles) {
+      return isSignedIn() && request.auth.token.role in roles;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isSameBarangay(barangayId) {
+      return isSignedIn() && request.auth.token.barangayId == barangayId;
     }
 
     //------------------------------------------------------------
     // User Profiles
     //------------------------------------------------------------
-    // - A user can read/write their own profile.
-    // - An admin (captain/superadmin) can read profiles within their own barangay.
-    // - A superadmin can write to any user profile (for role changes).
     match /userProfiles/{userId} {
-      function isOwner() {
-        return request.auth.uid == userId;
-      }
-      function isSuperAdmin() {
-        return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.role == 'superadmin';
-      }
-      function isAdminInSameBarangay() {
-        let userProfile = get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data;
-        return userProfile.role in ['captain', 'superadmin'] && userProfile.barangayId == resource.data.barangayId;
-      }
-
-      allow read: if request.auth != null && (isOwner() || isAdminInSameBarangay());
-      allow create: if isOwner();
-      // Allow user to update their own profile, but not their role or barangayId
-      allow update: if isOwner() && !('role' in request.resource.data) && !('barangayId' in request.resource.data);
-      // Allow superadmin to update any field
-      allow write: if request.auth != null && isSuperAdmin();
+      // Users can read/create their own profile.
+      allow read, create: if isOwner(userId);
+      // Users can update their own profile, but cannot change their role or barangayId.
+      allow update: if isOwner(userId) 
+                    && !('role' in request.resource.data) 
+                    && !('barangayId' in request.resource.data);
+      // A captain can read profiles within their own barangay.
+      allow get: if isRole('barangay_captain') && isSameBarangay(resource.data.barangayId);
+      // Superadmin can read/write any profile (for administrative changes).
+      allow read, write: if isSuperAdmin();
     }
-    
+
     //------------------------------------------------------------
     // Barangay-Scoped Data
+    // All data is nested under a `barangays` collection to enforce tenant isolation.
     //------------------------------------------------------------
-    // Helper function to check if the authenticated user belongs to the specified barangay.
-    function isUserInBarangay(barangayId) {
-      return request.auth != null &&
-             get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)).data.barangayId == barangayId;
-    }
-
-    // All data is nested under a `barangays` collection.
     match /barangays/{barangayId} {
-      // Allow reads/writes if the user is part of that barangay.
-      // This rule is inherited by all subcollections.
-      allow read, write: if isUserInBarangay(barangayId);
-      
-      // Subcollections for each data type.
+      // The barangay document itself is read-only for most users.
+      allow get: if isSameBarangay(barangayId);
+      allow write: if isSuperAdmin(); // Only superadmins can edit barangay details.
+
+      // Subcollections for each data type. These rules inherit the parent `barangayId`.
       match /residents/{residentId} {
-        // No extra rules needed, inherits from parent.
-        allow read, write: if true;
+        // Any authenticated user from the same barangay can read resident data.
+        allow read: if isSameBarangay(barangayId);
+        // Only secretary or captain can create/update resident records.
+        allow write: if isSameBarangay(barangayId) && isRoleIn(['barangay_secretary', 'barangay_captain']);
       }
       
       match /blotter_cases/{caseId} {
-        allow read, write: if true;
+        allow read, write: if isSameBarangay(barangayId) && isRoleIn(['barangay_secretary', 'barangay_captain']);
       }
 
       match /business_permits/{permitId} {
-        allow read, write: if true;
+        allow read, write: if isSameBarangay(barangayId) && isRoleIn(['barangay_secretary', 'barangay_captain', 'treasurer']);
       }
 
       match /transactions/{transactionId} {
-        allow read, write: if true;
+        allow read, write: if isSameBarangay(barangayId) && isRoleIn(['barangay_secretary', 'barangay_captain', 'treasurer']);
       }
-
+      
+      // Configuration for a specific barangay
       match /config/{docId} {
-        // e.g., /barangays/{barangayId}/config/identity
-        allow read, write: if isUserInBarangay(barangayId);
+        allow read: if isSameBarangay(barangayId);
+        allow write: if isSameBarangay(barangayId) && isRoleIn(['barangay_captain']);
       }
+    }
+    
+    // By default, deny all other reads and writes.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

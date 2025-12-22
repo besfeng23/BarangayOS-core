@@ -2,66 +2,78 @@
 import { initializeApp, getApps, getApp, cert, App } from 'firebase-admin/app';
 import { getAuth, Auth } from 'firebase-admin/auth';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
-import { env } from '@/lib/env';
 
-let adminApp: App;
-let adminAuth: Auth;
-let adminDb: Firestore;
+// This file is designed to be build-safe for Vercel and Next.js.
+// It uses a lazy initialization pattern to ensure the Firebase Admin SDK
+// is only initialized at runtime, not during the build process.
+
+let adminApp: App | undefined;
+let adminAuth: Auth | undefined;
+let adminDb: Firestore | undefined;
 
 function getAdminApp(): App {
-  if (getApps().some(app => app.name === 'admin')) {
-    return getApp('admin');
+  // If the app is already initialized, return it.
+  if (adminApp) {
+    return adminApp;
+  }
+  
+  // Check if an app named 'admin' already exists. This can happen in serverless environments.
+  const existingApp = getApps().find(app => app.name === 'admin');
+  if (existingApp) {
+    adminApp = existingApp;
+    return adminApp;
+  }
+  
+  // Prepare credentials.
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+  if (serviceAccountJson) {
+      const serviceAccount = JSON.parse(serviceAccountJson);
+      if (!serviceAccount.project_id) {
+          throw new Error("Service account JSON must contain a string 'project_id' property.");
+      }
+      adminApp = initializeApp({
+          credential: cert(serviceAccount)
+      }, 'admin');
+      return adminApp;
   }
 
+  // Fallback for local development using separate environment variables
   const serviceAccount = {
-    projectId: env.FIREBASE_ADMIN_PROJECT_ID,
-    clientEmail: env.FIREBASE_ADMIN_CLIENT_EMAIL,
-    privateKey: env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
   };
 
   if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
-      if (process.env.NODE_ENV === 'production') {
-        // In production (Vercel deployment), if creds are missing, something is wrong with env vars.
-        throw new Error('Firebase Admin credentials are not configured.');
-      }
-      // During build or in dev without creds, we can use a placeholder or mock if needed,
-      // but for now, we'll just prevent crashing. Here we throw to signal a runtime misconfiguration.
-      // The build process itself won't hit this because we're initializing lazily.
-       throw new Error('Firebase Admin credentials are not available. Ensure server environment variables are set.');
+      throw new Error('Firebase Admin credentials are not available. Set FIREBASE_SERVICE_ACCOUNT_JSON or individual FIREBASE_ADMIN_* variables.');
   }
 
-  return initializeApp({
+  adminApp = initializeApp({
     credential: cert(serviceAccount)
   }, 'admin');
+  
+  return adminApp;
 }
 
 function initializeAdmin() {
-    adminApp = getAdminApp();
-    adminAuth = getAuth(adminApp);
-    adminDb = getFirestore(adminApp);
+  const app = getAdminApp();
+  adminAuth = getAuth(app);
+  adminDb = getFirestore(app);
 }
 
-// Check if already initialized before trying to initialize.
-// This is the gatekeeper.
-if (!getApps().some(app => app.name === 'admin')) {
-    // We only call the initialization function if the admin app isn't already there.
-    // However, to be build-safe, we should avoid initializing here at the top level.
-    // The logic is moved into accessor functions.
-}
-
-// Export functions that ensure initialization before returning the instance.
-function getAdminAuth() {
+function getAdminAuthInstance() {
     if (!adminAuth) {
         initializeAdmin();
     }
-    return adminAuth;
+    return adminAuth!;
 }
 
-function getAdminDb() {
+function getAdminDbInstance() {
     if (!adminDb) {
         initializeAdmin();
     }
-    return adminDb;
+    return adminDb!;
 }
 
-export { getAdminAuth, getAdminDb };
+export { getAdminAuthInstance as getAdminAuth, getAdminDbInstance as getAdminDb };

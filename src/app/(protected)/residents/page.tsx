@@ -1,20 +1,27 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { getAdminDb } from '@/lib/firebase/admin';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { residentConverter } from '@/lib/firebase/schema';
 import { verifySessionCookie } from '@/lib/firebase/auth';
+import { getAdminDb } from '@/lib/firebase/admin';
 import { redirect } from 'next/navigation';
 
 async function getResidents(barangayId: string) {
+    // Moved Admin DB init inside the function to avoid build-time execution
     const adminDb = getAdminDb();
     const residentsRef = collection(adminDb, 'residents').withConverter(residentConverter);
     const q = query(residentsRef, where("barangayId", "==", barangayId));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data());
+    
+    try {
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+        console.error("Error fetching residents:", error);
+        // Throwing the error will be caught by the error boundary
+        throw new Error("Failed to fetch resident data from the server.");
+    }
 }
-
 
 export default async function ResidentsPage() {
     const decodedClaims = await verifySessionCookie();
@@ -47,7 +54,8 @@ export default async function ResidentsPage() {
             <div className="mt-4 space-y-2">
               {residents.length === 0 ? (
                  <div className="text-center p-12 border-2 border-dashed rounded-xl">
-                    <p className="mt-4 text-muted-foreground">No residents found.</p>
+                    <p className="font-semibold text-lg">No Residents Found</p>
+                    <p className="mt-4 text-muted-foreground">Click "+ Add New Resident" to get started.</p>
                 </div>
               ) : (
                 residents.map((r) => (
