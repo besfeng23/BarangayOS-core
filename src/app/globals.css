@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 220 20% 95%;
-    --foreground: 220 20% 10%;
-
-    --card: 220 20% 100%;
-    --card-foreground: 220 20% 10%;
-
-    --popover: 220 20% 100%;
-    --popover-foreground: 220 20% 10%;
-
-    --primary: 210 100% 45%;
+    --background: 220 10% 2%; /* Jet Black */
+    --foreground: 210 40% 98%;
+    
+    --card: 220 15% 10% / 0.8; /* Glassy Card */
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 220 10% 8% / 0.9; /* Slightly more opaque popover */
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 210 100% 50%; /* Vibrant Blue */
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 45 100% 50%;
+    
+    --secondary: 45 100% 50%; /* Vibrant Amber/Gold */
     --secondary-foreground: 220 20% 10%;
-
-    --muted: 220 20% 90%;
-    --muted-foreground: 220 15% 45%;
-
-    --accent: 220 20% 92%;
-    --accent-foreground: 220 20% 10%;
-
-    --destructive: 0 84% 60%;
+    
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 220 15% 20% / 0.5; /* Glassy Accent */
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 70% 50%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 220 20% 80%;
-    --input: 220 20% 85%;
-    --ring: 210 100% 45%;
+    
+    --border: 220 15% 20%;
+    --input: 220 15% 18% / 0.8; /* Glassy Input */
+    --ring: 210 100% 50%; /* Ring matches primary blue */
 
     --radius: 0.75rem;
   }
@@ -77,5 +77,25 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Roboto', sans-serif;
     @apply font-bold text-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-ken-burns {
+    animation-name: ken-burns;
+    animation-duration: 20s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
+
+  @keyframes ken-burns {
+    0% {
+      transform: scale(1) translateY(0);
+      transform-origin: center center;
+    }
+    100% {
+      transform: scale(1.1) translateY(-15px);
+      transform-origin: center center;
+    }
   }
 }
