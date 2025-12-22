@@ -1,7 +1,7 @@
 
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore } from "firebase/firestore";
-import { getAuth, Auth } from "firebase/auth";
+import { getAuth, Auth, browserLocalPersistence, setPersistence } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { env } from "@/lib/env";
 
@@ -34,6 +34,9 @@ try {
 }
 
 const auth: Auth = getAuth(app);
+// Set session persistence
+setPersistence(auth, browserLocalPersistence);
+
 const storage: FirebaseStorage = getStorage(app);
 
 export { app, db, auth, storage, db as firestore };

@@ -1,11 +1,13 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, browserLocalPersistence, browserSessionPersistence, setPersistence } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
@@ -16,6 +18,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [keepLoggedIn, setKeepLoggedIn] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +31,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      const persistence = keepLoggedIn ? browserLocalPersistence : browserSessionPersistence;
+      await setPersistence(auth, persistence);
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/apps'); // Redirect to the app hub after login
     } catch (err: any) {
@@ -97,6 +102,15 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </Button>
               </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="keep-logged-in" checked={keepLoggedIn} onCheckedChange={(checked) => setKeepLoggedIn(checked as boolean)} />
+              <label
+                htmlFor="keep-logged-in"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Keep me logged in
+              </label>
             </div>
             <Button
               type="submit"

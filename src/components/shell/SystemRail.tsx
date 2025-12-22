@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import Link from 'next/link';
@@ -43,7 +44,7 @@ export default function SystemRail({
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-card/80 backdrop-blur-lg border-b">
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-3">
         <Link
-          href="/"
+          href="/apps"
           className="flex items-center gap-3 min-w-0"
           aria-label="Go to Home Dashboard"
         >
