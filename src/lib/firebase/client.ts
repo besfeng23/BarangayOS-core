@@ -6,7 +6,17 @@ import { getAnalytics, Analytics, isSupported } from "firebase/analytics";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 // Standard Firebase config object using environment variables for security.
-const firebaseConfig = {
+const fallbackFirebaseConfig = {
+  apiKey: "AIzaSyDUMMYKEY00000000000000000000000000",
+  authDomain: "bos-fallback.local",
+  projectId: "bos-fallback",
+  storageBucket: "bos-fallback.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:0000000000000000",
+  measurementId: "G-0000000000",
+};
+
+const envFirebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -15,6 +25,26 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+const firebaseConfig = {
+  apiKey: envFirebaseConfig.apiKey || fallbackFirebaseConfig.apiKey,
+  authDomain: envFirebaseConfig.authDomain || fallbackFirebaseConfig.authDomain,
+  projectId: envFirebaseConfig.projectId || fallbackFirebaseConfig.projectId,
+  storageBucket: envFirebaseConfig.storageBucket || fallbackFirebaseConfig.storageBucket,
+  messagingSenderId: envFirebaseConfig.messagingSenderId || fallbackFirebaseConfig.messagingSenderId,
+  appId: envFirebaseConfig.appId || fallbackFirebaseConfig.appId,
+  measurementId: envFirebaseConfig.measurementId || fallbackFirebaseConfig.measurementId,
+};
+
+const missingConfigKeys = Object.entries(envFirebaseConfig)
+  .filter(([, value]) => !value)
+  .map(([key]) => key);
+
+if (missingConfigKeys.length) {
+  console.warn(
+    `[firebase] Using fallback configuration; missing env vars: ${missingConfigKeys.join(", ")}`
+  );
+}
 
 // Initialize Firebase App (Singleton Pattern)
 const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -57,5 +87,7 @@ export const getAnalyticsIfSupported = async (): Promise<Analytics | null> => {
     }
     return analytics;
 }
+
+export const firestore = db;
 
 export { app, db, auth, storage };
