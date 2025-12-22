@@ -35,19 +35,24 @@ export default function LoginPage() {
       await setPersistence(auth, persistence);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Fetch the ID token and send it to the server to create a session cookie
       const idToken = await userCredential.user.getIdToken();
-      await fetch('/api/auth/session', {
+      
+      const response = await fetch('/api/auth/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ idToken }),
       });
+
+      if (!response.ok) {
+          throw new Error('Failed to create session on the server.');
+      }
       
-      router.push('/apps'); // Redirect to the app hub after login
+      // Force a full page reload to ensure server and client are in sync
+      window.location.href = '/apps';
+
     } catch (err: any) {
       setError('Invalid email or password. Please try again.');
       console.error(err);
-    } finally {
       setLoading(false);
     }
   };

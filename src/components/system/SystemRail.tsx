@@ -1,26 +1,25 @@
-
-"use client";
-import React from "react";
-import Link from "next/link";
-import { useAuth } from "@/hooks/use-auth";
-import AIQuickSearch from "@/components/ai/AIQuickSearch";
-import { StatusIndicator } from "../shell/StatusIndicator";
-import { useSettings } from "@/lib/bos/settings/useSettings";
-import { Button } from "../ui/button";
-import { HelpCircle } from "lucide-react";
+'use client';
+import React from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
+import AIQuickSearch from '@/components/ai/AIQuickSearch';
+import { StatusIndicator } from '../shell/StatusIndicator';
+import { useSettings } from '@/hooks/useSettings';
+import { Button } from '../ui/button';
+import { HelpCircle } from 'lucide-react';
 
 
 function getRolePill(role: string | null | undefined): string {
-  if (!role) return "Staff Mode";
+  if (!role) return 'Staff Mode';
   switch (role.toLowerCase()) {
-    case "super_admin":
-    case "barangay_captain":
-    case "admin":
-      return "Admin Mode";
-    case "secretary":
-      return "Secretary Mode";
+    case 'super_admin':
+    case 'barangay_captain':
+    case 'admin':
+      return 'Admin Mode';
+    case 'secretary':
+      return 'Secretary Mode';
     default:
-      return "Staff Mode";
+      return 'Staff Mode';
   }
 }
 
@@ -37,7 +36,7 @@ export default function SystemRail({ onHelpClick }: { onHelpClick?: () => void }
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-zinc-900/80 backdrop-blur-lg border-b border-zinc-800">
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-3 min-w-0" aria-label="Go to Home Dashboard">
+        <Link href="/apps" className="flex items-center gap-3 min-w-0" aria-label="Go to Home Dashboard">
           <div className="h-10 w-10 rounded-xl border border-zinc-800 bg-zinc-900/40 flex items-center justify-center">
             <svg
               width="22"

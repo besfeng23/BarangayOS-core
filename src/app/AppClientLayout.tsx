@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -11,7 +12,6 @@ import { resetLocalDatabase } from '@/lib/bosDb';
 import { HelpCircle } from 'lucide-react';
 import HelpDrawer from '@/components/ai/HelpDrawer';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 
 const ErrorPanel = ({ error, onReset }: { error: Error, onReset: () => void }) => (
   <div className="flex items-center justify-center min-h-screen bg-zinc-950">
@@ -53,7 +53,6 @@ export default function AppClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, loading: authLoading } = useAuth();
   const [bootState, setBootState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [bootError, setBootError] = useState<Error | null>(null);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -90,13 +89,9 @@ export default function AppClientLayout({
 
   const isLoginPage = pathname === '/login';
   const isLandingPage = pathname.startsWith('/landing');
-  const isProtectedPage = !isLoginPage && !isLandingPage;
+  const showShell = !isLoginPage && !isLandingPage;
 
-  if (isLoginPage || isLandingPage) {
-    return <>{children}</>;
-  }
-
-  if (authLoading || bootState === 'loading') {
+  if (bootState === 'loading') {
     return <FullscreenLoader />;
   }
 
@@ -104,18 +99,18 @@ export default function AppClientLayout({
     return <ErrorPanel error={bootError} onReset={resetLocalDatabase} />;
   }
   
-  if (isProtectedPage && !user) {
-    // AuthGuard is conceptually here. If no user, show loader while redirect happens.
-    return <FullscreenLoader />;
+  if (showShell) {
+      return (
+        <>
+            <IdleScreensaver />
+            <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
+                {children}
+            </TerminalShell>
+            <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        </>
+    );
   }
   
-  return (
-      <>
-        <IdleScreensaver />
-        <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
-            {children}
-        </TerminalShell>
-        <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-      </>
-  )
+  // For login and landing pages, just render children without the shell
+  return <>{children}</>;
 }

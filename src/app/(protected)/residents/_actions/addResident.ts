@@ -1,10 +1,11 @@
-
 'use server'
 
 import { z } from 'zod';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import { verifySessionCookie } from '@/lib/firebase/auth';
+import { residentsCollection } from '@/lib/firebase/collections';
+import { revalidatePath } from 'next/cache';
 
 const formSchema = z.object({
     firstName: z.string().min(2),
@@ -25,10 +26,9 @@ export async function addResident(values: z.infer<typeof formSchema>) {
     
     const { firstName, lastName, purok } = validation.data;
     const barangayId = decodedClaims.barangayId || 'TEST-BARANGAY-1';
-    const adminDb = getAdminDb();
 
     try {
-        await adminDb.collection('residents').add({
+        await residentsCollection.add({
             fullName: {
                 first: firstName,
                 last: lastName,
@@ -47,9 +47,11 @@ export async function addResident(values: z.infer<typeof formSchema>) {
             status: 'active',
             createdBy: decodedClaims.uid,
             updatedBy: decodedClaims.uid,
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
         });
+        
+        // Revalidate the residents page to show the new data
+        revalidatePath('/residents');
+        
         return { success: true };
     } catch (error) {
         console.error("Error adding resident:", error);
