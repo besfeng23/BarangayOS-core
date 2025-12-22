@@ -1,16 +1,20 @@
 
-import { residentsCollection } from '@/lib/firebase/collections';
-import { getDocs, query, where } from 'firebase/firestore';
-import { verifySessionCookie } from '@/lib/firebase/auth';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { getAdminDb } from '@/lib/firebase/admin';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { residentConverter } from '@/lib/firebase/schema';
+import { verifySessionCookie } from '@/lib/firebase/auth';
+import { redirect } from 'next/navigation';
 
 async function getResidents(barangayId: string) {
-    const q = query(residentsCollection, where("barangayId", "==", barangayId));
+    const adminDb = getAdminDb();
+    const residentsRef = collection(adminDb, 'residents').withConverter(residentConverter);
+    const q = query(residentsRef, where("barangayId", "==", barangayId));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => doc.data());
 }
+
 
 export default async function ResidentsPage() {
     const decodedClaims = await verifySessionCookie();

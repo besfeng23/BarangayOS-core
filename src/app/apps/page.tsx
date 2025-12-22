@@ -135,7 +135,7 @@ const modules: Module[] = [
 ];
 
 const ModuleCard = ({ module, onInstallClick }: { module: Module; onInstallClick: (module: Module) => void; }) => {
-  const content = (
+  const CardContent = (
     <div
       className={`group relative flex flex-col rounded-2xl border bg-slate-800/30 p-4 min-h-[180px] h-full ${
         module.status === 'INSTALLED'
@@ -163,10 +163,10 @@ const ModuleCard = ({ module, onInstallClick }: { module: Module; onInstallClick
   );
 
   if (module.status === 'INSTALLED' && module.href) {
-    return <Link href={module.href}>{content}</Link>;
+    return <Link href={module.href} passHref>{CardContent}</Link>;
   }
 
-  return <button onClick={() => onInstallClick(module)} className="text-left h-full">{content}</button>;
+  return <button onClick={() => onInstallClick(module)} className="text-left h-full w-full">{CardContent}</button>;
 };
 
 
