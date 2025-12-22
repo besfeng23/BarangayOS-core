@@ -36,25 +36,33 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
+    --background: 220 10% 2%; /* Jet Black */
     --foreground: 210 40% 98%;
-    --card: 222 47% 15%;
+    
+    --card: 220 15% 10% / 0.8; /* Glassy Card */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    
+    --popover: 220 10% 8% / 0.9; /* Slightly more opaque popover */
     --popover-foreground: 210 40% 98%;
-    --primary: 45 100% 50%;
-    --primary-foreground: 220 20% 10%;
-    --secondary: 210 100% 45%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
+    
+    --primary: 210 100% 50%; /* Vibrant Blue */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 45 100% 50%; /* Vibrant Amber/Gold */
+    --secondary-foreground: 220 20% 10%;
+    
+    --muted: 220 15% 15%;
     --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
+    
+    --accent: 220 15% 20% / 0.5; /* Glassy Accent */
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+    
+    --destructive: 0 70% 50%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 27%;
-    --input: 217 33% 27%;
-    --ring: 45 100% 50%;
+    
+    --border: 220 15% 20%;
+    --input: 220 15% 18% / 0.8; /* Glassy Input */
+    --ring: 210 100% 50%; /* Ring matches primary blue */
   }
 }
 
