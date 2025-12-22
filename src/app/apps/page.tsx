@@ -75,7 +75,8 @@ const modules: Module[] = [
     name: 'eMango Wallet',
     description: 'Digital collections and disbursements.',
     icon: Wallet,
-    status: 'AVAILABLE',
+    status: 'INSTALLED',
+    href: '/emango',
   },
   {
     id: 'procurement',
@@ -97,8 +98,8 @@ const modules: Module[] = [
     id: 'security',
     name: 'Security & Emergency',
     description: 'Manage security devices and incidents.',
-    icon: Shield,
-    status: 'AVAILABLE',
+    icon: 'INSTALLED',
+    href: '/security',
   },
   {
     id: 'health',

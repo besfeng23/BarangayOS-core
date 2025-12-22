@@ -56,7 +56,7 @@ export default function EmangoHomePage() {
           return { collections: 0, transactions: 0 };
       }
       const collectionsToday = stats[0].reduce((sum, tx) => {
-          const amountMatch = tx.subtitle.match(/₱([\d,.]+)/);
+          const amountMatch = tx.subtitle.match(/₱([\\d,.]+)/);
           if (amountMatch) {
               return sum + parseFloat(amountMatch[1].replace(/,/g, ''));
           }
