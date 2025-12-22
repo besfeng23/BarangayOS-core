@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -98,7 +99,8 @@ const modules: Module[] = [
     id: 'security',
     name: 'Security & Emergency',
     description: 'Manage security devices and incidents.',
-    icon: 'INSTALLED',
+    icon: Shield,
+    status: 'INSTALLED',
     href: '/security',
   },
   {
