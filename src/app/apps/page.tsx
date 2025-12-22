@@ -1,7 +1,4 @@
-
-'use client';
-
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Users,
   FileText,
@@ -16,15 +13,6 @@ import {
   LayoutGrid,
 } from 'lucide-react';
 import Link from 'next/link';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 type ModuleStatus = 'INSTALLED' | 'AVAILABLE';
@@ -134,7 +122,7 @@ const modules: Module[] = [
   },
 ];
 
-const ModuleCard = ({ module, onInstallClick }: { module: Module; onInstallClick: (module: Module) => void; }) => {
+const ModuleCard = ({ module }: { module: Module; }) => {
   const CardContent = (
     <div
       className={`group relative flex flex-col rounded-2xl border bg-slate-800/30 p-4 min-h-[180px] h-full ${
@@ -157,7 +145,7 @@ const ModuleCard = ({ module, onInstallClick }: { module: Module; onInstallClick
             : 'bg-blue-600/20 border-blue-500/30 text-blue-300 group-hover:bg-blue-500 group-hover:text-black'
         }`}
       >
-        {module.status === 'INSTALLED' ? 'OPEN' : 'INSTALL'}
+        {module.status === 'INSTALLED' ? 'OPEN' : 'INFO'}
       </div>
     </div>
   );
@@ -166,40 +154,11 @@ const ModuleCard = ({ module, onInstallClick }: { module: Module; onInstallClick
     return <Link href={module.href} passHref>{CardContent}</Link>;
   }
 
-  return <button onClick={() => onInstallClick(module)} className="text-left h-full w-full">{CardContent}</button>;
-};
-
-
-const ActivationModal = ({ module, isOpen, onClose }: { module: Module | null, isOpen: boolean, onClose: () => void }) => {
-    if (!module) return null;
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-slate-900 border-slate-800 text-white">
-                <DialogHeader>
-                    <DialogTitle>Activate {module.name}?</DialogTitle>
-                    <DialogDescription>
-                        This module requires activation. Please contact your system administrator or account manager to enable this feature for your barangay.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="h-12">Cancel</Button>
-                    <Button onClick={onClose} className="h-12">Understood</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+  return <div className="text-left h-full w-full cursor-not-allowed">{CardContent}</div>;
 };
 
 
 export default function AppHubPage() {
-    const [modalModule, setModalModule] = useState<Module | null>(null);
-
-    const handleCardClick = (module: Module) => {
-        if(module.status === 'AVAILABLE') {
-            setModalModule(module);
-        }
-    };
-
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <header className="mb-8">
@@ -211,11 +170,9 @@ export default function AppHubPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {modules.map((module) => (
-          <ModuleCard key={module.id} module={module} onInstallClick={handleCardClick} />
+          <ModuleCard key={module.id} module={module} />
         ))}
       </div>
-
-      <ActivationModal module={modalModule} isOpen={!!modalModule} onClose={() => setModalModule(null)} />
     </div>
   );
 }

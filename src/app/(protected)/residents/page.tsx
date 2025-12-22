@@ -20,6 +20,7 @@ export default async function ResidentsPage() {
     const decodedClaims = await verifySessionCookie();
     
     if (!decodedClaims) {
+        // This check is redundant due to the layout, but good for safety.
         return redirect('/login');
     }
 
