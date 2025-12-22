@@ -14,14 +14,3 @@ function createCollection<T = DocumentData>(collectionName: string) {
 export const residentsCollection = createCollection<Resident>('residents').withConverter(residentConverter);
 export const blotterCasesCollection = createCollection<BlotterCase>('blotter_cases').withConverter(blotterCaseConverter);
 export const businessPermitsCollection = createCollection<BusinessPermit>('business_permits').withConverter(businessPermitConverter);
-
-// You can also add common queries here in the future
-// Example:
-// import { query, where } from 'firebase/firestore';
-// export const getActiveResidentsQuery = (barangayId: string) => {
-//   return query(
-//     residentsCollection,
-//     where('barangayId', '==', barangayId),
-//     where('status', '==', 'active')
-//   );
-// };
