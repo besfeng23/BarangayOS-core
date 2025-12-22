@@ -18,18 +18,6 @@ export const AuthContext = createContext<AuthContextType>({
   customClaims: null,
 });
 
-async function setSessionCookie(token: string) {
-    await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: token }),
-    });
-}
-
-async function clearSessionCookie() {
-    await fetch('/api/auth/session', { method: 'DELETE' });
-}
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,11 +30,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (user) {
         const tokenResult = await user.getIdTokenResult();
         setCustomClaims(tokenResult.claims);
-        const idToken = await user.getIdToken();
-        await setSessionCookie(idToken);
       } else {
         setCustomClaims(null);
-        await clearSessionCookie();
       }
       setLoading(false);
     });

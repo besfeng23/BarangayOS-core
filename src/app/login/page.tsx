@@ -33,21 +33,10 @@ export default function LoginPage() {
     try {
       const persistence = keepLoggedIn ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       
-      const idToken = await userCredential.user.getIdToken();
-      
-      const response = await fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-      });
-
-      if (!response.ok) {
-          throw new Error('Failed to create session on the server.');
-      }
-      
-      // Force a full page reload to ensure server and client are in sync
+      // The onIdTokenChanged listener in AuthProvider will handle the redirect.
+      // Forcing a reload ensures all server/client states are in sync.
       window.location.href = '/apps';
 
     } catch (err: any) {
