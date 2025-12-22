@@ -1,16 +1,28 @@
 
-import { verifySessionCookie } from '@/lib/firebase/auth';
-import { redirect } from 'next/navigation';
+'use client';
 
-export default async function ProtectedLayout({
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await verifySessionCookie();
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  if (!session) {
-    redirect('/login');
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    // AuthProvider will show a loading skeleton, so we can just return null here
+    // to prevent rendering children until authentication state is confirmed.
+    return null;
   }
 
   return <>{children}</>;
