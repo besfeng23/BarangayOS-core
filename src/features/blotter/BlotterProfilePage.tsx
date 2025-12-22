@@ -4,13 +4,8 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
 import { useToast } from "@/components/ui/toast";
 import { useBlotterData } from "@/hooks/useBlotterData";
-<<<<<<< HEAD
 import PrintFrame from "@/components/print/PrintFrame";
 import { useBlotterDocs } from "@/hooks/useBlotterDocs";
-=======
-import { PrintFrame } from "@/components/print/PrintFrame";
-import { useBlotterDocs } from "@/hooks/blotter/useBlotterDocs";
->>>>>>> f7b5f3f (do the next one thousand things simultaneously)
 import { SummonsTemplate } from "@/features/blotter/print/SummonsTemplate";
 import { AmicableTemplate } from "@/features/blotter/print/AmicableTemplate";
 import type { BlotterRecord } from "@/lib/bosDb";
@@ -242,4 +237,3 @@ export default function BlotterProfilePage() {
         )}
       </div>
   );
-}
