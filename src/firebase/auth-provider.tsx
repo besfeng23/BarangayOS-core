@@ -1,8 +1,8 @@
 
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { getAuth, onIdTokenChanged, User } from 'firebase/auth';
+import React, { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { getAuth, onIdTokenChanged, signOut, User } from 'firebase/auth';
 import { app } from '@/lib/firebase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -10,12 +10,14 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   customClaims: { [key: string]: any } | null;
+  handleSignOut: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   customClaims: null,
+  handleSignOut: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -39,6 +41,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [auth]);
 
+  const handleSignOut = useCallback(async () => {
+    await signOut(auth);
+    // Also clear the server-side session cookie
+    await fetch('/api/auth/session', { method: 'DELETE' });
+    window.location.href = '/login';
+  }, [auth]);
+
   if (loading) {
     return (
         <div className="flex flex-col h-screen bg-slate-900 p-8 space-y-4">
@@ -58,5 +67,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  return <AuthContext.Provider value={{ user, loading, customClaims }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, customClaims, handleSignOut }}>
+        {children}
+    </AuthContext.Provider>
+  );
 };
