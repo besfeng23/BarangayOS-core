@@ -1,5 +1,3 @@
-
-
 import { Timestamp } from 'firebase/firestore';
 import type { CityHealthTypes } from './city-health';
 import type { JobsPortalTypes } from './jobs-portal';

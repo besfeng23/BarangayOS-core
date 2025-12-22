@@ -1,10 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import CityHealthClient from './CityHealthClient';
 
 export default function CityHealthHomePage() {
   return <CityHealthClient />;
 =======
 
+=======
+>>>>>>> 27a7513 (do   the next 500 things simutaneosily)
 'use client';
 
 import Link from 'next/link';

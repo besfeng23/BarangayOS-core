@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -77,8 +76,7 @@ const modules: Module[] = [
     name: 'eMango Wallet',
     description: 'Digital collections and disbursements.',
     icon: Wallet,
-    status: 'INSTALLED',
-    href: '/emango',
+    status: 'AVAILABLE',
   },
   {
     id: 'procurement',
@@ -101,8 +99,7 @@ const modules: Module[] = [
     name: 'Security & Emergency',
     description: 'Manage security devices and incidents.',
     icon: Shield,
-    status: 'INSTALLED',
-    href: '/security',
+    status: 'AVAILABLE',
   },
   {
     id: 'health',
