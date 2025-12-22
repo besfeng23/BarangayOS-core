@@ -33,7 +33,16 @@ export default function LoginPage() {
     try {
       const persistence = keepLoggedIn ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Fetch the ID token and send it to the server to create a session cookie
+      const idToken = await userCredential.user.getIdToken();
+      await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+      });
+      
       router.push('/apps'); // Redirect to the app hub after login
     } catch (err: any) {
       setError('Invalid email or password. Please try again.');

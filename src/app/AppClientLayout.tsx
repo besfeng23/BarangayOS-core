@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { resetLocalDatabase } from '@/lib/bosDb';
 import { HelpCircle } from 'lucide-react';
 import HelpDrawer from '@/components/ai/HelpDrawer';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 const ErrorPanel = ({ error, onReset }: { error: Error, onReset: () => void }) => (
   <div className="flex items-center justify-center min-h-screen bg-zinc-950">
@@ -53,6 +53,7 @@ export default function AppClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { user, loading: authLoading } = useAuth();
   const [bootState, setBootState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [bootError, setBootError] = useState<Error | null>(null);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -89,39 +90,32 @@ export default function AppClientLayout({
 
   const isLoginPage = pathname === '/login';
   const isLandingPage = pathname.startsWith('/landing');
-  const isStatusPage = pathname === '/status';
-  const isJobsPortal = pathname.startsWith('/jobs') || pathname.startsWith('/applications') || pathname.startsWith('/profile') || pathname.startsWith('/saved');
-
+  const isProtectedPage = !isLoginPage && !isLandingPage;
 
   if (isLoginPage || isLandingPage) {
     return <>{children}</>;
   }
 
+  if (authLoading || bootState === 'loading') {
+    return <FullscreenLoader />;
+  }
+
   if (bootState === 'error' && bootError) {
     return <ErrorPanel error={bootError} onReset={resetLocalDatabase} />;
   }
-
-  if (bootState === 'loading') {
+  
+  if (isProtectedPage && !user) {
+    // AuthGuard is conceptually here. If no user, show loader while redirect happens.
     return <FullscreenLoader />;
   }
   
-  const content = (
+  return (
       <>
         <IdleScreensaver />
-        {isStatusPage || isJobsPortal ? (
-            <div className="bg-slate-900 text-white min-h-screen">
-                <div className="container mx-auto px-4 py-8">
-                    {children}
-                </div>
-            </div>
-        ) : (
-          <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
+        <TerminalShell onHelpClick={() => setIsHelpOpen(true)}>
             {children}
-          </TerminalShell>
-        )}
+        </TerminalShell>
         <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       </>
   )
-
-  return <AuthGuard>{content}</AuthGuard>;
 }

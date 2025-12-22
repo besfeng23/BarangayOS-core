@@ -41,6 +41,13 @@ const NavButton = ({
 export default function BottomNav() {
   const pathname = usePathname();
 
+  // In a real app, this might come from a config or role check
+  const isProtected = pathname.startsWith('/apps') || pathname.startsWith('/residents') || pathname.startsWith('/blotter') || pathname.startsWith('/certificates') || pathname.startsWith('/permits') || pathname.startsWith('/settings') || pathname.startsWith('/history') || pathname.startsWith('/print');
+
+  if (!isProtected) {
+      return null;
+  }
+
   return (
     <footer className="fixed bottom-0 left-0 right-0 h-20 bg-card/90 backdrop-blur-lg border-t z-40">
       <nav className="h-full flex items-center justify-around max-w-md mx-auto">
@@ -48,7 +55,7 @@ export default function BottomNav() {
           <NavButton
             key={item.href}
             {...item}
-            isActive={pathname === item.href}
+            isActive={pathname.startsWith(item.href)}
           />
         ))}
       </nav>
