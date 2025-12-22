@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -92,7 +91,7 @@ export default function ResidentWizard({ mode, initial, onDone }: ResidentWizard
     if (step > 1) {
         setStep(prev => prev - 1);
     } else {
-        router.back();
+        router.push("/residents");
     }
   };
 

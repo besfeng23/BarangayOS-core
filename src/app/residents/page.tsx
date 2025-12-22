@@ -22,13 +22,13 @@ export default function ResidentsPage() {
 
             <div className="rounded-xl border bg-card p-4">
               <input
-                className="h-12 w-full rounded-lg bg-background border px-3"
+                className="h-14 w-full rounded-lg bg-background border px-3 text-lg"
                 placeholder="Search by name, household no, or ID..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
               <button
-                className="mt-3 h-12 w-full rounded-lg bg-primary text-primary-foreground font-semibold"
+                className="mt-3 h-14 w-full rounded-lg bg-primary text-primary-foreground font-semibold text-lg"
                 onClick={() => router.push('/residents/new')}
               >
                 + Add New Resident

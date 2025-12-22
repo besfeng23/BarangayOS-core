@@ -1,12 +1,16 @@
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
 import { useToast } from "@/components/ui/toast";
 import { useBlotterData } from "@/hooks/useBlotterData";
+<<<<<<< HEAD
 import PrintFrame from "@/components/print/PrintFrame";
 import { useBlotterDocs } from "@/hooks/useBlotterDocs";
+=======
+import { PrintFrame } from "@/components/print/PrintFrame";
+import { useBlotterDocs } from "@/hooks/blotter/useBlotterDocs";
+>>>>>>> f7b5f3f (do the next one thousand things simultaneously)
 import { SummonsTemplate } from "@/features/blotter/print/SummonsTemplate";
 import { AmicableTemplate } from "@/features/blotter/print/AmicableTemplate";
 import type { BlotterRecord } from "@/lib/bosDb";
@@ -130,7 +134,8 @@ export default function BlotterProfilePage() {
             </div>
           </div>
         </div>
-        {printJob && <PrintFrame>
+        {printJob && (
+          <PrintFrame html={null}>
             {printJob?.docType === "SUMMONS" && (
               <SummonsTemplate
                 blotter={printJob.blotter}
@@ -152,7 +157,8 @@ export default function BlotterProfilePage() {
                 signerTitle={printJob.signerTitle}
               />
             )}
-        </PrintFrame>}
+        </PrintFrame>
+        )}
         
         {settleOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4" role="dialog" aria-modal="true">

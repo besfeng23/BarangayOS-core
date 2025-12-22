@@ -11,7 +11,6 @@ import {
   Wallet,
   LucideIcon,
   Building,
-  Annoyed,
   Newspaper,
   LayoutGrid,
 } from 'lucide-react';
