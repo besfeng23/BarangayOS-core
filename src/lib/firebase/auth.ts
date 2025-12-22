@@ -1,6 +1,6 @@
 
 import { cookies } from 'next/headers';
-import { adminAuth } from './admin';
+import { getAdminAuth } from './admin';
 
 export async function verifySessionCookie() {
   const sessionCookie = cookies().get('session')?.value;
@@ -8,6 +8,8 @@ export async function verifySessionCookie() {
   if (!sessionCookie) {
     return null;
   }
+  
+  const adminAuth = getAdminAuth();
 
   try {
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);

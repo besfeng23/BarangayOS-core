@@ -2,7 +2,7 @@
 'use server'
 
 import { z } from 'zod';
-import { adminDb } from '@/lib/firebase/admin';
+import { getAdminDb } from '@/lib/firebase/admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import { verifySessionCookie } from '@/lib/firebase/auth';
 
@@ -25,6 +25,7 @@ export async function addResident(values: z.infer<typeof formSchema>) {
     
     const { firstName, lastName, purok } = validation.data;
     const barangayId = decodedClaims.barangayId || 'TEST-BARANGAY-1';
+    const adminDb = getAdminDb();
 
     try {
         await adminDb.collection('residents').add({
