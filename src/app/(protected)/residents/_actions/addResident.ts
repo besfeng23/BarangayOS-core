@@ -15,7 +15,7 @@ const formSchema = z.object({
 
 export async function addResident(values: z.infer<typeof formSchema>) {
     const decodedClaims = await verifySessionCookie();
-    if (!decodedClaims) {
+    if (!decodedClaims?.uid || !decodedClaims?.barangayId) {
         return { success: false, error: 'Unauthorized' };
     }
 
@@ -25,7 +25,7 @@ export async function addResident(values: z.infer<typeof formSchema>) {
     }
     
     const { firstName, lastName, purok } = validation.data;
-    const barangayId = decodedClaims.barangayId || 'TEST-BARANGAY-1';
+    const barangayId = decodedClaims.barangayId;
 
     try {
         await residentsCollection.add({

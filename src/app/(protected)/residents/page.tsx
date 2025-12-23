@@ -25,13 +25,13 @@ async function getResidents(barangayId: string) {
 
 export default async function ResidentsPage() {
     const decodedClaims = await verifySessionCookie();
-    
-    if (!decodedClaims) {
+
+    if (!decodedClaims?.uid || !decodedClaims?.barangayId) {
         // This check is redundant due to the layout, but good for safety.
         return redirect('/login');
     }
 
-    const residents = await getResidents(decodedClaims.barangayId || 'TEST-BARANGAY-1');
+    const residents = await getResidents(decodedClaims.barangayId);
 
     return (
         <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
