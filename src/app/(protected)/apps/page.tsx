@@ -34,7 +34,7 @@ const modules: Module[] = [
     description: 'View, add, or manage residents.',
     icon: Users,
     status: 'INSTALLED',
-    href: '/residents',
+    href: '/residents-v2',
   },
   {
     id: 'certificates',
