@@ -1,24 +1,22 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { residentConverter } from '@/lib/firebase/schema';
 import { verifySessionCookie } from '@/lib/firebase/auth';
 import { getAdminDb } from '@/lib/firebase/admin';
 import { redirect } from 'next/navigation';
 
 async function getResidents(barangayId: string) {
-    // Moved Admin DB init inside the function to avoid build-time execution
     const adminDb = getAdminDb();
-    const residentsRef = collection(adminDb, 'residents').withConverter(residentConverter);
-    const q = query(residentsRef, where("barangayId", "==", barangayId));
-    
+
     try {
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => doc.data());
+        const snapshot = await adminDb
+            .collection('residents')
+            .where('barangayId', '==', barangayId)
+            .get();
+
+        return snapshot.docs.map((doc) => doc.data());
     } catch (error) {
         console.error("Error fetching residents:", error);
-        // Throwing the error will be caught by the error boundary
         throw new Error("Failed to fetch resident data from the server.");
     }
 }
@@ -26,12 +24,48 @@ async function getResidents(barangayId: string) {
 export default async function ResidentsPage() {
     const decodedClaims = await verifySessionCookie();
 
-    if (!decodedClaims?.uid || !decodedClaims?.barangayId) {
-        // This check is redundant due to the layout, but good for safety.
+    if (!decodedClaims?.uid) {
+        console.log('[residents] redirecting: missing uid or session cookie');
         return redirect('/login');
     }
 
-    const residents = await getResidents(decodedClaims.barangayId);
+    // Resolve barangayId from claims or Firestore profile documents
+    const adminDb = getAdminDb();
+    let resolvedBarangayId = (decodedClaims as { barangayId?: string })?.barangayId as string | undefined;
+
+    if (!resolvedBarangayId) {
+        const userDocRef = adminDb.doc(`users/${decodedClaims.uid}`);
+        const userProfileRef = adminDb.doc(`userProfiles/${decodedClaims.uid}`);
+
+        const [userDoc, userProfileDoc] = await Promise.all([userDocRef.get(), userProfileRef.get()]);
+        resolvedBarangayId = (userDoc.data() as { barangayId?: string } | undefined)?.barangayId
+          || (userProfileDoc.data() as { barangayId?: string } | undefined)?.barangayId;
+    }
+
+    if (!resolvedBarangayId) {
+        console.log('[residents] barangay not configured for uid', decodedClaims.uid);
+        return (
+            <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
+                <div className="rounded-xl border bg-card p-6 text-center space-y-3">
+                    <h1 className="text-xl font-semibold">Barangay not configured</h1>
+                    <p className="text-sm text-muted-foreground">
+                        This account does not have an assigned barangay. Please try again or contact an admin.
+                    </p>
+                    <div className="flex justify-center gap-3">
+                        <Link href="/apps" passHref>
+                            <Button variant="outline">Back</Button>
+                        </Link>
+                        <Link href="/residents" passHref>
+                            <Button>Try again</Button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    console.log('[residents] resolved barangayId', resolvedBarangayId);
+    const residents = await getResidents(resolvedBarangayId);
 
     return (
         <div className="mx-auto w-full max-w-3xl p-4 md:p-6">
@@ -65,7 +99,7 @@ export default async function ResidentsPage() {
                   >
                     <div className="font-semibold">{r.displayName}</div>
                     <div className="text-muted-foreground text-xs mt-1">
-                      {r.addressSnapshot.purok} • ID: {r.id.slice(0, 8)}...
+                      {(r.addressSnapshot?.purok ?? 'N/A')} • ID: {r.id ? `${r.id.slice(0, 8)}...` : 'N/A'}
                     </div>
                   </div>
                 ))

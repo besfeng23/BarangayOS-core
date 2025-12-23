@@ -32,8 +32,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (user) {
         const tokenResult = await user.getIdTokenResult();
         setCustomClaims(tokenResult.claims);
+
+        try {
+          const idToken = await user.getIdToken();
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken }),
+          });
+        } catch (err) {
+          console.error('[auth] failed to persist session cookie', err);
+        }
       } else {
         setCustomClaims(null);
+        try {
+          await fetch('/api/auth/session', { method: 'DELETE' });
+        } catch (err) {
+          console.error('[auth] failed to clear session cookie', err);
+        }
       }
       setLoading(false);
     });
