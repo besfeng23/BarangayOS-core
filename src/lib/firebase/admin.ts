@@ -2,13 +2,6 @@
 import { initializeApp, getApps, getApp, cert, App } from 'firebase-admin/app';
 import { getAuth, Auth } from 'firebase-admin/auth';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
-import { bootstrap } from 'global-agent';
-
-if (!process.env.GLOBAL_AGENT_HTTP_PROXY && (process.env.HTTPS_PROXY || process.env.HTTP_PROXY)) {
-  process.env.GLOBAL_AGENT_HTTP_PROXY = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
-  // Ensure Firebase Admin SDK honors outbound proxy settings in constrained environments.
-  bootstrap();
-}
 
 // Prefer REST transport so outbound calls respect HTTP(S) proxy settings.
 if (!process.env.FIRESTORE_PREFER_REST) {
