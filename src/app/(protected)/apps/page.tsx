@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Users,
@@ -13,8 +12,7 @@ import {
   Newspaper,
   LayoutGrid,
 } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { LolaCard, LolaHeader, LolaPage, LolaRowLink, LolaSection } from '@/components/lola';
 
 type ModuleStatus = 'INSTALLED' | 'AVAILABLE';
 
@@ -52,7 +50,7 @@ const modules: Module[] = [
     status: 'INSTALLED',
     href: '/blotter',
   },
-   {
+  {
     id: 'permits',
     name: 'Business Permits',
     description: 'Register and renew local business permits.',
@@ -123,57 +121,48 @@ const modules: Module[] = [
   },
 ];
 
-const ModuleCard = ({ module }: { module: Module; }) => {
-  const CardContent = (
-    <div
-      className={`group relative flex flex-col rounded-2xl border bg-slate-800/30 p-4 min-h-[180px] h-full ${
-        module.status === 'INSTALLED'
-          ? 'border-slate-700/80 hover:bg-slate-800/60 cursor-pointer'
-          : 'border-slate-700/50 grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all'
-      }`}
-    >
-      <div className="flex items-center gap-4">
-        <div className={`p-2 rounded-lg ${module.status === 'INSTALLED' ? 'bg-blue-500/10' : 'bg-slate-700/50'}`}>
-            <module.icon className={`w-6 h-6 ${module.status === 'INSTALLED' ? 'text-blue-400' : 'text-slate-400'}`} />
-        </div>
-        <h3 className="text-lg font-semibold text-slate-100">{module.name}</h3>
-      </div>
-      <p className="text-sm text-slate-300 mt-2 flex-grow">{module.description}</p>
-      <div
-        className={`mt-4 w-full rounded-xl border py-2.5 text-center text-sm font-bold tracking-widest ${
-          module.status === 'INSTALLED'
-            ? 'bg-slate-800/60 border-slate-700/50 text-slate-100'
-            : 'bg-blue-600/20 border-blue-500/30 text-blue-300 group-hover:bg-blue-500 group-hover:text-black'
-        }`}
-      >
-        {module.status === 'INSTALLED' ? 'OPEN' : 'INFO'}
-      </div>
-    </div>
-  );
-
-  if (module.status === 'INSTALLED' && module.href) {
-    return <Link href={module.href} passHref>{CardContent}</Link>;
-  }
-
-  return <div className="text-left h-full w-full cursor-not-allowed">{CardContent}</div>;
-};
-
-
 export default function AppHubPage() {
-  return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold">Applications</h1>
-        <p className="text-slate-300">
-          Manage installed modules for your barangay.
-        </p>
-      </header>
+  const installed = modules.filter((module) => module.status === 'INSTALLED');
+  const available = modules.filter((module) => module.status === 'AVAILABLE');
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {modules.map((module) => (
-          <ModuleCard key={module.id} module={module} />
-        ))}
+  return (
+    <LolaPage>
+      <LolaHeader
+        title="BarangayOS Applications"
+        subtitle="Large, single-column tiles with clear chevrons so Lola knows where to go."
+      />
+
+      <div className="space-y-6">
+        <LolaSection title="Installed" subtitle="Open the core modules your barangay uses daily.">
+          <LolaCard className="space-y-3">
+            {installed.map((module) => (
+              <LolaRowLink
+                key={module.id}
+                title={module.name}
+                description={module.description}
+                href={module.href}
+                meta="Open"
+                icon={<module.icon className="h-6 w-6" />}
+              />
+            ))}
+          </LolaCard>
+        </LolaSection>
+
+        <LolaSection title="Coming Soon" subtitle="Preview modules that will roll out next.">
+          <LolaCard className="space-y-3">
+            {available.map((module) => (
+              <LolaRowLink
+                key={module.id}
+                title={module.name}
+                description={module.description}
+                disabled
+                meta="Planned"
+                icon={<module.icon className="h-6 w-6" />}
+              />
+            ))}
+          </LolaCard>
+        </LolaSection>
       </div>
-    </div>
+    </LolaPage>
   );
 }

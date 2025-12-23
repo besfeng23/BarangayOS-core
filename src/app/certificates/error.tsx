@@ -1,38 +1,37 @@
+'use client';
 
-'use client' 
+import { LolaBanner, LolaCard, LolaPage, LolaPrimaryButton, LolaSecondaryButton } from '@/components/lola';
 
-import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-
-export default function Error({
+export default function ErrorCertificates({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
-  useEffect(() => {
-    console.error(error)
-  }, [error])
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-      <h2 className="text-2xl font-bold mb-4">Something went wrong in Certificates Module</h2>
-      <p className="text-muted-foreground mb-6 max-w-md">{error.message || "An unexpected error occurred."}</p>
-      <div className="flex gap-4">
-        <Button
-          onClick={() => reset()}
-          variant="secondary"
-        >
-          Try again
-        </Button>
-         <Button
-            onClick={() => window.history.back()}
-            variant="outline"
-        >
-          Go Back
-        </Button>
+    <LolaPage>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
+        <LolaBanner
+          variant="error"
+          title="Certificate module error"
+          message="We couldn’t load the certificate tools. Check your connection or try again."
+        />
+        <LolaCard className="w-full max-w-2xl space-y-3">
+          <p className="text-sm text-slate-600">Details</p>
+          <div className="rounded-xl bg-slate-900 p-3 text-left text-sm text-red-100">
+            {error.message || 'Unexpected error.'}
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <LolaSecondaryButton fullWidth={false} onClick={() => window.history.back()}>
+              Go back
+            </LolaSecondaryButton>
+            <LolaPrimaryButton fullWidth={false} onClick={() => reset()}>
+              Try again
+            </LolaPrimaryButton>
+          </div>
+        </LolaCard>
       </div>
-    </div>
-  )
+    </LolaPage>
+  );
 }

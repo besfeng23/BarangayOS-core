@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -12,16 +11,20 @@ export default function ProtectedLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true';
 
   useEffect(() => {
+    if (bypassAuth) return;
     if (!loading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, bypassAuth]);
+
+  if (bypassAuth) {
+    return <>{children}</>;
+  }
 
   if (loading || !user) {
-    // AuthProvider will show a loading skeleton, so we can just return null here
-    // to prevent rendering children until authentication state is confirmed.
     return null;
   }
 

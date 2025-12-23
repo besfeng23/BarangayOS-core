@@ -1,18 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { getAuth, signInWithEmailAndPassword, browserLocalPersistence, browserSessionPersistence, setPersistence } from 'firebase/auth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Shield, Loader2, Eye, EyeOff } from 'lucide-react';
 import { app } from '@/lib/firebase/client';
 import Image from 'next/image';
 import Link from 'next/link';
+import {
+  LolaBanner,
+  LolaCard,
+  LolaHeader,
+  LolaInput,
+  LolaPage,
+  LolaPrimaryButton,
+} from '@/components/lola';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -21,7 +22,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
   const auth = getAuth(app);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -33,11 +33,8 @@ export default function LoginPage() {
       const persistence = keepLoggedIn ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
       await signInWithEmailAndPassword(auth, email, password);
-      
-      // The onIdTokenChanged listener in AuthProvider will handle the redirect.
-      // Forcing a hard reload to ensure all state is correctly initialized.
-      window.location.href = '/apps';
 
+      window.location.href = '/apps';
     } catch (err: any) {
       setError('Invalid email or password. Please try again.');
       console.error(err);
@@ -46,96 +43,105 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-900 relative p-4">
-      <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
-        <Link href="/landing" className="text-sm text-slate-400 hover:text-white transition-colors">&larr; Back to Landing Page</Link>
-      </div>
+    <LolaPage className="flex flex-col items-center justify-center">
+      <div className="w-full max-w-2xl">
+        <LolaHeader title="Sign in to BarangayOS" subtitle="Large, clear controls to keep Lola unblocked." backHref="/landing" />
 
-      <Card className="w-full max-w-md mx-auto bg-slate-800/50 border-slate-700 text-white">
-        <CardHeader className="text-center">
-          <Shield className="mx-auto h-12 w-12 text-blue-400" />
-          <CardTitle className="text-3xl font-bold mt-4">BarangayOS</CardTitle>
-          <CardDescription className="text-slate-400">
-            Sign in to access your terminal.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-6">
-            {error && (
-              <Alert variant="destructive">
-                <AlertTitle>Login Failed</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+        <LolaCard className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+              <Shield className="h-7 w-7" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold leading-tight">Secure Sign In</p>
+              <p className="text-base text-slate-600">Use your official email and password.</p>
+            </div>
+          </div>
+
+          {error && (
+            <LolaBanner variant="error" title="Login failed" message={error} />
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-lg">Email</Label>
-              <Input
+              <label htmlFor="email" className="text-base font-semibold text-slate-800">Email</label>
+              <LolaInput
                 id="email"
                 type="email"
                 placeholder="juan@example.com"
                 required
-                className="h-12 text-lg bg-slate-900 border-slate-600"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
               />
+              <p className="text-sm text-slate-600">We’ll keep you signed in on this device.</p>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-lg">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  required
-                  className="h-12 text-lg bg-slate-900 border-slate-600 pr-12"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                />
-                <Button
+              <label htmlFor="password" className="text-base font-semibold text-slate-800">Password</label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <LolaInput
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Your password"
+                    required
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 text-slate-400 hover:text-white"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="flex h-14 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold text-slate-800 shadow-sm focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </Button>
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
               </div>
+              <p className="text-sm text-slate-600">Passwords are hidden by default to prevent mistakes.</p>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox id="keep-logged-in" checked={keepLoggedIn} onCheckedChange={(checked) => setKeepLoggedIn(checked as boolean)} />
-              <label
-                htmlFor="keep-logged-in"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Keep me logged in
-              </label>
-            </div>
-            <Button
-              type="submit"
-              className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700"
-              disabled={loading}
-            >
-              {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {loading ? 'Signing In...' : 'Sign In'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
 
-      <footer className="fixed bottom-8 left-0 right-0 flex flex-col items-center justify-center">
-        <p className="text-[10px] text-slate-500 tracking-widest mb-2 uppercase">POWERED BY</p>
-        <Image 
-            src="/speedypldt.png" 
-            alt="PLDT Enterprise" 
-            width={200}
-            height={48}
-            className="h-12 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
-        />
-      </footer>
-    </div>
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-800 shadow-sm">
+              <input
+                id="keep-logged-in"
+                type="checkbox"
+                checked={keepLoggedIn}
+                onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                className="h-5 w-5 accent-blue-700"
+              />
+              Keep me logged in on this device
+            </label>
+
+            <LolaPrimaryButton type="submit" disabled={loading}>
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Signing In…
+                </span>
+              ) : (
+                'Sign In'
+              )}
+            </LolaPrimaryButton>
+          </form>
+        </LolaCard>
+
+        <footer className="mt-6 flex flex-col items-center justify-center gap-2 text-center">
+          <p className="text-xs tracking-[0.24em] text-slate-500 uppercase">Powered by</p>
+          <Link href="/landing" className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <Image
+              src="/speedypldt.png"
+              alt="PLDT Enterprise"
+              width={200}
+              height={48}
+              className="h-12 w-auto object-contain"
+            />
+          </Link>
+        </footer>
+      </div>
+    </LolaPage>
   );
 }

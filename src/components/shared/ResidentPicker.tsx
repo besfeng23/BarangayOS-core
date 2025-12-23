@@ -91,8 +91,9 @@ export function ResidentPicker({
         <div className="flex items-center gap-2 p-2 rounded-xl bg-background border min-h-[56px] h-14">
           <User className="h-5 w-5 text-primary flex-shrink-0" />
           <span className="font-semibold flex-1">{displayName}</span>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleClear}>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleClear} aria-label="Clear selected resident">
             <X className="h-4 w-4" />
+            <span className="sr-only">Clear selected resident</span>
           </Button>
         </div>
       </div>

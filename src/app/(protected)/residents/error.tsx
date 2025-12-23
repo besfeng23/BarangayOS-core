@@ -1,9 +1,8 @@
-
 'use client' 
 
 import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
+import { LolaBanner, LolaCard, LolaPage, LolaPrimaryButton, LolaSecondaryButton } from '@/components/lola';
 
 export default function Error({
   error,
@@ -14,38 +13,32 @@ export default function Error({
 }) {
   const { user } = useAuth();
   useEffect(() => {
-    // You can log the error to an error reporting service
     console.error(`[Residents Module Error] User: ${user?.uid || 'anonymous'}`, error)
   }, [error, user])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
-      <h2 className="text-2xl font-bold mb-4 text-destructive">Error Loading Residents</h2>
-      <p className="text-muted-foreground mb-6 max-w-md">
-        There was a problem fetching the resident records. This might be a temporary issue with the server or your connection.
-      </p>
-      <div className="bg-zinc-800 p-4 rounded-lg font-mono text-xs text-red-300 mb-6 max-w-full overflow-x-auto">
-        {error.message || "An unexpected error occurred."}
+    <LolaPage>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
+        <LolaBanner
+          variant="error"
+          title="Error loading residents"
+          message="We couldn’t load the resident directory. Check your connection or try again."
+        />
+        <LolaCard className="w-full max-w-2xl space-y-3">
+          <p className="text-sm text-slate-600">Error details</p>
+          <div className="rounded-xl bg-slate-900 p-3 text-left text-sm text-red-100">
+            {error.message || "An unexpected error occurred."}
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <LolaSecondaryButton fullWidth={false} onClick={() => window.history.back()}>
+              Go Back
+            </LolaSecondaryButton>
+            <LolaPrimaryButton fullWidth={false} onClick={() => reset()}>
+              Try again
+            </LolaPrimaryButton>
+          </div>
+        </LolaCard>
       </div>
-      <div className="flex gap-4">
-        <Button
-          onClick={
-            // Attempt to recover by trying to re-render the segment
-            () => reset()
-          }
-          variant="secondary"
-          size="lg"
-        >
-          Try again
-        </Button>
-         <Button
-            onClick={() => window.history.back()}
-            variant="outline"
-            size="lg"
-        >
-          Go Back
-        </Button>
-      </div>
-    </div>
+    </LolaPage>
   )
 }

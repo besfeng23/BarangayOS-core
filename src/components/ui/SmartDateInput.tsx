@@ -4,6 +4,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { getManilaDate, getManilaYesterday } from '@/lib/date';
+import { lolaHeights, lolaRadii } from '@/styles/tokens';
 
 
 interface SmartDateInputProps {
@@ -18,7 +19,7 @@ const QuickActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>>
   <button
     type="button"
     className={cn(
-      "rounded-full bg-muted px-3 py-1 text-xs font-bold uppercase text-primary transition-colors hover:bg-accent",
+      "h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-sm font-semibold text-blue-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-100",
       className
     )}
     {...props}
@@ -38,16 +39,16 @@ export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange,
   };
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full space-y-2', className)}>
       {labelText && (
-        <label className="mb-1 block text-sm font-medium">
+        <label className="block text-base font-semibold text-slate-800">
           {labelText}
         </label>
       )}
        {helperText && (
-        <p className="mb-2 text-xs text-muted-foreground">{helperText}</p>
+        <p className="text-sm text-slate-600">{helperText}</p>
       )}
-      <div className="mb-2 flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <QuickActionButton onClick={() => handleQuickAction('today')}>
           Today
         </QuickActionButton>
@@ -59,8 +60,10 @@ export const SmartDateInput: React.FC<SmartDateInputProps> = ({ value, onChange,
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border bg-background p-3 text-lg focus:ring-2 focus:ring-ring"
+        className="w-full border-2 border-slate-200 bg-white p-3 text-base font-medium text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-100"
         style={{
+          height: lolaHeights.control,
+          borderRadius: lolaRadii.lg,
           colorScheme: 'light', 
         }}
       />
