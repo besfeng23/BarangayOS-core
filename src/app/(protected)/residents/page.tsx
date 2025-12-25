@@ -1,3 +1,7 @@
-import ResidentsPageContent from './ResidentsPageContent';
+"use client";
 
-export default ResidentsPageContent;
+import ResidentsIndex from "@/features/residents/ResidentsIndex";
+
+export default function Page() {
+  return <ResidentsIndex />;
+}
