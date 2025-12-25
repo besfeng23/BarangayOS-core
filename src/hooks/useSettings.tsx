@@ -4,16 +4,25 @@ import React, { createContext, useContext, ReactNode, useCallback, useState } fr
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/bosDb";
 import { writeActivity } from "@/lib/bos/activity/writeActivity";
+import type { DeviceType } from "@/lib/bosDb";
+import type { AISettings as AISettingsValue } from '@/hooks/useAISettings';
+
 
 export type BarangaySettings = {
   barangayName: string;
   barangayAddress: string;
   punongBarangay: string;
   secretaryName: string;
+
   trialEnabled: boolean;
   trialDaysRemaining: number;
+
   controlPrefix: string;
   readOnlyMode: boolean;
+  
+  securityDeviceTypes: DeviceType[];
+  ai?: Partial<AISettingsValue>;
+
   updatedAtISO: string;
 };
 
@@ -28,6 +37,21 @@ const DEFAULTS: BarangaySettings = {
   trialDaysRemaining: 5,
   controlPrefix: "BRGY",
   readOnlyMode: false,
+  securityDeviceTypes: [
+    'CCTV',
+    'NVR',
+    'BODY_CAM',
+    'DASH_CAM',
+    'PANIC_BUTTON',
+    'SIREN',
+    'LED_DISPLAY',
+    'PA_SYSTEM',
+  ],
+  ai: {
+    enableAI: true,
+    allowPII: false,
+    demoMode: true,
+  },
   updatedAtISO: new Date().toISOString(),
 };
 
@@ -52,6 +76,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [saving, setSaving] = useState(false);
 
   const settingsData = useLiveQuery(() => db.settings.get(KEY), [], null);
+  
   const settings = settingsData?.value as BarangaySettings ?? DEFAULTS;
   const loading = settingsData === null;
 
@@ -62,9 +87,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       const payload: BarangaySettings = {
         ...currentSettings,
         ...updates,
-        updatedAtISO: new Date().toISOString(),
+        updatedAtISO: new Date().toISOString()
       };
-
+      
       await db.settings.put({ key: KEY, value: payload });
 
       await db.sync_queue.add({
